@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+:root {
+  /* Napoleon AI Design Tokens */
+  --primary-background: #0B0D11;
+  --accent-gold: #D4AF37;
+  --neutral-silver: #C7CAD1;
+  --warm-ivory: #F6F6F4;
+  
+  /* Motion */
+  --luxury-easing: cubic-bezier(0.4,0,0.2,1);
+  --ripple-duration: 600ms;
+}
+
+@theme inline {
+  --color-primary-background: var(--primary-background);
+  --color-accent-gold: var(--accent-gold);
+  --color-neutral-silver: var(--neutral-silver);
+  --color-warm-ivory: var(--warm-ivory);
+  --font-body: var(--font-inter);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--primary-background);
+  color: var(--warm-ivory);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--primary-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--neutral-silver);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-gold);
+}
+
+/* Focus styles */
+*:focus {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
+}
+
+/* Animation classes */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
