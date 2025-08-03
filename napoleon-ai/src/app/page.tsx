@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { EnvelopeIcon, StarIcon, BoltIcon } from '@heroicons/react/24/outline';
+import GmailOAuthButton from '@/components/auth/GmailOAuthButton';
 
 export default function Home() {
   return (
@@ -65,11 +66,7 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.6 }}
               className="mb-16"
             >
-              <button className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-primary-background bg-accent-gold rounded-full transition-all duration-300 hover:bg-accent-gold/90 hover:scale-105 active:scale-95">
-                <EnvelopeIcon className="w-6 h-6 mr-3 transition-transform group-hover:rotate-12" />
-                Connect with Gmail
-                <div className="absolute inset-0 rounded-full bg-accent-gold opacity-0 group-hover:opacity-20 transition-opacity duration-300 animate-ripple"></div>
-              </button>
+              <GmailOAuthButton />
             </motion.div>
 
             {/* Feature Preview */}

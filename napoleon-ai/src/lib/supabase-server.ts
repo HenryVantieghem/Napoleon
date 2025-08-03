@@ -1,17 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
-import { createBrowserClient, createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-// For client-side usage
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// For client components
-export function createClientSupabase() {
-  return createBrowserClient(supabaseUrl, supabaseAnonKey);
-}
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 
 // For server components
 export async function createServerSupabase() {

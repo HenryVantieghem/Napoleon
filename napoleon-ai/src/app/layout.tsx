@@ -12,7 +12,6 @@ export const metadata: Metadata = {
   description: "Transform communication chaos into strategic clarity with AI-powered Gmail management.",
   keywords: ["AI", "Gmail", "Email Management", "Productivity", "Smart Inbox"],
   authors: [{ name: "Napoleon AI" }],
-  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({

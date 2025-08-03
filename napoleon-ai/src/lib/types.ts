@@ -1,5 +1,9 @@
 // Napoleon AI MVP - Core TypeScript Interfaces
 
+import type { Session } from '@supabase/supabase-js';
+
+export type { Session };
+
 export interface User {
   id: string;
   email: string;
@@ -74,7 +78,7 @@ export interface ThreadWithAnalysis {
 
 export interface AuthState {
   user: User | null;
-  session: any;
+  session: Session | null;
   loading: boolean;
   error: string | null;
 }
