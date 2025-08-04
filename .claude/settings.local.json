@@ -31,7 +31,16 @@
       "WebFetch(domain:notion.so)",
       "WebFetch(domain:www.notion.com)",
       "WebFetch(domain:mercury.com)",
-      "WebFetch(domain:napoleon-vebn7naz1-napoleon.vercel.app)"
+      "WebFetch(domain:napoleon-vebn7naz1-napoleon.vercel.app)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(mkdir:*)",
+      "Bash(pip install:*)",
+      "Bash(SuperClaude install --profile developer)",
+      "Bash(python3:*)",
+      "Bash(SuperClaude --help)",
+      "Bash(SuperClaude install --profile developer --yes)"
     ],
     "deny": []
   }
