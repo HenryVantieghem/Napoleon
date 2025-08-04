@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor, within, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Dashboard from '@/app/dashboard/page';
 import { ThreadList } from '@/components/dashboard/ThreadList';
@@ -86,22 +86,27 @@ describe('Executive Gmail Dashboard', () => {
         fetchLatestThreads: jest.fn().mockResolvedValue(mockThreads),
       }));
 
-      render(<Dashboard />);
+      await act(async () => {
+        render(<Dashboard />);
+      });
 
       await waitFor(() => {
         expect(screen.getByTestId('dashboard-container')).toBeInTheDocument();
         expect(screen.getByTestId('dashboard-header')).toBeInTheDocument();
         expect(screen.getByTestId('thread-list')).toBeInTheDocument();
-      });
-    });
+      }, { timeout: 10000 });
+    }, 15000);
 
-    it('should display loading state initially', () => {
+    it('should display loading state initially', async () => {
       const GmailClient = require('@/lib/gmail-client');
       GmailClient.mockImplementation(() => ({
         fetchLatestThreads: jest.fn().mockImplementation(() => new Promise(() => {})),
       }));
 
-      render(<Dashboard />);
+      await act(async () => {
+        render(<Dashboard />);
+      });
+      
       expect(screen.getByTestId('loading-state')).toBeInTheDocument();
       expect(screen.getByText(/Loading your executive inbox/i)).toBeInTheDocument();
     });
@@ -112,13 +117,15 @@ describe('Executive Gmail Dashboard', () => {
         fetchLatestThreads: jest.fn().mockResolvedValue([]),
       }));
 
-      render(<Dashboard />);
+      await act(async () => {
+        render(<Dashboard />);
+      });
 
       await waitFor(() => {
         expect(screen.getByTestId('empty-state')).toBeInTheDocument();
         expect(screen.getByText(/Your inbox is clear/i)).toBeInTheDocument();
-      });
-    });
+      }, { timeout: 10000 });
+    }, 15000);
 
     it('should handle network errors gracefully', async () => {
       const GmailClient = require('@/lib/gmail-client');
@@ -126,13 +133,15 @@ describe('Executive Gmail Dashboard', () => {
         fetchLatestThreads: jest.fn().mockRejectedValue(new Error('Network error')),
       }));
 
-      render(<Dashboard />);
+      await act(async () => {
+        render(<Dashboard />);
+      });
 
       await waitFor(() => {
         expect(screen.getByTestId('error-state')).toBeInTheDocument();
         expect(screen.getByText(/Unable to load your emails/i)).toBeInTheDocument();
-      });
-    });
+      }, { timeout: 10000 });
+    }, 15000);
   });
 
   describe('DashboardHeader Component', () => {

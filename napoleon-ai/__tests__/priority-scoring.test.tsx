@@ -105,7 +105,7 @@ describe('AI Priority Scoring Algorithm', () => {
         summary: 'Q4 financial results requiring executive review before earnings call',
         key_points: ['Q4 financial results', 'Executive review needed', 'Earnings call Friday'],
         suggested_actions: ['Review financial results', 'Prepare for earnings call', 'Schedule CFO meeting'],
-        sentiment: 'neutral',
+        sentiment: 'neutral' as const,
         confidence_score: 0.88,
         created_at: new Date().toISOString(),
       });
@@ -153,7 +153,7 @@ describe('AI Priority Scoring Algorithm', () => {
         summary: 'Contract amendment requiring executive approval and legal review',
         key_points: ['Contract amendments', 'Executive approval needed', 'Legal flagged clauses'],
         suggested_actions: ['Review contract amendments', 'Consult with legal team', 'Approve or request changes'],
-        sentiment: 'neutral',
+        sentiment: 'neutral' as const,
         confidence_score: 0.92,
         created_at: new Date().toISOString(),
       });
@@ -190,7 +190,7 @@ describe('AI Priority Scoring Algorithm', () => {
           summary: 'Financial results for review',
           key_points: [],
           suggested_actions: [],
-          sentiment: 'neutral',
+          sentiment: 'neutral' as const,
           confidence_score: 0.88,
           created_at: new Date().toISOString(),
         })
@@ -295,7 +295,7 @@ describe('AI Priority Scoring Algorithm', () => {
         summary: 'C-level communication',
         key_points: [],
         suggested_actions: [],
-        sentiment: 'neutral',
+        sentiment: 'neutral' as const,
         confidence_score: 0.9,
         created_at: new Date().toISOString(),
       });
@@ -321,7 +321,7 @@ describe('AI Priority Scoring Algorithm', () => {
         summary: 'Time-sensitive contract signature',
         key_points: [],
         suggested_actions: [],
-        sentiment: 'neutral',
+        sentiment: 'neutral' as const,
         confidence_score: 0.9,
         created_at: new Date().toISOString(),
       });
@@ -349,7 +349,7 @@ describe('AI Priority Scoring Algorithm', () => {
         summary: '',
         key_points: [],
         suggested_actions: [],
-        sentiment: 'neutral',
+        sentiment: 'neutral' as const,
         confidence_score: 0,
         created_at: new Date().toISOString(),
       } as any);
@@ -365,15 +365,15 @@ describe('AI Priority Scoring Algorithm', () => {
 
   describe('Caching', () => {
     it('should cache analysis results by thread ID', async () => {
-      const mockAnalysis = {
+      const mockAnalysis: AIAnalysis = {
         id: 'cached_analysis',
         thread_id: mockThreads[0].id,
         priority_score: 8.5,
-        category: 'important',
+        category: 'important' as const,
         summary: 'Cached analysis',
         key_points: [],
         suggested_actions: [],
-        sentiment: 'neutral',
+        sentiment: 'neutral' as const,
         confidence_score: 0.9,
         created_at: new Date().toISOString(),
       };
@@ -392,15 +392,15 @@ describe('AI Priority Scoring Algorithm', () => {
     });
 
     it('should provide cache clearing functionality', async () => {
-      const mockAnalysis = {
+      const mockAnalysis: AIAnalysis = {
         id: 'analysis_to_clear',
         thread_id: mockThreads[0].id,
         priority_score: 7.0,
-        category: 'important',
+        category: 'important' as const,
         summary: 'Analysis to clear',
         key_points: [],
         suggested_actions: [],
-        sentiment: 'neutral',
+        sentiment: 'neutral' as const,
         confidence_score: 0.8,
         created_at: new Date().toISOString(),
       };

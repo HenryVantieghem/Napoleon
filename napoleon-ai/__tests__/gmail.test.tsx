@@ -3,10 +3,17 @@ import type { GmailThread, GmailMessage, AIAnalysis } from '@/lib/types'
 // Mock Gmail API responses
 const mockGmailThread: GmailThread = {
   id: 'thread_123',
-  historyId: '12345',
+  subject: 'Meeting Tomorrow',
   snippet: 'Meeting tomorrow at 3pm...',
-  threadId: 'thread_123',
-  messages: [
+  participants: ['john@company.com', 'sarah@company.com'],
+  unreadCount: 1,
+  lastActivity: new Date('2024-01-15T10:00:00Z'),
+  hasAttachments: false,
+  labels: ['INBOX', 'IMPORTANT']
+}
+
+// Mock Gmail messages (separate from GmailThread for API testing)
+const mockGmailMessages: GmailMessage[] = [
     {
       id: 'msg_123',
       threadId: 'thread_123',
@@ -30,8 +37,7 @@ const mockGmailThread: GmailThread = {
       },
       sizeEstimate: 1024,
     },
-  ],
-}
+]
 
 const mockAIAnalysis: AIAnalysis = {
   id: 'analysis_123',
@@ -106,7 +112,7 @@ describe('Gmail Integration', () => {
     })
 
     it('should parse Gmail message headers correctly', () => {
-      const message = mockGmailThread.messages[0]
+      const message = mockGmailMessages[0]
       const fromHeader = message.payload.headers.find(h => h.name === 'From')
       const subjectHeader = message.payload.headers.find(h => h.name === 'Subject')
       
