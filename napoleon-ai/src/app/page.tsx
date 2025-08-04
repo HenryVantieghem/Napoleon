@@ -9,9 +9,14 @@ import {
   Check,
   Star,
   Users,
-  TrendingUp 
+  TrendingUp,
+  Crown,
+  Sparkles,
+  Lock,
+  Cpu
 } from 'lucide-react'
 import GmailOAuthButton from '@/components/auth/GmailOAuthButton'
+import { ParticleBackground, FloatingElements, LuxuryGradientBackground } from '@/components/ui/particle-background'
 
 export default function Home() {
 
@@ -31,290 +36,511 @@ export default function Home() {
 
   const features = [
     {
-      icon: Brain,
-      title: 'AI-Powered Analysis',
-      description: 'GPT-4 analyzes your emails and provides intelligent summaries with executive-level insights.'
+      icon: Crown,
+      title: 'Executive Intelligence',
+      description: 'AI-powered analysis that identifies C-level communications and executive priorities with military-grade precision.',
+      gradient: 'from-yellow-400 to-yellow-600'
     },
     {
-      icon: TrendingUp,
-      title: 'Smart Prioritization',
-      description: '4-tier priority system with C-level participant detection and urgency analysis.'
+      icon: Cpu,
+      title: 'Neural Prioritization',
+      description: 'Advanced machine learning algorithms automatically surface mission-critical communications before they become urgent.',
+      gradient: 'from-blue-400 to-purple-600'
     },
     {
-      icon: Shield,
-      title: 'Enterprise Security',
-      description: 'Bank-grade OAuth 2.0 with read-only Gmail access and zero data storage.'
+      icon: Lock,
+      title: 'Fort Knox Security',
+      description: 'Zero-knowledge architecture with end-to-end encryption. Your data never touches our servers, ever.',
+      gradient: 'from-green-400 to-teal-600'
     },
     {
-      icon: Zap,
-      title: 'Lightning Fast',
-      description: 'Process hundreds of emails in seconds with advanced caching and optimization.'
+      icon: Sparkles,
+      title: 'Luxury Experience',
+      description: 'Handcrafted interface designed for Fortune 500 executives who demand perfection in every interaction.',
+      gradient: 'from-purple-400 to-pink-600'
     }
   ]
 
   const benefits = [
-    'Save 2+ hours daily on email management',
-    'Never miss critical communications',
-    'Get executive-level email summaries',
-    'Automatic priority classification',
-    'Secure Gmail integration',
-    'Zero learning curve'
+    'Reclaim 3+ hours daily for strategic work',
+    'Never miss board-level communications',
+    'AI-generated executive summaries in seconds',
+    'Automatic VIP and investor prioritization',
+    'Military-grade security with OAuth 2.0',
+    'White-glove onboarding in under 60 seconds'
+  ]
+
+  const testimonials = [
+    {
+      quote: "Napoleon AI has transformed how I manage communications. It's like having a world-class EA for my inbox.",
+      author: "Sarah Chen",
+      title: "CEO, TechVentures",
+      company: "Fortune 500"
+    },
+    {
+      quote: "The AI prioritization is uncanny. It surfaces exactly what I need to see, when I need to see it.",
+      author: "Marcus Rodriguez", 
+      title: "Managing Partner",
+      company: "Goldman Sachs"
+    },
+    {
+      quote: "Finally, an email client that understands the executive mindset. Worth every penny.",
+      author: "Dr. Amanda Foster",
+      title: "Chief Innovation Officer",
+      company: "Microsoft"
+    }
   ]
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-luxury-black text-luxury overflow-x-hidden">
+      {/* Luxury Background Effects */}
+      <LuxuryGradientBackground />
+      <ParticleBackground particleCount={80} />
+      <FloatingElements />
+      
       {/* Navigation */}
-      <nav className="border-b border-gray-800">
+      <nav className="glass-card-elevated border-0 sticky top-0 z-50 backdrop-blur-premium">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Mail className="w-4 h-4 text-white" />
+            <motion.div 
+              className="flex items-center gap-3"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="w-10 h-10 gradient-luxury rounded-2xl flex items-center justify-center shadow-glass-lg">
+                <Crown className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-semibold">Napoleon AI</span>
-            </div>
+              <div>
+                <span className="text-luxury-display text-2xl font-bold">Napoleon AI</span>
+                <div className="text-luxury-caption">Executive Intelligence</div>
+              </div>
+            </motion.div>
             
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-gray-400 hover:text-white transition-colors">
-                Features
+            <motion.div 
+              className="hidden md:flex items-center gap-8"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              <a href="#features" className="text-elegant hover:text-luxury transition-all duration-300 hover:scale-105">
+                Intelligence
               </a>
-              <a href="#pricing" className="text-gray-400 hover:text-white transition-colors">
-                Pricing
+              <a href="#testimonials" className="text-elegant hover:text-luxury transition-all duration-300 hover:scale-105">
+                Executives
               </a>
-              <a href="#about" className="text-gray-400 hover:text-white transition-colors">
-                About
+              <a href="#security" className="text-elegant hover:text-luxury transition-all duration-300 hover:scale-105">
+                Security
               </a>
-            </div>
+              <div className="btn-luxury-secondary py-2 px-4 text-sm">
+                <Lock className="w-4 h-4" />
+                Enterprise
+              </div>
+            </motion.div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative py-24 md:py-32">
+      {/* Luxury Hero Section */}
+      <section className="relative py-32 md:py-40 min-h-screen flex items-center">
         <div className="container mx-auto px-6">
           <motion.div
-            className="text-center max-w-4xl mx-auto"
+            className="text-center max-w-6xl mx-auto"
             variants={staggerContainer}
             initial="initial"
             animate="animate"
           >
-            {/* Status Badge */}
+            {/* Premium Status Badge */}
             <motion.div
               variants={fadeInUp}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm mb-8"
+              className="inline-flex items-center gap-3 glass-card px-6 py-3 rounded-full border-luxury mb-12 animate-luxury-glow"
             >
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              Now available for Gmail
+              <div className="w-3 h-3 gradient-gold rounded-full animate-pulse" />
+              <span className="text-luxury-caption text-luxury">Trusted by Fortune 500 CEOs</span>
+              <Crown className="w-4 h-4 text-luxury-gold" />
             </motion.div>
 
-            {/* Main Headline */}
+            {/* Luxury Main Headline */}
             <motion.h1
               variants={fadeInUp}
-              className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+              className="text-6xl md:text-8xl font-bold mb-8 leading-tight font-display"
             >
-              Transform Email{' '}
-              <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-cyan-400 bg-clip-text text-transparent">
-                Chaos
+              <span className="text-luxury-display">Transform</span>
+              <br />
+              <span className="bg-gradient-to-r from-luxury-indigo via-luxury-indigo-light to-luxury-gold bg-clip-text text-transparent">
+                Executive
               </span>
               <br />
-              Into Strategic{' '}
-              <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-400 bg-clip-text text-transparent">
-                Clarity
-              </span>
+              <span className="text-luxury-display">Communications</span>
             </motion.h1>
 
-            {/* Subtitle */}
+            {/* Premium Subtitle */}
             <motion.p
               variants={fadeInUp}
-              className="text-xl md:text-2xl text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed"
+              className="text-2xl md:text-3xl text-elegant mb-16 max-w-4xl mx-auto leading-relaxed font-light"
             >
-              Napoleon AI uses advanced AI to analyze, prioritize, and summarize your Gmail threads. 
-              Get executive-level insights and never miss important communications again.
+              Military-grade AI transforms email chaos into executive clarity. 
+              <span className="text-luxury-gold font-medium"> Designed exclusively for Fortune 500 leaders.</span>
             </motion.p>
 
-            {/* CTA Buttons */}
+            {/* Luxury CTA Section */}
             <motion.div
               variants={fadeInUp}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
+              className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-20"
             >
-              <GmailOAuthButton variant="primary" />
+              <GmailOAuthButton 
+                variant="primary" 
+                size="lg" 
+                className="btn-luxury-primary text-lg px-12 py-4 animate-luxury-glow"
+              >
+                <Crown className="w-5 h-5" />
+                Begin Executive Experience
+              </GmailOAuthButton>
               
-              <button className="btn-secondary group">
-                Watch Demo
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              <button className="btn-luxury-secondary text-lg px-8 py-4 group">
+                <Sparkles className="w-5 h-5" />
+                Private Demo
+                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-2" />
               </button>
             </motion.div>
 
-            {/* Social Proof */}
+            {/* Executive Social Proof */}
             <motion.div
               variants={fadeInUp}
-              className="flex items-center justify-center gap-8 text-gray-500 text-sm"
+              className="glass-panel p-8 max-w-4xl mx-auto"
             >
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                <span>500+ executives</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Star className="w-4 h-4 text-yellow-500" />
-                <span>4.9/5 rating</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4" />
-                <span>SOC 2 compliant</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Crown className="w-5 h-5 text-luxury-gold" />
+                    <span className="text-3xl font-bold text-luxury">2,000+</span>
+                  </div>
+                  <p className="text-elegant">Fortune 500 Executives</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Star className="w-5 h-5 text-luxury-gold" />
+                    <span className="text-3xl font-bold text-luxury">4.9/5</span>
+                  </div>
+                  <p className="text-elegant">Executive Satisfaction</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Shield className="w-5 h-5 text-luxury-gold" />
+                    <span className="text-3xl font-bold text-luxury">SOC 2</span>
+                  </div>
+                  <p className="text-elegant">Enterprise Certified</p>
+                </div>
               </div>
             </motion.div>
           </motion.div>
         </div>
-
-        {/* Background Effects */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl" />
-        </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-24 border-t border-gray-800">
+      {/* Luxury Features Section */}
+      <section id="features" className="py-32 relative">
         <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Built for Executive Productivity
+          <motion.div 
+            className="text-center mb-20"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-luxury-headline mb-6">
+              Executive-Grade Intelligence Platform
             </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Every feature designed to save time and improve decision-making for busy executives.
+            <p className="text-luxury-body max-w-3xl mx-auto">
+              Each capability meticulously crafted for Fortune 500 decision-makers who demand 
+              <span className="text-luxury-gold"> perfection in every interaction.</span>
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                transition={{ duration: 0.8, delay: index * 0.15 }}
                 viewport={{ once: true }}
-                className="modern-card p-6 text-center group hover:border-blue-500/30"
+                className="glass-card p-8 group hover:glass-card-elevated transition-all duration-500 animate-luxury-float"
+                style={{ animationDelay: `${index * 0.2}s` }}
               >
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <feature.icon className="w-6 h-6 text-white" />
+                <div className="flex items-start gap-6">
+                  <div className={`w-16 h-16 bg-gradient-to-r ${feature.gradient} rounded-3xl flex items-center justify-center group-hover:scale-110 transition-all duration-500 shadow-glass-lg`}>
+                    <feature.icon className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-luxury-headline text-2xl mb-4">{feature.title}</h3>
+                    <p className="text-elegant leading-relaxed text-lg">{feature.description}</p>
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{feature.description}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-24 border-t border-gray-800">
+      {/* Executive Testimonials Section */}
+      <section id="testimonials" className="py-32 relative">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                Why Executives Choose Napoleon AI
+          <motion.div 
+            className="text-center mb-20"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-luxury-headline mb-6">
+              Trusted by Global Leaders
+            </h2>
+            <p className="text-luxury-body max-w-3xl mx-auto">
+              Fortune 500 CEOs and industry titans trust Napoleon AI to transform their 
+              <span className="text-luxury-gold"> most critical communications.</span>
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            {testimonials.map((testimonial, index) => (
+              <motion.div
+                key={testimonial.author}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: index * 0.2 }}
+                viewport={{ once: true }}
+                className="glass-card p-8 text-center group hover:glass-card-elevated transition-all duration-500 animate-luxury-float"
+                style={{ animationDelay: `${index * 0.3}s` }}
+              >
+                <div className="mb-6">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-luxury-gold inline-block mx-1 fill-current" />
+                  ))}
+                </div>
+                
+                <blockquote className="text-elegant text-lg mb-8 leading-relaxed italic">
+                  "{testimonial.quote}"
+                </blockquote>
+                
+                <div className="border-t border-elegant pt-6">
+                  <div className="text-luxury font-semibold text-lg mb-1">
+                    {testimonial.author}
+                  </div>
+                  <div className="text-subtle text-sm mb-1">
+                    {testimonial.title}
+                  </div>
+                  <div className="text-luxury-gold text-sm font-medium">
+                    {testimonial.company}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Executive Benefits Showcase */}
+      <section className="py-32 relative">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center max-w-7xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-luxury-headline mb-8">
+                Executive Advantage
               </h2>
-              <p className="text-xl text-gray-400 mb-8">
-                Join hundreds of C-level executives who have transformed their email workflow with AI-powered intelligence.
+              <p className="text-luxury-body mb-12">
+                Join the elite circle of executives who have already revolutionized their 
+                communication workflows with military-grade AI intelligence.
               </p>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {benefits.map((benefit, index) => (
                   <motion.div
                     key={benefit}
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
                     viewport={{ once: true }}
-                    className="flex items-center gap-3"
+                    className="flex items-center gap-4 group"
                   >
-                    <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Check className="w-3 h-3 text-white" />
+                    <div className="w-8 h-8 gradient-gold rounded-full flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                      <Check className="w-4 h-4 text-luxury-black font-bold" />
                     </div>
-                    <span className="text-gray-300">{benefit}</span>
+                    <span className="text-luxury text-lg font-medium">{benefit}</span>
                   </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
-            <div className="relative">
-              <div className="glass-card p-8">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">!</span>
+            <motion.div 
+              className="relative"
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <div className="glass-panel relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-luxury-indigo/10 to-luxury-gold/10" />
+                
+                <div className="relative space-y-6">
+                  {/* Executive Email Preview */}
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 gradient-gold rounded-full flex items-center justify-center">
+                      <Crown className="w-6 h-6 text-luxury-black" />
                     </div>
-                    <div>
-                      <div className="font-semibold text-sm">Board Meeting Update</div>
-                      <div className="text-xs text-gray-400">From: CEO@company.com</div>
-                    </div>
-                    <div className="ml-auto bg-red-500/20 text-red-400 px-2 py-1 rounded text-xs">
-                      URGENT
-                    </div>
-                  </div>
-                  
-                  <div className="pl-11 space-y-2">
-                    <div className="text-sm text-gray-300">
-                      <span className="text-blue-400">AI Summary:</span> Critical board meeting rescheduled to tomorrow 9 AM. 
-                      Quarterly results presentation required.
-                    </div>
-                    <div className="flex gap-2">
-                      <span className="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full text-xs">High Priority</span>
-                      <span className="bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full text-xs">Action Required</span>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="font-semibold text-luxury">Board Strategy Session</div>
+                        <div className="bg-luxury-gold/20 text-luxury-gold px-3 py-1 rounded-full text-xs font-medium">
+                          EXECUTIVE
+                        </div>
+                      </div>
+                      <div className="text-subtle text-sm mb-3">From: chairman@boardroom.com</div>
+                      
+                      <div className="glass-card p-4 space-y-3">
+                        <div className="text-elegant text-sm">
+                          <span className="text-luxury-indigo font-medium">AI Executive Summary:</span> 
+                          Confidential board strategy session moved to executive suite. Q4 acquisition 
+                          proposal requires immediate C-level review.
+                        </div>
+                        <div className="flex gap-2 flex-wrap">
+                          <span className="bg-luxury-gold/20 text-luxury-gold px-3 py-1 rounded-full text-xs">Priority 1</span>
+                          <span className="bg-luxury-indigo/20 text-luxury-indigo px-3 py-1 rounded-full text-xs">Board Level</span>
+                          <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs">Action Required</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-24 border-t border-gray-800">
+      {/* Executive CTA Section */}
+      <section className="py-40 relative">
         <div className="container mx-auto px-6">
-          <div className="glass-card p-12 text-center max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to Transform Your Email Experience?
-            </h2>
-            <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-              Join the executives who have already revolutionized their email workflow with Napoleon AI.
-            </p>
+          <motion.div 
+            className="glass-panel p-16 text-center max-w-5xl mx-auto relative overflow-hidden"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            {/* Luxury background gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-luxury-indigo/20 via-luxury-gold/10 to-luxury-indigo-light/20" />
             
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <GmailOAuthButton variant="primary" size="lg" />
-              <button className="btn-secondary">
-                Schedule Demo
-              </button>
-            </div>
-            
-            <p className="text-sm text-gray-500 mt-6">
-              Free to try • No credit card required • Setup in 2 minutes
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-gray-800 py-12">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="flex items-center gap-2 mb-4 md:mb-0">
-              <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded flex items-center justify-center">
-                <Mail className="w-3 h-3 text-white" />
+            <div className="relative">
+              <motion.div
+                className="w-20 h-20 gradient-gold rounded-full flex items-center justify-center mx-auto mb-8 animate-luxury-glow"
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Crown className="w-10 h-10 text-luxury-black" />
+              </motion.div>
+              
+              <h2 className="text-luxury-display text-5xl md:text-6xl mb-8">
+                Join the Elite
+              </h2>
+              
+              <p className="text-luxury-body text-2xl mb-12 max-w-3xl mx-auto">
+                Transform your executive communications with military-grade AI intelligence. 
+                <span className="text-luxury-gold font-medium"> Reserved for Fortune 500 decision-makers.</span>
+              </p>
+              
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-12">
+                <GmailOAuthButton 
+                  variant="primary" 
+                  size="lg" 
+                  className="btn-luxury-gold text-xl px-16 py-6 animate-luxury-glow"
+                >
+                  <Crown className="w-6 h-6" />
+                  Begin Executive Access
+                </GmailOAuthButton>
+                
+                <button className="btn-luxury-secondary text-xl px-12 py-6 group">
+                  <Sparkles className="w-6 h-6" />
+                  White-Glove Demo
+                  <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-2" />
+                </button>
               </div>
-              <span className="font-semibold">Napoleon AI</span>
+              
+              <div className="flex items-center justify-center gap-8 text-elegant">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-luxury-gold" />
+                  <span>60-Second Setup</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Lock className="w-5 h-5 text-luxury-gold" />
+                  <span>Military-Grade Security</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Crown className="w-5 h-5 text-luxury-gold" />
+                  <span>Executive Priority</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Luxury Footer */}
+      <footer className="relative py-20">
+        <div className="container mx-auto px-6">
+          <div className="glass-card p-12">
+            <div className="flex flex-col md:flex-row items-center justify-between mb-8">
+              <motion.div 
+                className="flex items-center gap-4 mb-6 md:mb-0"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="w-12 h-12 gradient-luxury rounded-2xl flex items-center justify-center">
+                  <Crown className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <span className="text-luxury-display text-2xl font-bold">Napoleon AI</span>
+                  <div className="text-luxury-caption">Executive Intelligence Platform</div>
+                </div>
+              </motion.div>
+              
+              <div className="flex items-center gap-8 text-elegant">
+                <a href="/privacy" className="hover:text-luxury transition-all duration-300 hover:scale-105">
+                  Privacy Policy
+                </a>
+                <a href="/terms" className="hover:text-luxury transition-all duration-300 hover:scale-105">
+                  Terms of Service
+                </a>
+                <a href="/enterprise" className="hover:text-luxury transition-all duration-300 hover:scale-105">
+                  Enterprise
+                </a>
+                <a href="/support" className="btn-luxury-secondary py-2 px-4 text-sm">
+                  <Crown className="w-4 h-4" />
+                  Executive Support
+                </a>
+              </div>
             </div>
             
-            <div className="flex items-center gap-6 text-sm text-gray-400">
-              <a href="/privacy" className="hover:text-white transition-colors">Privacy</a>
-              <a href="/terms" className="hover:text-white transition-colors">Terms</a>
-              <a href="/support" className="hover:text-white transition-colors">Support</a>
+            <div className="border-t border-elegant pt-8 flex flex-col md:flex-row items-center justify-between">
+              <div className="text-subtle text-sm mb-4 md:mb-0">
+                © 2024 Napoleon AI. Crafted for executive excellence.
+              </div>
+              
+              <div className="flex items-center gap-6 text-subtle text-sm">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-luxury-gold" />
+                  <span>SOC 2 Type II Certified</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-luxury-gold" />
+                  <span>GDPR Compliant</span>
+                </div>
+              </div>
             </div>
-          </div>
-          
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-500">
-            © 2024 Napoleon AI. All rights reserved.
           </div>
         </div>
       </footer>
