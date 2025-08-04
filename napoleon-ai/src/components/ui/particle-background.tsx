@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 
 interface Particle {
@@ -24,18 +24,18 @@ export function ParticleBackground({
   className = '' 
 }: ParticleBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const animationRef = useRef<number>()
+  const animationRef = useRef<number | undefined>(undefined)
   const [particles, setParticles] = useState<Particle[]>([])
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
 
-  // Luxury color palette for particles
-  const colors = [
+  // Luxury color palette for particles (memoized to prevent re-renders)
+  const colors = useMemo(() => [
     'rgba(99, 102, 241, 0.6)',   // Luxury indigo
     'rgba(139, 92, 246, 0.5)',   // Luxury purple
     'rgba(251, 191, 36, 0.4)',   // Luxury gold
     'rgba(255, 255, 255, 0.3)',  // Pure white
     'rgba(16, 185, 129, 0.4)',   // Luxury success
-  ]
+  ], [])
 
   // Initialize particles
   useEffect(() => {
@@ -69,7 +69,7 @@ export function ParticleBackground({
     }))
 
     setParticles(newParticles)
-  }, [dimensions, particleCount])
+  }, [dimensions, particleCount, colors])
 
   // Animation loop
   useEffect(() => {

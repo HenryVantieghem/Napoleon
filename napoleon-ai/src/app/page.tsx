@@ -1,15 +1,10 @@
 'use client'
 import { motion } from 'framer-motion'
 import { 
-  Mail, 
-  Zap, 
   Shield, 
-  Brain, 
   ArrowRight, 
   Check,
   Star,
-  Users,
-  TrendingUp,
   Crown,
   Sparkles,
   Lock,
@@ -319,7 +314,7 @@ export default function Home() {
                 </div>
                 
                 <blockquote className="text-elegant text-lg mb-8 leading-relaxed italic">
-                  "{testimonial.quote}"
+                  &ldquo;{testimonial.quote}&rdquo;
                 </blockquote>
                 
                 <div className="border-t border-elegant pt-6">
