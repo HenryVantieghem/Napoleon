@@ -26,6 +26,8 @@ module.exports = {
         display: ['Shelley Script', 'cursive'],
         heading: ['Canela', 'serif'], 
         body: ['Inter', 'sans-serif'],
+        serif: ['Georgia', 'serif'],
+        sans: ['Inter', 'sans-serif'],
       },
       spacing: {
         '4': '1rem',
@@ -39,12 +41,20 @@ module.exports = {
       },
       animation: {
         'ripple': 'ripple 600ms cubic-bezier(0.4,0,0.2,1)',
+        'fadeIn': 'fadeIn 800ms ease-out',
       },
       keyframes: {
         ripple: {
           '0%': { transform: 'scale(0)', opacity: '1' },
           '100%': { transform: 'scale(1)', opacity: '0' },
         },
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      boxShadow: {
+        'gold': '0 16px 32px rgba(212, 175, 55, 0.2)',
       },
     },
   },
