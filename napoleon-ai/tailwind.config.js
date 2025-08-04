@@ -21,6 +21,12 @@ module.exports = {
         'napoleon-ivory': '#F6F6F4',
         'napoleon-ivory-soft': '#FAFAF9',
         'napoleon-ivory-warm': '#F8F8F6',
+        // Kinetic Luxury colors
+        'luxury-black': '#000000',
+        'luxury-indigo': '#6366f1',
+        'luxury-gold': '#fbbf24',
+        'text-luxury': '#ffffff',
+        'glass-primary': 'rgba(255, 255, 255, 0.05)',
         // Legacy support
         primary: {
           background: '#0B0D11',
