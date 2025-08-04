@@ -15,10 +15,13 @@ export interface User {
 
 export interface GmailThread {
   id: string;
-  historyId: string;
-  messages: GmailMessage[];
+  subject: string;
   snippet: string;
-  threadId: string;
+  participants: string[];
+  unreadCount: number;
+  lastActivity: Date;
+  hasAttachments: boolean;
+  labels: string[];
 }
 
 export interface GmailMessage {
@@ -56,6 +59,57 @@ export interface GmailMessagePart {
     size: number;
     data?: string;
   };
+}
+
+// Raw Gmail API Types
+export interface GmailApiThread {
+  id: string;
+  historyId: string;
+  messages?: GmailApiMessage[];
+  snippet?: string;
+}
+
+export interface GmailApiMessage {
+  id: string;
+  threadId: string;
+  labelIds: string[];
+  snippet: string;
+  historyId: string;
+  internalDate: string;
+  payload: GmailApiPayload;
+  sizeEstimate: number;
+}
+
+export interface GmailApiPayload {
+  partId: string;
+  mimeType: string;
+  filename: string;
+  headers: GmailHeader[];
+  body: {
+    size: number;
+    data?: string;
+  };
+  parts?: GmailApiPayload[];
+}
+
+export interface GmailApiListResponse<T> {
+  threads?: T[];
+  messages?: T[];
+  nextPageToken?: string;
+  resultSizeEstimate?: number;
+}
+
+// Gmail API Client Types
+export interface GmailClientOptions {
+  accessToken: string;
+  maxResults?: number;
+  pageToken?: string;
+}
+
+export interface GmailClientError {
+  code: number;
+  message: string;
+  details?: unknown;
 }
 
 export interface AIAnalysis {
