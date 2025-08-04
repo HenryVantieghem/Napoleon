@@ -6,19 +6,31 @@ Napoleon AI is a luxury Gmail-only Smart Inbox designed exclusively for C-level 
 ## 🚨 CURRENT STATUS (August 4, 2025)
 - **Production URL**: https://napoleon-6ocsjs9fk-napoleon.vercel.app
 - **GitHub Repo**: https://github.com/HenryVantieghem/Napoleon.git
-- **Tech Stack**: Next.js 14, TypeScript, Tailwind CSS, Supabase, OpenAI GPT-4, Framer Motion
-- **Design System**: Luxury glassmorphism with particle animations
-- **Status**: ⚠️ NEEDS SUPABASE CREDENTIALS TO FUNCTION
+- **Tech Stack**: Next.js 14, TypeScript, Tailwind CSS, Clerk, OpenAI GPT-4, Framer Motion
+- **Design System**: Luxury glassmorphism with particle animations evolving to **Kinetic Luxury**
+- **Status**: 🚀 READY FOR KINETIC LUXURY EVOLUTION
 
-## 🔥 CRITICAL ISSUE - IMMEDIATE ACTION REQUIRED
-**PROBLEM**: DNS_PROBE_FINISHED_NXDOMAIN - using placeholder Supabase URL
-**SOLUTION**:
-1. Run `./scripts/setup-supabase.sh` for diagnostic
-2. Go to https://supabase.com/dashboard  
-3. Create/select project → Settings → API
-4. Copy real Project URL (format: https://abcdefghijklmnop.supabase.co)
-5. Copy anon public key
-6. Update `.env.local` AND Vercel environment variables
+## 💎 KINETIC LUXURY VISION
+**Philosophy**: "Apple meets Tesla meets Linear" elevated to **Kinetic Luxury**
+
+Every pixel, interaction, and transition must feel alive, intentional, and incredibly polished. The user experience should convey power, clarity, and delight from first interaction.
+
+### Core Principles:
+- **Alive Motion**: Subtle, sophisticated animations that respond to user intent
+- **Depth & Dimension**: Multi-layered glassmorphism with aurora gradients
+- **Executive Power**: Interactions that feel commanding and premium
+- **Fluid Intelligence**: Seamless transitions between states and data loading
+- **Award-Worthy Craft**: Every detail refined to Awwwards-level excellence
+
+## 🔥 CLERK AUTHENTICATION - STEP-BY-STEP IMPLEMENTATION
+**SOLUTION COMPLETE**: Comprehensive authentication framework implemented
+1. ✅ Clerk middleware created (`middleware.ts`)
+2. ✅ ClerkAuthButton component with luxury styling
+3. ✅ Route protection configured
+4. **NEXT**: Add real Clerk credentials to `.env.local` and Vercel
+   - Get keys from https://dashboard.clerk.com
+   - Enable Gmail OAuth provider
+   - Set redirect URIs: `/sso-callback`
 
 ## 🎨 LUXURY DESIGN SYSTEM COMPLETED
 
@@ -68,10 +80,10 @@ Napoleon AI is a luxury Gmail-only Smart Inbox designed exclusively for C-level 
 
 ### GMAIL OAUTH FLOW
 1. User clicks luxury OAuth button with crown icon
-2. Redirect to Google OAuth with Gmail readonly scope
-3. Callback to `/auth/callback` handled by Supabase
+2. Clerk handles the redirect to Google for OAuth with the Gmail `readonly` scope.
+3. Callback to `/sso-callback` is handled by Clerk's Next.js middleware.
 4. Session stored securely
-5. Dashboard fetches latest 10 Gmail threads
+5. Authenticated dashboard fetches latest 10 Gmail threads
 6. AI analyzes and scores emails for executive priorities
 
 ### AI PRIORITY SCORING SYSTEM
@@ -84,9 +96,9 @@ Napoleon AI is a luxury Gmail-only Smart Inbox designed exclusively for C-level 
 
 ### REQUIRED ENVIRONMENT VARIABLES
 ```bash
-# CRITICAL - MUST BE REAL VALUES
-NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+# CRITICAL - MUST BE REAL CLERK VALUES
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
 OPENAI_API_KEY=your-openai-api-key-here
 
 # OPTIONAL
@@ -132,29 +144,30 @@ git add . && git commit -m "feat: ..." && git push origin main
 **Copy this exact prompt when starting a new terminal:**
 
 ```
-I'm continuing work on Napoleon AI, a luxury executive email intelligence platform with glassmorphism UI and particle animations.
+I'm continuing work on Napoleon AI, evolving from luxury prototype to award-winning "Kinetic Luxury" experience.
 
 IMMEDIATE CONTEXT:
 - Production: https://napoleon-6ocsjs9fk-napoleon.vercel.app
 - GitHub: https://github.com/HenryVantieghem/Napoleon.git  
-- CRITICAL ISSUE: Supabase DNS error (placeholder credentials) blocking all auth
-- Status: Luxury transformation complete, needs real Supabase config
+- Status: Foundation complete, entering Kinetic Luxury evolution phase
+- Role: Lead Product Engineer implementing full-feature-development workflow
 
 TECHNICAL STACK:
-- Next.js 14 + TypeScript + Tailwind + Supabase + OpenAI GPT-4 + Framer Motion
-- Luxury glassmorphism design with 80+ particle animations
-- Executive-grade Gmail OAuth with AI priority scoring
-- Complete error boundaries and production monitoring
+- Next.js 14 + TypeScript + Tailwind + Clerk + OpenAI GPT-4 + Framer Motion
+- Kinetic Luxury design system with sophisticated particle animations
+- Executive-grade authentication with AI priority scoring
+- Award-winning craft targeting Awwwards recognition
 
-DESIGN PHILOSOPHY:
-Think "Apple meets Tesla meets Linear" - every interaction should feel premium and executive-worthy. The UI uses pure black backgrounds (#000000) with sophisticated indigo (#6366f1) and gold (#fbbf24) accents.
+KINETIC LUXURY VISION:
+"Apple meets Tesla meets Linear" elevated to living, breathing interactions. Every pixel should feel alive, intentional, and incredibly polished. Target: Fortune 500 executives expecting world-class experiences.
 
 IMMEDIATE PRIORITY:
-1. Fix Supabase configuration (run ./scripts/setup-supabase.sh for diagnostic)  
-2. Test complete OAuth flow with real credentials
-3. Ensure luxury UI renders properly with live Gmail data
+1. **Authentication**: Add real Clerk credentials (.env.local + Vercel environment)
+2. **Kinetic UI**: Implement mouse-reactive particles, aurora gradients, fluid animations
+3. **Dashboard**: Complete executive email interface with Gold Tier visualization
+4. **Award Preparation**: Refine every detail for Awwwards submission readiness
 
-Please read /Users/henryvantieghem/Napoleon/CLAUDE.md for complete context. The luxury transformation is complete - we just need working authentication to go live for Fortune 500 executives.
+Please read /Users/henryvantieghem/Napoleon/CLAUDE.md for complete Kinetic Luxury vision. We're evolving from prototype to category-defining luxury experience.
 ```
 
 ## 📊 SUCCESS METRICS
