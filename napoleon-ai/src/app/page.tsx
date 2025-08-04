@@ -10,7 +10,7 @@ import {
   Lock,
   Cpu
 } from 'lucide-react'
-import GmailOAuthButton from '@/components/auth/GmailOAuthButton'
+import ClerkAuthButton from '@/components/auth/ClerkAuthButton'
 import { ParticleBackground, FloatingElements, LuxuryGradientBackground } from '@/components/ui/particle-background'
 
 export default function Home() {
@@ -183,14 +183,13 @@ export default function Home() {
               variants={fadeInUp}
               className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-20"
             >
-              <GmailOAuthButton 
+              <ClerkAuthButton 
                 variant="primary" 
                 size="lg" 
                 className="btn-luxury-primary text-lg px-12 py-4 animate-luxury-glow"
               >
-                <Crown className="w-5 h-5" />
                 Begin Executive Experience
-              </GmailOAuthButton>
+              </ClerkAuthButton>
               
               <button className="btn-luxury-secondary text-lg px-8 py-4 group">
                 <Sparkles className="w-5 h-5" />
@@ -449,14 +448,13 @@ export default function Home() {
               </p>
               
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-12">
-                <GmailOAuthButton 
+                <ClerkAuthButton 
                   variant="primary" 
                   size="lg" 
                   className="btn-luxury-gold text-xl px-16 py-6 animate-luxury-glow"
                 >
-                  <Crown className="w-6 h-6" />
                   Begin Executive Access
-                </GmailOAuthButton>
+                </ClerkAuthButton>
                 
                 <button className="btn-luxury-secondary text-xl px-12 py-6 group">
                   <Sparkles className="w-6 h-6" />
