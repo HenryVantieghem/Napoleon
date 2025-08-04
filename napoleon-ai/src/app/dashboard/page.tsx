@@ -4,16 +4,20 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClientSupabase } from '@/lib/supabase-client';
 import GmailClient from '@/lib/gmail-client';
+import { PriorityScorer } from '@/lib/priority-scorer';
+import { OpenAIAnalyzer } from '@/lib/openai-analyzer';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { ThreadList } from '@/components/dashboard/ThreadList';
 import { LoadingState } from '@/components/dashboard/LoadingState';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { ErrorState } from '@/components/dashboard/ErrorState';
-import type { GmailThread } from '@/lib/types';
+import type { GmailThread, ThreadWithPriority } from '@/lib/types';
 
 export default function Dashboard() {
   const [threads, setThreads] = useState<GmailThread[]>([]);
+  const [priorityData, setPriorityData] = useState<ThreadWithPriority[]>([]);
   const [loading, setLoading] = useState(true);
+  const [priorityLoading, setPriorityLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string>('');
   const [userName, setUserName] = useState<string>('');
@@ -50,6 +54,24 @@ export default function Dashboard() {
         const fetchedThreads = await gmailClient.fetchLatestThreads(10);
         
         setThreads(fetchedThreads);
+
+        // Initialize AI priority scoring (optional - requires OpenAI API key)
+        const openaiApiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+        if (openaiApiKey && fetchedThreads.length > 0) {
+          setPriorityLoading(true);
+          try {
+            const openaiAnalyzer = new OpenAIAnalyzer(openaiApiKey);
+            const priorityScorer = new PriorityScorer(openaiAnalyzer);
+            
+            const scoredThreads = await priorityScorer.scoreThreads(fetchedThreads);
+            setPriorityData(scoredThreads);
+          } catch (priorityError) {
+            console.warn('Priority scoring failed:', priorityError);
+            // Continue without priority scoring - not critical for basic functionality
+          } finally {
+            setPriorityLoading(false);
+          }
+        }
       } catch (err) {
         console.error('Dashboard initialization error:', err);
         if (err instanceof Error) {
@@ -117,15 +139,33 @@ export default function Dashboard() {
       <DashboardHeader userEmail={userEmail} userName={userName} />
       <main className="container mx-auto px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-serif text-warm-ivory mb-2">
-            Executive Inbox
-          </h1>
-          <p className="text-neutral-silver">
-            {threads.length} conversation{threads.length !== 1 ? 's' : ''} • 
-            {threads.filter(t => t.unreadCount > 0).length} unread
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-serif text-warm-ivory mb-2">
+                Executive Inbox
+              </h1>
+              <p className="text-neutral-silver">
+                {threads.length} conversation{threads.length !== 1 ? 's' : ''} • 
+                {threads.filter(t => t.unreadCount > 0).length} unread
+                {priorityData.length > 0 && (
+                  <span className="ml-2">
+                    • {priorityData.filter(p => p.priorityTier === 'gold').length} urgent
+                    • {priorityData.filter(p => p.priorityTier === 'silver').length} important
+                  </span>
+                )}
+              </p>
+            </div>
+            
+            {/* Priority scoring status */}
+            {priorityLoading && (
+              <div className="flex items-center space-x-2 text-accent-gold">
+                <div className="w-4 h-4 border border-accent-gold border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm">Analyzing priorities...</span>
+              </div>
+            )}
+          </div>
         </div>
-        <ThreadList threads={threads} />
+        <ThreadList threads={threads} priorityData={priorityData} />
       </main>
     </div>
   );

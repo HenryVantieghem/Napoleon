@@ -1,14 +1,18 @@
 import { formatDistanceToNow } from 'date-fns';
-import type { GmailThread } from '@/lib/types';
+import { PriorityBadge } from './PriorityBadge';
+import type { GmailThread, ThreadWithPriority } from '@/lib/types';
 
 interface ThreadCardProps {
   thread: GmailThread;
+  priority?: ThreadWithPriority;
 }
 
-export function ThreadCard({ thread }: ThreadCardProps) {
+export function ThreadCard({ thread, priority }: ThreadCardProps) {
   const isUnread = thread.unreadCount > 0;
   const hasAttachments = thread.hasAttachments;
   const isImportant = thread.labels.includes('IMPORTANT');
+  const priorityTier = priority?.priorityTier || 'standard';
+  const priorityScore = priority?.priorityScore || 0;
 
   const formatTimestamp = (date: Date) => {
     const now = new Date();
@@ -40,15 +44,28 @@ export function ThreadCard({ thread }: ThreadCardProps) {
         focus:outline-none focus:ring-2 focus:ring-accent-gold/50
         ${isUnread ? 'napoleon-thread-unread border-l-4 border-l-accent-gold shadow-lg shadow-accent-gold/5' : ''}
         ${isImportant ? 'ring-1 ring-accent-gold/20' : ''}
+        ${priorityTier === 'gold' ? 'ring-2 ring-yellow-500/30 shadow-yellow-500/10' : ''}
+        ${priorityTier === 'silver' ? 'ring-1 ring-gray-400/30 shadow-gray-400/10' : ''}
       `}
       data-testid={`thread-card-${thread.id}`}
       tabIndex={0}
       role="article"
       aria-label={`Email thread: ${thread.subject}. ${isUnread ? 'Unread. ' : ''}${thread.participants.length} participants.`}
     >
-      {/* Header with metadata */}
+      {/* Header with priority badge */}
       <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center space-x-2">
+        {/* Priority Badge */}
+        {priority && (
+          <PriorityBadge 
+            tier={priorityTier} 
+            score={priorityScore} 
+            size="sm"
+            showScore={priorityTier !== 'standard'}
+          />
+        )}
+        
+        {/* Metadata and timestamp */}
+        <div className="flex items-center space-x-2 ml-auto">
           {/* Unread indicator */}
           {isUnread && (
             <div 
@@ -75,15 +92,15 @@ export function ThreadCard({ thread }: ThreadCardProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
             </svg>
           )}
+          
+          {/* Timestamp */}
+          <time 
+            className="text-xs text-neutral-silver"
+            dateTime={thread.lastActivity.toISOString()}
+          >
+            {formatTimestamp(thread.lastActivity)}
+          </time>
         </div>
-
-        {/* Timestamp */}
-        <time 
-          className="text-xs text-neutral-silver"
-          dateTime={thread.lastActivity.toISOString()}
-        >
-          {formatTimestamp(thread.lastActivity)}
-        </time>
       </div>
 
       {/* Subject line - elegant serif */}

@@ -130,6 +130,17 @@ export interface ThreadWithAnalysis {
   analysis: AIAnalysis;
 }
 
+export interface ThreadWithPriority {
+  thread: GmailThread;
+  analysis: AIAnalysis;
+  priorityScore: number;
+  priorityTier: 'gold' | 'silver' | 'bronze' | 'standard';
+  boostedScore?: number;
+  boostReason?: string;
+}
+
+export type PriorityTier = 'gold' | 'silver' | 'bronze' | 'standard';
+
 export interface AuthState {
   user: User | null;
   session: Session | null;
