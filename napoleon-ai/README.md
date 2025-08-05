@@ -1,7 +1,7 @@
 # Napoleon AI 👑
 *Transform communication chaos into strategic clarity*
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/napoleon-ai)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/HenryVantieghem/Napoleon)
 [![Tests](https://img.shields.io/badge/tests-44%20passing-brightgreen.svg)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue.svg)]()
 [![AI Powered](https://img.shields.io/badge/AI-GPT--4-orange.svg)]()
@@ -45,7 +45,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/napoleon-ai.git
+git clone https://github.com/HenryVantieghem/Napoleon.git
 cd napoleon-ai
 
 # Install dependencies
@@ -66,15 +66,12 @@ Open [http://localhost:3000](http://localhost:3000) to see Napoleon AI in action
 ### Environment Configuration
 
 ```env
-# Required
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+# Required for authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
 
-# Optional (for AI priority scoring)
-NEXT_PUBLIC_OPENAI_API_KEY=sk-your-openai-key
-
-# Production URL
-NEXT_PUBLIC_SITE_URL=https://napoleonai.com
+# Required for AI priority scoring
+OPENAI_API_KEY=sk-your-openai-key
 ```
 
 ## 🏗️ Architecture
@@ -132,7 +129,7 @@ npm test gmail-api-client
 
 ### One-Click Deployment
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/napoleon-ai)
+[!Deploy with Vercel](https://vercel.com/new/clone?repository-url=https://github.com/HenryVantieghem/Napoleon)
 
 ### Manual Deployment
 

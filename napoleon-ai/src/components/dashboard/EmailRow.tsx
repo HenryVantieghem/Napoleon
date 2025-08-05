@@ -75,31 +75,31 @@ export function EmailRow({ thread, index, onSelect }: EmailRowProps) {
     switch (tier) {
       case 'gold':
         return {
-          bg: 'bg-gradient-to-r from-yellow-500/10 via-yellow-400/5 to-yellow-600/10',
-          border: 'border-yellow-500/30',
-          text: 'text-yellow-400',
-          glow: 'shadow-yellow-500/20'
+          bg: 'bg-gradient-to-r from-imperial-gold/10 via-imperial-gold/5 to-imperial-gold/10',
+          border: 'border-imperial-gold/30',
+          text: 'text-imperial-gold',
+          glow: 'shadow-imperial-gold/20'
         }
       case 'silver':
         return {
-          bg: 'bg-gradient-to-r from-gray-300/10 via-gray-200/5 to-gray-400/10',
-          border: 'border-gray-300/30',
-          text: 'text-gray-300',
-          glow: 'shadow-gray-300/20'
+          bg: 'bg-gradient-to-r from-text-secondary/10 via-text-secondary/5 to-text-secondary/10',
+          border: 'border-text-secondary/30',
+          text: 'text-secondary',
+          glow: 'shadow-text-secondary/20'
         }
       case 'bronze':
         return {
-          bg: 'bg-gradient-to-r from-orange-600/10 via-orange-500/5 to-orange-700/10',
-          border: 'border-orange-500/30',
-          text: 'text-orange-400',
-          glow: 'shadow-orange-500/20'
+          bg: 'bg-gradient-to-r from-accent-warning/10 via-accent-warning/5 to-accent-warning/10',
+          border: 'border-accent-warning/30',
+          text: 'text-accent-warning',
+          glow: 'shadow-accent-warning/20'
         }
       default:
         return {
-          bg: 'bg-gradient-to-r from-gray-600/5 via-gray-500/3 to-gray-700/5',
-          border: 'border-gray-500/20',
-          text: 'text-gray-400',
-          glow: 'shadow-gray-500/10'
+          bg: 'bg-gradient-to-r from-glass-1 via-glass-0 to-glass-1',
+          border: 'border-glass-border/20',
+          text: 'text-tertiary',
+          glow: 'shadow-glass-border/10'
         }
     }
   }

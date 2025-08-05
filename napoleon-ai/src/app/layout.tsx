@@ -56,27 +56,27 @@ export default function RootLayout({
       appearance={{
         baseTheme: undefined,
         variables: {
-          colorPrimary: "#6366f1",
-          colorBackground: "#000000",
-          colorText: "#ffffff",
-          colorInputBackground: "rgba(255, 255, 255, 0.05)",
-          colorInputText: "#ffffff",
+          colorPrimary: "var(--orbital-blue)",
+          colorBackground: "var(--imperial-dark)",
+          colorText: "var(--executive-white)",
+          colorInputBackground: "var(--glass-1)",
+          colorInputText: "var(--executive-white)",
         },
         elements: {
-          formButtonPrimary: "bg-luxury-indigo hover:bg-luxury-indigo/80 text-white",
-          socialButtonsBlockButton: "border-glass-primary text-white hover:bg-glass-primary",
-          card: "bg-luxury-black border border-glass-primary shadow-glass-xl",
-          headerTitle: "text-white",
-          headerSubtitle: "text-text-elegant",
-          formFieldInput: "bg-glass-primary border-glass-primary text-white",
-          footerActionLink: "text-luxury-gold hover:text-luxury-gold/80",
-          dividerLine: "bg-glass-primary",
-          dividerText: "text-text-subtle",
+          formButtonPrimary: "bg-orbital-blue hover:bg-orbital-blue/80 text-executive-white",
+          socialButtonsBlockButton: "border-glass-border text-executive-white hover:bg-glass-1",
+          card: "bg-imperial-dark border border-glass-border shadow-2xl",
+          headerTitle: "text-executive-white",
+          headerSubtitle: "text-text-secondary",
+          formFieldInput: "bg-glass-1 border-glass-border text-executive-white",
+          footerActionLink: "text-imperial-gold hover:text-imperial-gold/80",
+          dividerLine: "bg-glass-border",
+          dividerText: "text-text-tertiary",
         },
       }}
     >
       <html lang="en">
-        <body className={`${inter.variable} ${playfairDisplay.variable} ${crimsonText.variable} font-sans bg-luxury-black text-text-luxury antialiased`}>
+        <body className={`${inter.variable} ${playfairDisplay.variable} ${crimsonText.variable} font-interface bg-imperial-dark text-executive-white antialiased`}>
           {children}
         </body>
       </html>

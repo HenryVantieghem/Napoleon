@@ -7,11 +7,11 @@ import { motion } from "framer-motion";
 
 export default function DashboardPage() {
   return (
-    <div className="relative min-h-screen bg-luxury-black overflow-hidden">
-      {/* Aurora gradient background */}
+    <div className="relative min-h-screen bg-imperial-dark overflow-hidden">
+      {/* Imperial Aurora gradient background */}
       <div className="
         absolute inset-0 
-        bg-gradient-to-br from-luxury-indigo/5 via-transparent to-luxury-gold/5
+        bg-gradient-to-br from-orbital-blue/5 via-transparent to-imperial-gold/5
         animate-pulse
       " />
       
@@ -20,11 +20,11 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="flex justify-between items-center p-4 border-b border-glass-primary/20 mb-8"
+        className="flex justify-between items-center p-4 border-b border-glass-border/20 mb-8"
       >
-        <div className="flex items-center text-2xl font-bold text-white">
-          <FaCrown className="mr-3 text-luxury-gold drop-shadow-lg" />
-          <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+        <div className="flex items-center text-2xl font-bold text-executive-white">
+          <FaCrown className="mr-3 text-imperial-gold drop-shadow-lg" />
+          <span className="bg-gradient-to-r from-executive-white to-text-secondary bg-clip-text text-transparent">
             Napoleon AI
           </span>
         </div>
@@ -32,9 +32,9 @@ export default function DashboardPage() {
           afterSignOutUrl="/"
           appearance={{
             elements: {
-              avatarBox: "w-10 h-10 border border-luxury-gold/30 shadow-lg",
-              userButtonPopoverCard: "bg-luxury-black/90 backdrop-blur-md border border-gray-700/30 shadow-2xl",
-              userButtonPopoverActionButton: "text-white hover:bg-white/5 transition-colors"
+              avatarBox: "w-10 h-10 border border-imperial-gold/30 shadow-lg",
+              userButtonPopoverCard: "bg-imperial-dark/90 backdrop-blur-md border border-glass-border/30 shadow-2xl",
+              userButtonPopoverActionButton: "text-executive-white hover:bg-glass-1 transition-colors"
             }
           }}
         />

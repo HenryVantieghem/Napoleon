@@ -1,3 +1,6 @@
+/* Napoleon Imperial Design System */
+@import "../../../.superdesign/design_iterations/napoleon_imperial.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,47 +8,47 @@
 /* Napoleon AI Luxury Design System */
 @import "../styles/luxury-glassmorphism.css";
 
-/* CSS Custom Properties - Napoleon AI Color System */
+/* Enhanced Imperial Integration - Using imported tokens */
 :root {
-  /* Primary Navy Background */
-  --navy-primary: #0B0D11;
+  /* Legacy compatibility - mapped to Imperial tokens */
+  --navy-primary: var(--imperial-dark);
   --navy-secondary: #1a1d23;
   
-  /* Imperial Gold Accents */
-  --gold-primary: #D4AF37;
+  /* Imperial Gold Accents - Using new tokens */
+  --gold-primary: var(--imperial-gold);
   --gold-secondary: #F4E4BC;
   
-  /* Orbital Glow Effects */
-  --orbital-blue: #3B82F6;
+  /* Enhanced Orbital Effects - Updated palette */
+  --orbital-blue: var(--orbital-blue);
   --orbital-purple: #9333EA;
   --orbital-cyan: #06B6D4;
   
-  /* Glass Morphism */
-  --glass-white: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.2);
+  /* Enhanced Glass Morphism - Imperial tokens */
+  --glass-white: var(--glass-1);
+  --glass-border: var(--glass-border);
   --glass-shadow: rgba(31, 38, 135, 0.37);
   
-  /* Typography */
-  --text-primary: #FFFFFF;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --text-muted: rgba(255, 255, 255, 0.5);
+  /* Imperial Typography */
+  --text-primary: var(--text-primary);
+  --text-secondary: var(--text-secondary);
+  --text-muted: var(--text-tertiary);
 }
 
-/* Typography Foundation */
+/* Imperial Typography Foundation */
 .font-napoleon {
-  font-family: var(--font-playfair), "Playfair Display", serif;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
   font-style: italic;
 }
 
 .font-headline {
-  font-family: var(--font-crimson), "Crimson Text", serif;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
 }
 
 .font-body {
-  font-family: var(--font-inter), "Inter", sans-serif;
-  font-weight: 400;
+  font-family: var(--font-interface);
+  font-weight: var(--weight-regular);
 }
 
 /* Luxury Base Styles */

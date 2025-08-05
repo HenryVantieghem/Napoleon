@@ -7,60 +7,90 @@ module.exports = {
   ],
   theme: {
     extend: {
-      // Napoleon AI Luxury Design System
+      // Napoleon Imperial Design System - CSS Variables Integration
       colors: {
-        'napoleon-primary': '#0B0D11',
-        'napoleon-primary-lighter': '#1A1D23',
-        'napoleon-primary-darker': '#040507',
-        'napoleon-gold': '#D4AF37',
-        'napoleon-gold-light': '#E6C659',
-        'napoleon-gold-dark': '#B8941F',
-        'napoleon-platinum': '#C7CAD1',
-        'napoleon-platinum-light': '#E5E7EA',
-        'napoleon-platinum-dark': '#A9ACB3',
-        'napoleon-ivory': '#F6F6F4',
-        'napoleon-ivory-soft': '#FAFAF9',
-        'napoleon-ivory-warm': '#F8F8F6',
-        // Kinetic Luxury colors
+        // Imperial Core Colors
+        'imperial-dark': 'var(--imperial-dark)',
+        'imperial-gold': 'var(--imperial-gold)',
+        'orbital-blue': 'var(--orbital-blue)',
+        'executive-white': 'var(--executive-white)',
+        
+        // Enhanced Glass System
+        'glass-0': 'var(--glass-0)',
+        'glass-1': 'var(--glass-1)',
+        'glass-2': 'var(--glass-2)',
+        'glass-border': 'var(--glass-border)',
+        
+        // Imperial Text Colors
+        'text-primary': 'var(--text-primary)',
+        'text-secondary': 'var(--text-secondary)',
+        'text-tertiary': 'var(--text-tertiary)',
+        
+        // Executive Accents
+        'accent-success': 'var(--accent-success)',
+        'accent-warning': 'var(--accent-warning)',
+        'accent-danger': 'var(--accent-danger)',
+        'accent-info': 'var(--accent-info)',
+        
+        // Legacy Napoleon Colors (maintained for compatibility)
+        'napoleon-primary': 'var(--imperial-dark)',
+        'napoleon-gold': 'var(--imperial-gold)',
         'luxury-black': '#000000',
         'luxury-indigo': '#6366f1',
-        'luxury-gold': '#fbbf24',
-        'text-luxury': '#ffffff',
-        'glass-primary': 'rgba(255, 255, 255, 0.05)',
+        'luxury-gold': 'var(--imperial-gold)',
+        'text-luxury': 'var(--executive-white)',
+        
         // Legacy support
         primary: {
-          background: '#0B0D11',
+          background: 'var(--imperial-dark)',
         },
         accent: {
-          gold: '#D4AF37',
-        },
-        neutral: {
-          silver: '#C7CAD1',
-        },
-        warm: {
-          ivory: '#F6F6F4',
+          gold: 'var(--imperial-gold)',
         },
       },
       fontFamily: {
-        'napoleon': ['var(--font-playfair)', 'Playfair Display', 'serif'],
-        'luxury-headline': ['var(--font-crimson)', 'Crimson Text', 'serif'],
-        'luxury-body': ['var(--font-inter)', 'Inter', 'sans-serif'],
-        'playfair': ['var(--font-playfair)', 'Playfair Display', 'serif'],
-        'crimson': ['var(--font-crimson)', 'Crimson Text', 'serif'],
-        'inter': ['var(--font-inter)', 'Inter', 'sans-serif'],
-        serif: ['var(--font-crimson)', 'Crimson Text', 'serif'],
-        sans: ['var(--font-inter)', 'Inter', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        // Imperial Typography System
+        'display': 'var(--font-display)',
+        'interface': 'var(--font-interface)',
+        'mono': 'var(--font-mono)',
+        
+        // Napoleon Luxury Fonts (Imperial-powered)
+        'napoleon': 'var(--font-display)',
+        'luxury-headline': 'var(--font-display)',
+        'luxury-body': 'var(--font-interface)',
+        
+        // Legacy compatibility
+        'playfair': 'var(--font-display)',
+        'inter': 'var(--font-interface)',
+        serif: 'var(--font-display)',
+        sans: 'var(--font-interface)',
       },
       spacing: {
-        '4': '1rem',
-        '8': '2rem', 
-        '16': '4rem',
-        '24': '6rem',
-        '32': '8rem',
+        // Imperial Spacing System
+        '1': 'var(--space-1)',
+        '2': 'var(--space-2)',
+        '3': 'var(--space-3)',
+        '4': 'var(--space-4)',
+        '6': 'var(--space-6)',
+        '8': 'var(--space-8)',
+        '12': 'var(--space-12)',
+        '16': 'var(--space-16)',
+        '24': 'var(--space-24)',
+      },
+      borderRadius: {
+        'sm': 'var(--radius-sm)',
+        'DEFAULT': 'var(--radius)',
+        'md': 'var(--radius-md)',
+        'lg': 'var(--radius-lg)',
+        'xl': 'var(--radius-xl)',
+        'full': 'var(--radius-full)',
       },
       transitionTimingFunction: {
         'luxury': 'cubic-bezier(0.4,0,0.2,1)',
+        'imperial-fast': 'var(--transition-fast)',
+        'imperial-base': 'var(--transition-base)',
+        'imperial-slow': 'var(--transition-slow)',
+        'imperial-spring': 'var(--transition-spring)',
       },
       animation: {
         'ripple': 'ripple 600ms cubic-bezier(0.4,0,0.2,1)',
