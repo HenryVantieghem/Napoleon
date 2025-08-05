@@ -74,6 +74,7 @@ export function EmailList({ maxEmails = 10 }: EmailListProps) {
 
   useEffect(() => {
     fetchEmails()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [maxEmails])
 
   const handleEmailSelect = (thread: ThreadWithPriority) => {

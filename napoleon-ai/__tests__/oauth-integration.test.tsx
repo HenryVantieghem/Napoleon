@@ -1,12 +1,13 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createClientSupabase } from '@/lib/supabase-client'
-import GmailOAuthButton from '@/components/auth/GmailOAuthButton'
-import AuthProvider from '@/components/auth/AuthProvider'
+import ClerkAuthButton from '@/components/auth/ClerkAuthButton'
 
-// Mock Supabase
-jest.mock('@/lib/supabase-client', () => ({
-  createClientSupabase: jest.fn(),
+// Mock Clerk
+jest.mock('@clerk/nextjs', () => ({
+  SignInButton: ({ children }: { children: React.ReactNode }) => children,
+  SignUpButton: ({ children }: { children: React.ReactNode }) => children,
+  UserButton: () => <div data-testid="user-button" />,
+  useUser: () => ({ isSignedIn: false, user: null, isLoaded: true }),
 }))
 
 // Mock Next.js router

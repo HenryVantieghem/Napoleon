@@ -26,12 +26,18 @@ export function KineticParticles({
   className = ''
 }: KineticParticlesProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const animationRef = useRef<number>()
+  const animationRef = useRef<number>(0)
   const mouseRef = useRef({ x: 0, y: 0 })
   const particlesRef = useRef<Particle[]>([])
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isClient) return
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -162,7 +168,7 @@ export function KineticParticles({
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [particleCount, mouseAttraction, dimensions.width, dimensions.height])
+  }, [particleCount, mouseAttraction, dimensions.width, dimensions.height, isClient])
 
   return (
     <motion.canvas

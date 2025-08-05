@@ -3,7 +3,7 @@ import { auth } from '@clerk/nextjs/server'
 import { createAuthenticatedGmailClient } from '@/lib/gmail-auth'
 import { PriorityScorer } from '@/lib/priority-scorer'
 import { OpenAIAnalyzer } from '@/lib/openai-analyzer'
-import type { ThreadWithPriority } from '@/lib/types'
+// import type { ThreadWithPriority } from '@/lib/types'
 
 export async function GET(request: NextRequest) {
   try {
