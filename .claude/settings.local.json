@@ -56,7 +56,12 @@
       "Bash(# Move luxury UI components\nmv src/components/ui/luxury-motion.tsx src/components/luxury-ui/\nmv src/components/ui/particle-background.tsx src/components/luxury-ui/\nmv src/components/ui/orbital-background.tsx src/components/luxury-ui/\nmv src/components/ui/glass-card.tsx src/components/luxury-ui/\nmv src/components/landing/Starfield.tsx src/components/luxury-ui/\nmv src/components/landing/OrbitalGlow.tsx src/components/luxury-ui/\nmv src/components/dashboard/KineticParticles.tsx src/components/luxury-ui/\n\n# Move email components  \nmv src/components/dashboard/EmailList.tsx src/components/email/\nmv src/components/dashboard/EmailRow.tsx src/components/email/\nmv src/components/dashboard/ThreadList.tsx src/components/email/\nmv src/components/dashboard/ThreadCard.tsx src/components/email/\nmv src/components/dashboard/PriorityBadge.tsx src/components/email/\n\n# Move shared components\nmv src/components/dashboard/LoadingSkeleton.tsx src/components/shared/\nmv src/components/dashboard/LoadingState.tsx src/components/shared/\nmv src/components/dashboard/EmptyState.tsx src/components/shared/\nmv src/components/dashboard/ErrorState.tsx src/components/shared/\nmv src/components/error-boundary.tsx src/components/shared/\n\n# Dashboard stays in dashboard\n# Auth stays in auth\n\necho \"\"Components reorganized\"\")",
       "Bash(# Move lib files to organized folders\nmv src/lib/gmail-auth.ts src/lib/auth/\nmv src/lib/gmail-client.ts src/lib/gmail-api/\nmv src/lib/openai-analyzer.ts src/lib/ai/\nmv src/lib/priority-scorer.ts src/lib/ai/\nmv src/lib/types.ts src/lib/types/index.ts\nmv src/lib/utils.ts src/lib/utils/index.ts\nmv src/lib/slack-client.ts src/lib/gmail-api/\nmv src/lib/teams-client.ts src/lib/gmail-api/\n\necho \"\"Lib files reorganized\"\")",
       "Bash(true)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm outdated)",
+      "Bash(npx next build:*)",
+      "Bash(ANALYZE=true npm run build)",
+      "Bash(pkill:*)"
     ],
     "deny": []
   }

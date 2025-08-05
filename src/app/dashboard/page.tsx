@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import { UserButton } from "@clerk/nextjs";
-import { EmailList } from "@/components/email";
 import { 
   ExecutiveLayout, 
   ExecutiveContentGrid,
   ExecutiveSection,
-  ExecutiveCard,
   ExecutiveDashboard,
   ExecutiveMetricCard,
   LinearButton,
@@ -18,7 +16,32 @@ import {
   Fortune500Dashboard,
   TableauExecutiveDashboard
 } from "@/components/luxury-ui";
-import { Crown, Mail, TrendingUp, Shield, Zap, Activity, BarChart3, Users, Clock } from "lucide-react";
+import { Crown, Mail, TrendingUp, Shield, Zap, Users, Clock } from "lucide-react";
+
+// Import the SuperhumanEmail type
+interface SuperhumanEmail {
+  id: string
+  subject: string
+  sender: string
+  snippet: string
+  timestamp: Date
+  priority: 'vip' | 'team' | 'tools' | 'noise'
+  aiScore: number
+  executiveContext: {
+    category: 'board' | 'strategic' | 'operational' | 'informational'
+    urgency: 'critical' | 'high' | 'medium' | 'low'
+    actionRequired: boolean
+    estimatedReadTime: number
+    keyTopics: string[]
+    suggestedActions: string[]
+  }
+  metadata: {
+    isRead: boolean
+    hasAttachments: boolean
+    threadLength: number
+    lastReply?: Date
+  }
+}
 
 export default function DashboardPage() {
   // Mock executive stats - Phase 2 enhanced with Stripe-grade precision
@@ -154,10 +177,10 @@ export default function DashboardPage() {
   ]
 
   // State management for Phase 3 & 4 integration
-  const [selectedEmail, setSelectedEmail] = useState(mockEmails[0])
+  const [selectedEmail, setSelectedEmail] = useState<SuperhumanEmail>(mockEmails[0])
   const [tableauTimeframe, setTableauTimeframe] = useState<'day' | 'week' | 'month' | 'quarter' | 'year'>('month')
   
-  const handleEmailSelect = (email: typeof mockEmails[0]) => {
+  const handleEmailSelect = (email: SuperhumanEmail) => {
     setSelectedEmail(email)
   }
 

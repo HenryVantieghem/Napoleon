@@ -25,7 +25,7 @@ export function Starfield({
 }: StarfieldProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const starsRef = useRef<Star[]>([])
-  const animationIdRef = useRef<number | undefined>()
+  const animationIdRef = useRef<number | undefined>(undefined)
   const lastTimeRef = useRef<number>(0)
 
   const createStars = useCallback((width: number, height: number): Star[] => {

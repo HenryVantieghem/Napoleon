@@ -43,8 +43,6 @@ export function ExecutiveText({
   weight,
   animate = false 
 }: TypographyProps) {
-  const Component = (motion as Record<string, React.ComponentType<React.ComponentProps<any>>>)[as] || motion.p
-
   const variantStyles = {
     'napoleon-title': 'napoleon-branding text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-tight',
     'executive-hero': 'executive-heading text-3xl md:text-4xl lg:text-5xl leading-[1.2] tracking-tight',
@@ -72,15 +70,16 @@ export function ExecutiveText({
   )
 
   if (animate) {
+    // For animated components, default to motion.div for simplicity
     return (
-      <Component
+      <motion.div
         className={combinedClassName}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
       >
         {children}
-      </Component>
+      </motion.div>
     )
   }
 

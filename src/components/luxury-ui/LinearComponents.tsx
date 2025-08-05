@@ -17,7 +17,7 @@ type ComponentVariant = 'default' | 'primary' | 'secondary' | 'ghost' | 'outline
 type ComponentState = 'default' | 'loading' | 'success' | 'error' | 'warning' | 'info'
 
 // ===== LINEAR BUTTON SYSTEM =====
-interface LinearButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface LinearButtonProps extends Omit<HTMLMotionProps<"button">, 'children'> {
   variant?: ComponentVariant
   size?: ComponentSize
   state?: ComponentState
