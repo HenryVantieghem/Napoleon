@@ -1,7 +1,8 @@
 /**
  * Napoleon AI - Luxury UI Components
  * Executive-grade design system implementation
- * Phase 1: Apple Liquid Glass + Tesla Minimalism
+ * Phase 1: Apple Liquid Glass + Tesla Minimalism ✅
+ * Phase 2: Linear Professional + Stripe Enterprise ✅
  */
 
 // Kinetic Luxury Components (Phase 1 Complete)
@@ -13,13 +14,13 @@ export { Starfield } from './Starfield'
 export { OrbitalGlow } from './OrbitalGlow'
 export { KineticParticles } from './KineticParticles'
 
-// Executive Layout System (Phase 1 New)
+// Executive Layout System (Phase 1)
 export { 
   ExecutiveLayout, 
   ExecutiveContentGrid 
 } from './ExecutiveLayout'
 
-// Executive Typography System (Phase 1 New)
+// Executive Typography System (Phase 1)
 export {
   ExecutiveText,
   NapoleonTitle,
@@ -35,6 +36,24 @@ export {
   ResponsiveText,
   TypographyScale
 } from './ExecutiveTypography'
+
+// Stripe Data Visualization System (Phase 2)
+export {
+  ExecutiveMetricCard,
+  ExecutiveDashboard,
+  ExecutiveChart
+} from './StripeDataVisualization'
+
+// Linear Professional Components (Phase 2)
+export {
+  LinearButton,
+  LinearInput,
+  LinearCard,
+  LinearBadge,
+  LinearModal,
+  LinearNavigation,
+  LinearToast
+} from './LinearComponents'
 
 /**
  * Design System Constants

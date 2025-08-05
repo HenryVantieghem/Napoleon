@@ -15,6 +15,72 @@ module.exports = {
         'orbital-blue': 'var(--orbital-blue)',
         'executive-white': 'var(--executive-white)',
         
+        // LCH Color Space System (Phase 2)
+        'lch-primary-50': 'var(--lch-primary-50)',
+        'lch-primary-100': 'var(--lch-primary-100)',
+        'lch-primary-200': 'var(--lch-primary-200)',
+        'lch-primary-300': 'var(--lch-primary-300)',
+        'lch-primary-400': 'var(--lch-primary-400)',
+        'lch-primary-500': 'var(--lch-primary-500)',
+        'lch-primary-600': 'var(--lch-primary-600)',
+        'lch-primary-700': 'var(--lch-primary-700)',
+        'lch-primary-800': 'var(--lch-primary-800)',
+        'lch-primary-900': 'var(--lch-primary-900)',
+        'lch-primary-950': 'var(--lch-primary-950)',
+        
+        // LCH Gold System
+        'lch-gold-50': 'var(--lch-gold-50)',
+        'lch-gold-500': 'var(--lch-gold-500)',
+        'lch-gold-600': 'var(--lch-gold-600)',
+        'lch-gold-900': 'var(--lch-gold-900)',
+        
+        // LCH Neutrals
+        'lch-neutral-50': 'var(--lch-neutral-50)',
+        'lch-neutral-100': 'var(--lch-neutral-100)',
+        'lch-neutral-300': 'var(--lch-neutral-300)',
+        'lch-neutral-400': 'var(--lch-neutral-400)',
+        'lch-neutral-500': 'var(--lch-neutral-500)',
+        'lch-neutral-600': 'var(--lch-neutral-600)',
+        'lch-neutral-700': 'var(--lch-neutral-700)',
+        'lch-neutral-800': 'var(--lch-neutral-800)',
+        'lch-neutral-900': 'var(--lch-neutral-900)',
+        'lch-neutral-950': 'var(--lch-neutral-950)',
+        
+        // LCH State Colors
+        'lch-success-50': 'var(--lch-success-50)',
+        'lch-success-500': 'var(--lch-success-500)',
+        'lch-success-600': 'var(--lch-success-600)',
+        'lch-success-900': 'var(--lch-success-900)',
+        
+        'lch-warning-50': 'var(--lch-warning-50)',
+        'lch-warning-500': 'var(--lch-warning-500)',
+        'lch-warning-600': 'var(--lch-warning-600)',
+        'lch-warning-900': 'var(--lch-warning-900)',
+        
+        'lch-danger-50': 'var(--lch-danger-50)',
+        'lch-danger-500': 'var(--lch-danger-500)',
+        'lch-danger-600': 'var(--lch-danger-600)',
+        'lch-danger-900': 'var(--lch-danger-900)',
+        
+        // Professional Dark Theme Variables
+        'bg-primary': 'var(--bg-primary)',
+        'bg-secondary': 'var(--bg-secondary)',
+        'bg-elevated': 'var(--bg-elevated)',
+        'bg-interactive': 'var(--bg-interactive)',
+        
+        'text-primary': 'var(--text-primary)',
+        'text-secondary': 'var(--text-secondary)',
+        'text-tertiary': 'var(--text-tertiary)',
+        'text-muted': 'var(--text-muted)',
+        
+        'border-primary': 'var(--border-primary)',
+        'border-secondary': 'var(--border-secondary)',
+        'border-interactive': 'var(--border-interactive)',
+        
+        'interactive-hover': 'var(--interactive-hover)',
+        'interactive-active': 'var(--interactive-active)',
+        'interactive-disabled': 'var(--interactive-disabled)',
+        
         // Apple Liquid Glass Materials
         'glass-white': 'var(--glass-white)',
         'glass-white-strong': 'var(--glass-white-strong)',
