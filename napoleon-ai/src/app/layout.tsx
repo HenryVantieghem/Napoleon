@@ -1,19 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
-import { ErrorBoundary } from "@/components/error-boundary";
-import { ClerkProvider } from '@clerk/nextjs';
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" });
 
 export const metadata: Metadata = {
-  title: "Napoleon AI - Luxury Smart Inbox",
-  description: "Transform communication chaos into strategic clarity with AI-powered Gmail management.",
-  keywords: ["AI", "Gmail", "Email Management", "Productivity", "Smart Inbox"],
-  authors: [{ name: "Napoleon AI" }],
+  title: "Napoleon AI",
+  description: "Transforming email chaos into strategic clarity for executives.",
 };
 
 export default function RootLayout({
@@ -23,14 +18,8 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className="scroll-smooth">
-        <body
-          className={`${inter.variable} font-sans bg-black text-white antialiased min-h-screen`}
-        >
-          <ErrorBoundary>
-            {children}
-          </ErrorBoundary>
-        </body>
+      <html lang="en">
+        <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans bg-luxury-black text-text-luxury`}>{children}</body>
       </html>
     </ClerkProvider>
   );

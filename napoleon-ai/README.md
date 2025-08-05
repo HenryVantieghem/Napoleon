@@ -38,7 +38,7 @@
 
 ### Prerequisites
 - Node.js 18+ 
-- Supabase account ([supabase.com](https://supabase.com))
+- Clerk account ([clerk.com](https://clerk.com))
 - OpenAI API key (optional, for AI features)
 
 ### Installation
@@ -55,7 +55,7 @@ npm install
 cp .env.example .env.local
 
 # Configure your environment variables
-# Edit .env.local with your Supabase and OpenAI credentials
+# Edit .env.local with your Clerk and OpenAI credentials
 
 # Run the development server
 npm run dev
