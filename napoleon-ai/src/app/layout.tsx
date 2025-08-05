@@ -1,10 +1,30 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Inter, Playfair_Display, Crimson_Text } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" });
+// Napoleon AI Luxury Typography System
+const inter = Inter({ 
+  subsets: ["latin"], 
+  variable: "--font-inter",
+  display: "swap",
+  weight: ["400", "500", "600"]
+});
+
+const playfairDisplay = Playfair_Display({ 
+  subsets: ["latin"], 
+  variable: "--font-playfair",
+  display: "swap",
+  weight: ["400", "700"],
+  style: ["normal", "italic"]
+});
+
+const crimsonText = Crimson_Text({ 
+  subsets: ["latin"], 
+  variable: "--font-crimson",
+  display: "swap",
+  weight: ["400", "600", "700"]
+});
 
 export const metadata: Metadata = {
   title: "Napoleon AI - Executive Intelligence Platform",
@@ -56,7 +76,7 @@ export default function RootLayout({
       }}
     >
       <html lang="en">
-        <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans bg-luxury-black text-text-luxury antialiased`}>
+        <body className={`${inter.variable} ${playfairDisplay.variable} ${crimsonText.variable} font-sans bg-luxury-black text-text-luxury antialiased`}>
           {children}
         </body>
       </html>

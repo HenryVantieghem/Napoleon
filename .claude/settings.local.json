@@ -48,7 +48,10 @@
       "Bash(npm uninstall:*)",
       "WebFetch(domain:napoleon-cckfxq3u5-napoleon.vercel.app)",
       "Bash(find:*)",
-      "WebFetch(domain:napoleon-2jryrf2uv-napoleon.vercel.app)"
+      "WebFetch(domain:napoleon-2jryrf2uv-napoleon.vercel.app)",
+      "WebFetch(domain:www.pinterest.com)",
+      "WebFetch(domain:www.cartier.com)",
+      "WebFetch(domain:www.cosmos.so)"
     ],
     "deny": []
   }
