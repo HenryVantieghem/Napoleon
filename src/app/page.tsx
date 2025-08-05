@@ -30,6 +30,23 @@ export default function Home() {
     }
   }
 
+  // Executive button handlers
+  const handleWatchDemo = () => {
+    window.open('https://calendly.com/napoleon-ai/demo', '_blank')
+  }
+
+  const handleWhiteGloveDemo = () => {
+    window.open('https://calendly.com/napoleon-ai/white-glove-demo', '_blank')
+  }
+
+  const handleExecutiveSupport = () => {
+    window.open('mailto:support@napoleon-ai.com?subject=Executive Support Request', '_blank')
+  }
+
+  const scrollToSection = (sectionId: string) => {
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   const features = [
     {
       icon: Crown,
@@ -109,9 +126,9 @@ export default function Home() {
             <a href="#contact" className="text-luxury-body hover:text-white transition-all duration-300 font-crimson">
               Contact
             </a>
-            <button className="btn-luxury-primary font-inter text-sm px-6 py-2">
+            <ClerkAuthButton className="btn-luxury-primary font-inter text-sm px-6 py-2">
               Get started
-            </button>
+            </ClerkAuthButton>
           </motion.div>
         </div>
       </nav>
@@ -165,7 +182,10 @@ export default function Home() {
               variants={fadeInUp}
               className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8"
             >
-              <button className="btn-luxury-outline flex items-center gap-3 text-lg px-8 py-4 font-inter font-medium">
+              <button 
+                onClick={handleWatchDemo}
+                className="btn-luxury-outline flex items-center gap-3 text-lg px-8 py-4 font-inter font-medium hover:bg-white/10 transition-all duration-300"
+              >
                 <Play className="w-5 h-5" />
                 Watch Demo
               </button>
@@ -342,7 +362,10 @@ export default function Home() {
               Begin Executive Access
             </ClerkAuthButton>
             
-            <button className="btn-luxury-outline text-xl px-12 py-4 flex items-center gap-3 font-inter font-medium">
+            <button 
+              onClick={handleWhiteGloveDemo}
+              className="btn-luxury-outline text-xl px-12 py-4 flex items-center gap-3 font-inter font-medium hover:bg-white/10 transition-all duration-300"
+            >
               <Sparkles className="w-5 h-5" />
               White-Glove Demo
               <ArrowRight className="w-5 h-5" />
@@ -395,7 +418,10 @@ export default function Home() {
                 <a href="/enterprise" className="hover:text-white transition-all duration-300">
                   Enterprise
                 </a>
-                <button className="btn-luxury-outline py-2 px-4 text-sm flex items-center gap-2">
+                <button 
+                  onClick={handleExecutiveSupport}
+                  className="btn-luxury-outline py-2 px-4 text-sm flex items-center gap-2 hover:bg-white/10 transition-all duration-300"
+                >
                   <Crown className="w-3 h-3" />
                   Executive Support
                 </button>
