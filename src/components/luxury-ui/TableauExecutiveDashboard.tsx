@@ -43,7 +43,7 @@ interface TableauDashboardProps {
 }
 
 export function TableauExecutiveDashboard({ 
-  kpis, 
+  kpis = [], 
   timeframe, 
   onTimeframeChange, 
   className 

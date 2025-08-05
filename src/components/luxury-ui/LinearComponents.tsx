@@ -412,7 +412,7 @@ interface LinearNavigationProps {
 }
 
 export function LinearNavigation({ 
-  items, 
+  items = [], 
   orientation = 'vertical', 
   className 
 }: LinearNavigationProps) {

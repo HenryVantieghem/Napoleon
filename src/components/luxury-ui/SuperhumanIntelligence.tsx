@@ -50,7 +50,7 @@ interface SuperhumanInboxProps {
 /**
  * Superhuman Split Inbox - VIP/Team/Tools segregation
  */
-export function SuperhumanSplitInbox({ emails, onEmailSelect, className }: SuperhumanInboxProps) {
+export function SuperhumanSplitInbox({ emails = [], onEmailSelect, className }: SuperhumanInboxProps) {
   const [activeTab, setActiveTab] = useState<'vip' | 'team' | 'tools'>('vip')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -269,7 +269,7 @@ function SuperhumanEmailRow({ email, isSelected, onClick, index }: SuperhumanEma
       {/* Executive Context Tags */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          {email.executiveContext.keyTopics.slice(0, 3).map((topic, i) => (
+          {(email.executiveContext.keyTopics || []).slice(0, 3).map((topic, i) => (
             <LinearBadge key={i} variant="ghost" size="xs">
               {topic}
             </LinearBadge>
@@ -379,7 +379,7 @@ export function ExecutiveAIAssistant({ selectedEmail, className }: ExecutiveAIAs
         <div>
           <h4 className="font-semibold text-text-primary mb-2">Key Topics</h4>
           <div className="flex flex-wrap gap-2">
-            {selectedEmail.executiveContext.keyTopics.map((topic, i) => (
+            {(selectedEmail.executiveContext.keyTopics || []).map((topic, i) => (
               <LinearBadge key={i} variant="outline" size="sm">
                 {topic}
               </LinearBadge>
@@ -391,7 +391,7 @@ export function ExecutiveAIAssistant({ selectedEmail, className }: ExecutiveAIAs
         <div>
           <h4 className="font-semibold text-text-primary mb-2">Suggested Actions</h4>
           <div className="space-y-2">
-            {selectedEmail.executiveContext.suggestedActions.map((action, i) => (
+            {(selectedEmail.executiveContext.suggestedActions || []).map((action, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, x: -10 }}

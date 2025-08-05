@@ -6,7 +6,7 @@ interface ThreadListProps {
   priorityData?: ThreadWithPriority[];
 }
 
-export function ThreadList({ threads, priorityData }: ThreadListProps) {
+export function ThreadList({ threads = [], priorityData }: ThreadListProps) {
   return (
     <div 
       className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
