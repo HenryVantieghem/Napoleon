@@ -6,21 +6,35 @@ import GmailClient from './gmail-client'
  */
 export async function getGmailAccessToken(): Promise<string | null> {
   try {
-    const { userId } = await auth()
+    const { userId, getToken } = await auth()
     
     if (!userId) {
       throw new Error('User not authenticated')
     }
 
-    // Get the user's OAuth tokens from Clerk
-    const { getToken } = await auth()
-    const token = await getToken({ template: 'oauth_google' })
-    
-    if (!token) {
-      throw new Error('No Gmail access token found. User may need to reconnect their Gmail account.')
+    // Try to get the OAuth token for Google with Gmail scopes
+    try {
+      const token = await getToken({ template: 'oauth_google' })
+      
+      if (token) {
+        return token
+      }
+    } catch (templateError) {
+      console.warn('OAuth template not found, trying alternative method:', templateError)
     }
 
-    return token
+    // Alternative: Try to get token directly if template doesn't exist
+    try {
+      const token = await getToken()
+      if (token) {
+        console.log('Using fallback token method')
+        return token
+      }
+    } catch (fallbackError) {
+      console.warn('Fallback token method failed:', fallbackError)
+    }
+
+    throw new Error('No Gmail access token found. User may need to connect their Gmail account through OAuth.')
   } catch (error) {
     console.error('Failed to get Gmail access token:', error)
     return null

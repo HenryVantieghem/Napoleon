@@ -209,31 +209,112 @@ export function FloatingElements() {
   )
 }
 
-// Premium gradient background
+// Enhanced premium gradient background with real-time animations
 export function LuxuryGradientBackground() {
+  const [time, setTime] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(prev => prev + 0.01)
+    }, 16) // 60fps
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // Aurora movement calculations
+  const aurora1X = 20 + Math.sin(time * 0.3) * 15
+  const aurora1Y = 80 + Math.cos(time * 0.2) * 10
+  const aurora2X = 80 + Math.sin(time * 0.4) * 12
+  const aurora2Y = 20 + Math.cos(time * 0.35) * 15
+  const aurora3X = 40 + Math.sin(time * 0.25) * 20
+  const aurora3Y = 60 + Math.cos(time * 0.3) * 8
+
   return (
-    <div className="fixed inset-0 pointer-events-none">
-      {/* Primary gradient */}
-      <div 
-        className="absolute inset-0 opacity-50"
+    <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      {/* Animated aurora gradients */}
+      <motion.div 
+        className="absolute inset-0"
+        animate={{
+          opacity: [0.3, 0.6, 0.4, 0.5],
+        }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
         style={{
           background: `
-            radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 40% 40%, rgba(251, 191, 36, 0.05) 0%, transparent 50%)
+            radial-gradient(circle at ${aurora1X}% ${aurora1Y}%, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.05) 25%, transparent 50%),
+            radial-gradient(circle at ${aurora2X}% ${aurora2Y}%, rgba(139, 92, 246, 0.12) 0%, rgba(139, 92, 246, 0.04) 25%, transparent 50%),
+            radial-gradient(circle at ${aurora3X}% ${aurora3Y}%, rgba(251, 191, 36, 0.08) 0%, rgba(251, 191, 36, 0.02) 25%, transparent 40%)
           `
         }}
       />
       
-      {/* Secondary gradient overlay */}
+      {/* Flowing aurora overlay */}
+      <motion.div 
+        className="absolute inset-0"
+        animate={{
+          opacity: [0.2, 0.4, 0.3, 0.35],
+          scale: [1, 1.1, 0.95, 1],
+        }}
+        transition={{
+          duration: 12,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+        style={{
+          background: `
+            radial-gradient(ellipse at ${60 + Math.sin(time * 0.2) * 30}% ${30 + Math.cos(time * 0.15) * 20}%, 
+              rgba(16, 185, 129, 0.06) 0%, 
+              rgba(16, 185, 129, 0.02) 30%, 
+              transparent 60%
+            ),
+            radial-gradient(ellipse at ${25 + Math.cos(time * 0.35) * 25}% ${70 + Math.sin(time * 0.28) * 15}%, 
+              rgba(239, 68, 68, 0.04) 0%, 
+              transparent 50%
+            )
+          `
+        }}
+      />
+      
+      {/* Dynamic mesh gradient overlay */}
+      <motion.div 
+        className="absolute inset-0 opacity-20"
+        animate={{
+          rotate: [0, 360],
+        }}
+        transition={{
+          duration: 60,
+          repeat: Infinity,
+          ease: "linear"
+        }}
+        style={{
+          background: `
+            conic-gradient(from 0deg at 50% 50%, 
+              rgba(99, 102, 241, 0.1) 0deg,
+              rgba(139, 92, 246, 0.1) 60deg,
+              rgba(251, 191, 36, 0.05) 120deg,
+              rgba(16, 185, 129, 0.08) 180deg,
+              rgba(99, 102, 241, 0.1) 240deg,
+              rgba(139, 92, 246, 0.1) 300deg,
+              rgba(99, 102, 241, 0.1) 360deg
+            )
+          `
+        }}
+      />
+      
+      {/* Base gradient for depth */}
       <div 
-        className="absolute inset-0 opacity-30"
+        className="absolute inset-0 opacity-40"
         style={{
           background: `
             linear-gradient(135deg, 
-              rgba(0, 0, 0, 0.8) 0%, 
-              rgba(10, 10, 10, 0.9) 50%, 
-              rgba(0, 0, 0, 0.8) 100%
+              rgba(0, 0, 0, 0.9) 0%, 
+              rgba(5, 5, 10, 0.95) 25%,
+              rgba(10, 10, 15, 0.9) 50%, 
+              rgba(5, 5, 10, 0.95) 75%,
+              rgba(0, 0, 0, 0.9) 100%
             )
           `
         }}

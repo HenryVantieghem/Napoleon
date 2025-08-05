@@ -1,7 +1,7 @@
 'use client'
 
-import { motion, useMotionValue, useTransform } from 'framer-motion'
-import { useState } from 'react'
+import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion'
+import { useState, useRef } from 'react'
 import { format } from 'date-fns'
 import { 
   PaperClipIcon, 
@@ -19,25 +19,45 @@ interface EmailRowProps {
 
 export function EmailRow({ thread, index, onSelect }: EmailRowProps) {
   const [isHovered, setIsHovered] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
   
-  // Kinetic Luxury: Mouse tracking for parallax tilt effect
+  // Enhanced Kinetic Luxury: Mouse tracking for parallax tilt effect
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
   
-  const rotateX = useTransform(mouseY, [-100, 100], [2, -2])
-  const rotateY = useTransform(mouseX, [-100, 100], [-2, 2])
+  // Spring animations for smoother, more luxurious feel
+  const springX = useSpring(mouseX, { stiffness: 300, damping: 30 })
+  const springY = useSpring(mouseY, { stiffness: 300, damping: 30 })
+  
+  const rotateX = useTransform(springY, [-100, 100], [3, -3])
+  const rotateY = useTransform(springX, [-100, 100], [-3, 3])
+  const scale = useTransform(springX, [-100, 100], [0.98, 1.02])
+  
+  // Enhanced glow effect based on mouse position (simplified for performance)
+  const glowDistance = useTransform(springX, [-100, 100], [0, 1])
   
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect()
+    if (!cardRef.current) return
+    
+    const rect = cardRef.current.getBoundingClientRect()
     const centerX = rect.left + rect.width / 2
     const centerY = rect.top + rect.height / 2
     
-    mouseX.set(event.clientX - centerX)
-    mouseY.set(event.clientY - centerY)
+    // Enhanced mouse tracking with smooth interpolation
+    const x = (event.clientX - centerX) * 0.8
+    const y = (event.clientY - centerY) * 0.8
+    
+    mouseX.set(x)
+    mouseY.set(y)
+  }
+
+  const handleMouseEnter = () => {
+    setIsHovered(true)
   }
 
   const handleMouseLeave = () => {
     setIsHovered(false)
+    // Smooth return to center position
     mouseX.set(0)
     mouseY.set(0)
   }
@@ -89,32 +109,32 @@ export function EmailRow({ thread, index, onSelect }: EmailRowProps) {
 
   return (
     <motion.div
+      ref={cardRef}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ 
-        duration: 0.4, 
-        delay: index * 0.05,
+        duration: 0.5, 
+        delay: index * 0.08,
         ease: [0.4, 0, 0.2, 1]
       }}
       style={{
         rotateX: isHovered ? rotateX : 0,
         rotateY: isHovered ? rotateY : 0,
-      }}
-      whileHover={{
-        scale: 1.01,
-        transition: { duration: 0.2 }
+        scale: isHovered ? scale : 1,
+        transformStyle: 'preserve-3d',
       }}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={() => onSelect?.(thread)}
       className={`
         relative cursor-pointer group
         ${colors.bg} ${colors.border}
-        backdrop-blur-md border rounded-xl p-4 mb-3
-        transition-all duration-300 ease-out
+        backdrop-blur-xl border rounded-2xl p-5 mb-4
+        transition-all duration-500 ease-out
         ${isHovered ? `${colors.glow} shadow-2xl` : 'shadow-lg'}
         transform-gpu perspective-1000
+        hover:backdrop-blur-2xl
       `}
     >
       {/* Kinetic Luxury: Animated background gradient on hover */}
@@ -128,24 +148,84 @@ export function EmailRow({ thread, index, onSelect }: EmailRowProps) {
       />
 
       <div className="relative z-10 flex items-start gap-4">
-        {/* Priority Badge with reveal animation */}
+        {/* Enhanced Priority Badge with spring-physics reveal animation */}
         <motion.div
-          initial={{ scale: 0, rotate: -180 }}
-          animate={{ scale: 1, rotate: 0 }}
+          initial={{ scale: 0, rotate: -180, opacity: 0 }}
+          animate={{ scale: 1, rotate: 0, opacity: 1 }}
           transition={{ 
-            delay: index * 0.05 + 0.2,
-            duration: 0.5,
-            ease: [0.4, 0, 0.2, 1]
+            delay: index * 0.08 + 0.3,
+            type: "spring",
+            stiffness: 260,
+            damping: 20,
+            mass: 1
+          }}
+          whileHover={{
+            scale: 1.1,
+            rotate: 5,
+            transition: {
+              type: "spring",
+              stiffness: 400,
+              damping: 10
+            }
+          }}
+          whileTap={{
+            scale: 0.95,
+            transition: {
+              type: "spring",
+              stiffness: 600,
+              damping: 15
+            }
           }}
           className={`
-            flex-shrink-0 w-10 h-10 rounded-full
+            flex-shrink-0 w-12 h-12 rounded-2xl
             flex items-center justify-center
             ${colors.text} ${colors.bg}
-            border ${colors.border}
-            shadow-lg
+            border-2 ${colors.border}
+            shadow-xl ${colors.glow}
+            backdrop-blur-sm
+            relative overflow-hidden
+            group/badge
           `}
         >
-          {getPriorityIcon(thread.priorityTier)}
+          {/* Inner glow effect */}
+          <motion.div
+            className={`absolute inset-0 rounded-2xl ${colors.bg} opacity-0`}
+            animate={{
+              opacity: isHovered ? 0.6 : 0,
+            }}
+            transition={{ duration: 0.3 }}
+          />
+          
+          {/* Priority icon with enhanced animation */}
+          <motion.div
+            animate={{
+              rotate: isHovered ? [0, 10, -10, 0] : 0,
+              scale: isHovered ? [1, 1.1, 1] : 1,
+            }}
+            transition={{
+              duration: 0.6,
+              ease: "easeInOut"
+            }}
+            className="relative z-10"
+          >
+            {getPriorityIcon(thread.priorityTier)}
+          </motion.div>
+          
+          {/* Badge pulse effect for high priority */}
+          {(thread.priorityTier === 'gold' || thread.priorityTier === 'silver') && (
+            <motion.div
+              className={`absolute inset-0 rounded-2xl ${colors.border} border-2`}
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.5, 0, 0.5],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          )}
         </motion.div>
 
         {/* Email Content */}
