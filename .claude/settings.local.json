@@ -44,7 +44,11 @@
       "mcp__sequential-thinking__sequentialthinking",
       "WebFetch(domain:napoleon-6ocsjs9fk-napoleon.vercel.app)",
       "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_take_screenshot"
+      "mcp__playwright__browser_take_screenshot",
+      "Bash(npm uninstall:*)",
+      "WebFetch(domain:napoleon-cckfxq3u5-napoleon.vercel.app)",
+      "Bash(find:*)",
+      "WebFetch(domain:napoleon-2jryrf2uv-napoleon.vercel.app)"
     ],
     "deny": []
   }
