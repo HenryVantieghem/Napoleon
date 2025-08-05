@@ -1,7 +1,7 @@
 "use client";
 
 import { UserButton } from "@clerk/nextjs";
-import { EmailList } from "@/components/dashboard/EmailList";
+import { EmailList } from "@/components/email";
 import { FaCrown } from "react-icons/fa";
 import { motion } from "framer-motion";
 

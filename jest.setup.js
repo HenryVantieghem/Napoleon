@@ -95,7 +95,7 @@ jest.mock('next/headers', () => ({
 }))
 
 // Mock Gmail auth module
-jest.mock('@/lib/gmail-auth', () => ({
+jest.mock('@/lib/auth', () => ({
   createAuthenticatedGmailClient: jest.fn(() => ({
     fetchLatestThreads: jest.fn(() => []),
   })),

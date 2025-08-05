@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { createAuthenticatedGmailClient } from '@/lib/gmail-auth'
-import { PriorityScorer } from '@/lib/priority-scorer'
-import { OpenAIAnalyzer } from '@/lib/openai-analyzer'
+import { createAuthenticatedGmailClient } from '@/lib/auth/gmail-auth'
+import { PriorityScorer } from '@/lib/ai/priority-scorer'
+import { OpenAIAnalyzer } from '@/lib/ai/openai-analyzer'
 // import type { ThreadWithPriority } from '@/lib/types'
 
 export async function GET(request: NextRequest) {

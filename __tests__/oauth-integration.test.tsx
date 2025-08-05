@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import ClerkAuthButton from '@/components/auth/ClerkAuthButton'
+import { ClerkAuthButton } from '@/components/auth'
 
 // Mock Clerk
 jest.mock('@clerk/nextjs', () => ({

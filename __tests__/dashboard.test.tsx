@@ -72,14 +72,14 @@ jest.mock('@/lib/gmail-client', () => {
 });
 
 // Mock Gmail Auth
-jest.mock('@/lib/gmail-auth', () => ({
+jest.mock('@/lib/auth', () => ({
   createAuthenticatedGmailClient: jest.fn().mockResolvedValue({
     fetchLatestThreads: jest.fn().mockResolvedValue([]),
   }),
 }));
 
 // Mock OpenAI Analyzer
-jest.mock('@/lib/openai-analyzer', () => {
+jest.mock('@/lib/ai', () => {
   return jest.fn().mockImplementation(() => ({
     analyzeThread: jest.fn().mockResolvedValue({
       priority_score: 8.5,
@@ -94,7 +94,7 @@ jest.mock('@/lib/openai-analyzer', () => {
 });
 
 // Mock Priority Scorer
-jest.mock('@/lib/priority-scorer', () => ({
+jest.mock('@/lib/ai', () => ({
   PriorityScorer: jest.fn().mockImplementation(() => ({
     scoreThreads: jest.fn().mockResolvedValue([
       {

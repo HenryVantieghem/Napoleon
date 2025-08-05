@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { EmailRow } from './EmailRow'
-import { LoadingSkeleton } from './LoadingSkeleton'
-import { KineticParticles } from './KineticParticles'
+import { LoadingSkeleton } from '@/components/shared'
+import { KineticParticles } from '@/components/luxury-ui'
 import { 
   ExclamationTriangleIcon, 
   ArrowPathIcon,

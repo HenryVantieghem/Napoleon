@@ -11,9 +11,9 @@ import {
   Play,
   ChevronDown
 } from 'lucide-react'
-import ClerkAuthButton from '@/components/auth/ClerkAuthButton'
-import { OrbitalGlow } from '@/components/landing/OrbitalGlow'
-import { Starfield } from '@/components/landing/Starfield'
+import { ClerkAuthButton } from '@/components/auth'
+import { OrbitalGlow } from '@/components/luxury-ui'
+import { Starfield } from '@/components/luxury-ui'
 
 export default function Home() {
   const fadeInUp = {
