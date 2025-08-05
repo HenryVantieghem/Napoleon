@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { teamsClient } from '@/lib/teams-client'
+import { teamsClient } from '@/lib/gmail-api/teams-client'
 
 export async function POST(request: NextRequest) {
   try {

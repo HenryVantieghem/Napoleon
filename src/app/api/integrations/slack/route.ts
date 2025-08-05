@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { slackClient } from '@/lib/slack-client'
+import { slackClient } from '@/lib/gmail-api/slack-client'
 
 export async function POST(request: NextRequest) {
   try {

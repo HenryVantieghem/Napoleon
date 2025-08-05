@@ -9,22 +9,48 @@ module.exports = {
     extend: {
       // Napoleon Imperial Design System - CSS Variables Integration
       colors: {
-        // Imperial Core Colors
-        'imperial-dark': 'var(--imperial-dark)',
+        // Executive Color Psychology (Phase 1)
+        'navy-deep': 'var(--navy-deep)',
         'imperial-gold': 'var(--imperial-gold)',
         'orbital-blue': 'var(--orbital-blue)',
         'executive-white': 'var(--executive-white)',
         
-        // Enhanced Glass System
-        'glass-0': 'var(--glass-0)',
-        'glass-1': 'var(--glass-1)',
-        'glass-2': 'var(--glass-2)',
-        'glass-border': 'var(--glass-border)',
+        // Apple Liquid Glass Materials
+        'glass-white': 'var(--glass-white)',
+        'glass-white-strong': 'var(--glass-white-strong)',
+        'glass-white-subtle': 'var(--glass-white-subtle)',
+        'glass-black': 'var(--glass-black)',
+        'glass-black-strong': 'var(--glass-black-strong)',
+        
+        // Executive Priority Colors
+        'priority-gold': 'var(--priority-gold)',
+        'priority-silver': 'var(--priority-silver)',
+        'priority-bronze': 'var(--priority-bronze)',
+        'priority-standard': 'var(--priority-standard)',
+        
+        // Semantic Executive Colors
+        'success-executive': 'var(--success-executive)',
+        'warning-executive': 'var(--warning-executive)',
+        'danger-executive': 'var(--danger-executive)',
+        'info-executive': 'var(--info-executive)',
+        
+        // Contextual Glass Materials
+        'glass-success': 'var(--glass-success)',
+        'glass-warning': 'var(--glass-warning)',
+        'glass-danger': 'var(--glass-danger)',
+        'glass-info': 'var(--glass-info)',
+        
+        // Legacy Imperial Colors (maintained for compatibility)
+        'imperial-dark': 'var(--navy-deep)',
+        'glass-0': 'var(--glass-white-subtle)',
+        'glass-1': 'var(--glass-white)',
+        'glass-2': 'var(--glass-white-strong)',
+        'glass-border': 'var(--glass-white-strong)',
         
         // Imperial Text Colors
-        'text-primary': 'var(--text-primary)',
-        'text-secondary': 'var(--text-secondary)',
-        'text-tertiary': 'var(--text-tertiary)',
+        'text-primary': 'var(--executive-white)',
+        'text-secondary': 'rgba(255, 255, 255, 0.8)',
+        'text-tertiary': 'rgba(255, 255, 255, 0.6)',
         
         // Executive Accents
         'accent-success': 'var(--accent-success)',

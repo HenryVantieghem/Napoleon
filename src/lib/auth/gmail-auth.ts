@@ -1,5 +1,5 @@
 import { auth } from '@clerk/nextjs/server'
-import GmailClient from './gmail-client'
+import GmailClient from '@/lib/gmail-api/gmail-client'
 
 /**
  * Gets the authenticated user's Gmail access token from Clerk
