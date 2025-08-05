@@ -43,7 +43,7 @@ export function ExecutiveText({
   weight,
   animate = false 
 }: TypographyProps) {
-  const Component = (motion as Record<string, React.ComponentType<any>>)[as] || motion.p
+  const Component = (motion as Record<string, React.ComponentType<React.ComponentProps<any>>>)[as] || motion.p
 
   const variantStyles = {
     'napoleon-title': 'napoleon-branding text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-tight',
