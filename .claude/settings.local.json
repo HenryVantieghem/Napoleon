@@ -61,7 +61,8 @@
       "Bash(npm outdated)",
       "Bash(npx next build:*)",
       "Bash(ANALYZE=true npm run build)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "mcp__playwright__browser_click"
     ],
     "deny": []
   }
