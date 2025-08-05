@@ -6,8 +6,9 @@ Napoleon AI is a luxury Gmail-only Smart Inbox designed exclusively for C-level 
 ## ✅ CURRENT STATUS (August 5, 2025)
 - **Production URL**: https://napoleon-2jryrf2uv-napoleon.vercel.app
 - **GitHub Repo**: https://github.com/HenryVantieghem/Napoleon.git
-- **Tech Stack**: Next.js 14, TypeScript, Tailwind CSS, Clerk, OpenAI GPT-4, Framer Motion
+- **Tech Stack**: Next.js 14, TypeScript, Tailwind CSS, **Clerk Authentication**, OpenAI GPT-4, Framer Motion
 - **Design System**: **Kinetic Luxury** - Complete implementation with mouse-reactive animations
+- **Authentication**: **100% Clerk-based** - All Supabase references removed
 - **Status**: 🎖️ FULLY OPERATIONAL - READY FOR FORTUNE 500 EXECUTIVES
 
 ## 💎 KINETIC LUXURY VISION
@@ -81,9 +82,9 @@ Every pixel, interaction, and transition must feel alive, intentional, and incre
 
 ### DIAGNOSTIC SCRIPTS
 ```
-./scripts/setup-supabase.sh - Supabase configuration diagnostic
 ./scripts/error-detection.sh - Comprehensive error detection
 ./scripts/bulletproof-deploy.sh - Production deployment pipeline
+./scripts/deploy.sh - Vercel deployment script
 ```
 
 ## 🔧 TECHNICAL ARCHITECTURE
@@ -106,14 +107,23 @@ Every pixel, interaction, and transition must feel alive, intentional, and incre
 
 ### REQUIRED ENVIRONMENT VARIABLES
 ```bash
-# CRITICAL - MUST BE REAL CLERK VALUES
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
+# CLERK AUTHENTICATION (REQUIRED)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...  # Get from Clerk Dashboard
+CLERK_SECRET_KEY=sk_test_...                   # Get from Clerk Dashboard
+
+# AI ANALYSIS (REQUIRED)
 OPENAI_API_KEY=your-openai-api-key-here
 
-# OPTIONAL
+# ANALYTICS (OPTIONAL)
 NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=your-ga-id-here
 ```
+
+### CLERK SETUP INSTRUCTIONS
+1. **Create Clerk Application**: Go to clerk.com and create a new application
+2. **Enable Google OAuth**: In Clerk Dashboard → User & Authentication → Social Connections → Enable Google
+3. **Configure Gmail Scopes**: Add 'https://www.googleapis.com/auth/gmail.readonly' to Google OAuth scopes
+4. **Set Redirect URLs**: Add your production and development URLs to Clerk's redirect URLs
+5. **Copy Environment Variables**: Copy the publishable key and secret key to your .env.local file
 
 ### COMMANDS
 ```bash
@@ -158,8 +168,8 @@ I'm continuing work on Napoleon AI - a fully operational luxury executive email 
 
 CURRENT STATUS:
 - Production: https://napoleon-2jryrf2uv-napoleon.vercel.app (LIVE & WORKING)
-- GitHub: https://github.com/HenryVantieghem/Napoleon.git (Latest: a1938f2)
-- Authentication: ✅ Clerk OAuth with Gmail integration complete
+- GitHub: https://github.com/HenryVantieghem/Napoleon.git
+- Authentication: ✅ 100% Clerk-based authentication (Supabase completely removed)
 - Status: 🎖️ FULLY OPERATIONAL - Ready for Fortune 500 executives
 
 TECHNICAL STACK:
@@ -175,14 +185,6 @@ KINETIC LUXURY FEATURES COMPLETE:
 - Real-time aurora gradient backgrounds with mathematical movement calculations
 - Executive dashboard with comprehensive Gmail intelligence and live data
 - 60fps performance optimization with frame limiting and quality gates
-
-RECENT COMPLETION (Commit: a1938f2):
-- Enhanced particle system from 35 to 50 particles with advanced physics
-- Fixed TypeScript strict mode errors in useTransform implementations
-- Added fallback authentication methods in gmail-auth.ts
-- Optimized canvas rendering with 60fps frame limiting
-- Production build success with 174KB home, 181KB dashboard bundles
-- Complete luxury animation system with mouse interaction tracking
 
 NEXT HIGH-LEVERAGE OPPORTUNITIES:
 1. Email detail modal with luxury animations and keyboard navigation

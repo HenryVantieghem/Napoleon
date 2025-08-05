@@ -1,0 +1,348 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Napoleon AI Imperial Luxury Design System */
+@import "../styles/luxury-glassmorphism.css";
+
+/* Imperial CSS Custom Properties - Napoleon AI Color System */
+:root {
+  /* Imperial Navy Background */
+  --navy-primary: #0B0D11;
+  --navy-secondary: #1a1d23;
+  --imperial-dark: #0B0D11;
+  
+  /* Imperial Gold Accents */
+  --gold-primary: #D4AF37;
+  --gold-secondary: #F4E4BC;
+  --imperial-gold: #D4AF37;
+  
+  /* Enhanced Orbital Effects */
+  --orbital-blue: #3B82F6;
+  --orbital-purple: #9333EA;
+  --orbital-cyan: #06B6D4;
+  
+  /* Enhanced Glass Morphism */
+  --glass-white: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-shadow: rgba(31, 38, 135, 0.37);
+  
+  /* Imperial Typography */
+  --text-primary: var(--text-primary);
+  --text-secondary: var(--text-secondary);
+  --text-muted: rgba(255, 255, 255, 0.5);
+}
+
+/* Imperial Background Gradients */
+.bg-imperial-dark {
+  background: linear-gradient(135deg, #0B0D11 0%, #1a1d23 100%);
+}
+
+/* Imperial Typography Foundation */
+.font-napoleon {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-style: italic;
+}
+
+.font-headline {
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+}
+
+.font-body {
+  font-family: var(--font-interface);
+  font-weight: var(--weight-regular);
+}
+
+/* Luxury Base Styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--navy-primary);
+  color: var(--text-primary);
+  font-family: var(--font-inter), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Performance Optimization */
+* {
+  box-sizing: border-box;
+}
+
+.will-change-transform {
+  will-change: transform;
+  contain: layout style paint;
+}
+
+/* Orbital Glow Effect - Hero Centerpiece */
+.orbital-glow {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.8) 0%,
+    rgba(147, 51, 234, 0.6) 50%,
+    transparent 70%
+  );
+  box-shadow: 
+    0 0 50px rgba(59, 130, 246, 0.5),
+    0 0 100px rgba(147, 51, 234, 0.3),
+    0 0 200px rgba(59, 130, 246, 0.1),
+    inset 0 0 50px rgba(255, 255, 255, 0.1);
+  animation: orbitalRotation 20s linear infinite;
+  filter: blur(1px);
+}
+
+.orbital-glow::before {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    transparent 30%,
+    rgba(59, 130, 246, 0.4) 70%,
+    rgba(147, 51, 234, 0.2) 90%,
+    transparent 100%
+  );
+  animation: orbitalRotation 15s linear infinite reverse;
+}
+
+.orbital-glow::after {
+  content: '';
+  position: absolute;
+  inset: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  animation: orbitalPulse 4s ease-in-out infinite;
+}
+
+@keyframes orbitalRotation {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes orbitalPulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+/* Particle System */
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: particleFloat 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.particle:nth-child(2n) {
+  background: rgba(59, 130, 246, 0.4);
+  animation-duration: 12s;
+  animation-delay: -2s;
+}
+
+.particle:nth-child(3n) {
+  background: rgba(147, 51, 234, 0.4);
+  animation-duration: 10s;
+  animation-delay: -4s;
+}
+
+@keyframes particleFloat {
+  0%, 100% { 
+    transform: translateY(0px) translateX(0px) scale(1);
+    opacity: 0.3;
+  }
+  33% { 
+    transform: translateY(-20px) translateX(10px) scale(1.2);
+    opacity: 0.8;
+  }
+  66% { 
+    transform: translateY(10px) translateX(-15px) scale(0.8);
+    opacity: 0.5;
+  }
+}
+
+/* Glassmorphism Components */
+.glass-nav {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  border-radius: 16px;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+  border-radius: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 16px 64px 0 rgba(31, 38, 135, 0.4);
+}
+
+/* Luxury Button Styles */
+.btn-luxury-primary {
+  background: linear-gradient(135deg, var(--orbital-blue), var(--orbital-purple));
+  color: white;
+  padding: 16px 32px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+}
+
+.btn-luxury-primary:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 16px 64px rgba(59, 130, 246, 0.4);
+}
+
+.btn-luxury-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-luxury-primary:hover::before {
+  left: 100%;
+}
+
+.btn-luxury-outline {
+  background: transparent;
+  color: var(--text-primary);
+  padding: 16px 32px;
+  border-radius: 16px;
+  font-weight: 500;
+  font-size: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-luxury-outline:hover {
+  border-color: var(--orbital-blue);
+  background: rgba(59, 130, 246, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
+}
+
+/* Luxury Text Styles */
+.text-napoleon {
+  font-family: var(--font-playfair), serif;
+  font-weight: 700;
+  font-style: italic;
+  background: linear-gradient(135deg, var(--gold-primary), var(--gold-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+}
+
+.text-luxury-headline {
+  font-family: var(--font-crimson), serif;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.text-luxury-body {
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 400;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .orbital-glow {
+    width: 300px;
+    height: 300px;
+  }
+  
+  .btn-luxury-primary,
+  .btn-luxury-outline {
+    padding: 14px 24px;
+    font-size: 14px;
+    min-height: 48px; /* Executive touch targets */
+  }
+}
+
+/* Animation Performance */
+@media (prefers-reduced-motion: reduce) {
+  .orbital-glow,
+  .particle {
+    animation: none;
+  }
+  
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus styles for accessibility */
+*:focus {
+  outline: 2px solid var(--orbital-blue);
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--navy-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--orbital-blue);
+}
+
+/* Loading States */
+@keyframes luxurySpinner {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.luxury-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top: 3px solid var(--orbital-blue);
+  border-radius: 50%;
+  animation: luxurySpinner 1s linear infinite;
+}

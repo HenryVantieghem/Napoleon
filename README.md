@@ -78,7 +78,7 @@ OPENAI_API_KEY=sk-your-openai-key
 
 ### Tech Stack
 - **Frontend**: Next.js 14, TypeScript, Tailwind CSS
-- **Backend**: Supabase (PostgreSQL, Auth, Real-time)
+- **Authentication**: Clerk
 - **AI**: OpenAI GPT-4o-mini
 - **Deployment**: Vercel
 - **Testing**: Jest, React Testing Library
@@ -96,7 +96,7 @@ Napoleon AI
 
 ### Data Flow
 
-1. **Authentication**: OAuth 2.0 → Supabase → Gmail readonly access
+1. **Authentication**: OAuth 2.0 → Clerk → Gmail readonly access
 2. **Email Fetching**: Gmail API → Thread processing → Cache storage
 3. **AI Analysis**: OpenAI GPT-4 → Priority scoring → Context boosting
 4. **Display**: Luxury dashboard → Priority badges → Executive interface
@@ -148,7 +148,7 @@ vercel --prod
 
 - [ ] Configure environment variables in Vercel
 - [ ] Set up custom domain (napoleonai.com)
-- [ ] Configure Clerk OAuth redirect URLs
+- [ ] Configure Clerk OAuth redirect URLs for social providers
 - [ ] Test Gmail OAuth flow
 - [ ] Verify AI priority scoring
 - [ ] Set up monitoring and analytics
@@ -280,8 +280,8 @@ Napoleon AI demonstrates:
 ## 📞 Support
 
 - **Documentation**: [DEPLOYMENT.md](./DEPLOYMENT.md)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/napoleon-ai/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/napoleon-ai/discussions)
+- **Issues**: [GitHub Issues](https://github.com/HenryVantieghem/Napoleon/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/HenryVantieghem/Napoleon/discussions)
 
 ## 📄 License
 

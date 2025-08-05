@@ -51,7 +51,8 @@
       "WebFetch(domain:napoleon-2jryrf2uv-napoleon.vercel.app)",
       "WebFetch(domain:www.pinterest.com)",
       "WebFetch(domain:www.cartier.com)",
-      "WebFetch(domain:www.cosmos.so)"
+      "WebFetch(domain:www.cosmos.so)",
+      "Bash(cp:*)"
     ],
     "deny": []
   }

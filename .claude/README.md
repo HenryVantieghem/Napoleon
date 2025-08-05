@@ -9,17 +9,12 @@ This directory contains the specialized sub-agent configuration for Napoleon AI'
 
 #### 🔐 **authentication-specialist** (Haiku)
 OAuth flow debugging and security specialist
-- Supabase authentication configuration
-- Google OAuth troubleshooting  
-- JWT session management
-- Enterprise security compliance
+- Clerk authentication configuration
 
 #### 🗄️ **database-architect** (Sonnet)
-Supabase database design and optimization specialist
-- Schema design for executive data
-- Row Level Security (RLS) policies
-- Performance optimization
-- Real-time subscriptions
+Data architecture and caching specialist
+- Data model design for executive insights
+- Caching strategies for high-performance APIs
 
 #### 🎨 **luxury-ui-designer** (Sonnet) 
 Executive-grade glassmorphism UI specialist
