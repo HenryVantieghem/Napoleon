@@ -436,15 +436,15 @@ export default function Home() {
                 </div>
               </motion.div>
               
-              <div className="flex items-center gap-8 text-luxury-body font-inter">
-                <a href="/privacy" className="hover:text-white transition-all duration-300">
+              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 text-luxury-body font-inter text-sm">
+                <Link href="/privacy" className="hover:text-white transition-all duration-300">
                   Privacy Policy
-                </a>
-                <a href="/terms" className="hover:text-white transition-all duration-300">
+                </Link>
+                <Link href="/terms" className="hover:text-white transition-all duration-300">
                   Terms of Service
-                </a>
-                <a href="/enterprise" className="hover:text-white transition-all duration-300">
-                  Enterprise
+                </Link>
+                <a href="mailto:support@napoleonai.app" className="hover:text-white transition-all duration-300">
+                  Support
                 </a>
                 <button 
                   onClick={handleExecutiveSupport}
@@ -458,7 +458,7 @@ export default function Home() {
             
             <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between">
               <div className="text-luxury-body font-inter text-sm mb-4 md:mb-0">
-                © 2024 Napoleon AI. Crafted for executive excellence.
+                © 2025 Napoleon AI. Crafted for executive excellence.
               </div>
               
               <div className="flex items-center gap-6 text-luxury-body font-inter text-sm">
