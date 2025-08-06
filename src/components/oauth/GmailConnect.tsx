@@ -14,7 +14,16 @@ export function GmailConnect({ isConnected, onRefresh }: GmailConnectProps) {
     setIsConnecting(true)
     
     try {
-      console.log('🔍 [GMAIL OAUTH] Initiating Gmail OAuth flow...')
+      console.log('🔍 [GMAIL OAUTH] Button clicked - starting OAuth flow...')
+      console.log('🔍 [GMAIL OAUTH] Environment check:', {
+        clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.substring(0, 20) + '...',
+        hasClientId: !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+      })
+      
+      // Add a small delay to ensure state is set
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      console.log('🔍 [GMAIL OAUTH] Redirecting to /auth/gmail route...')
       
       // CRITICAL: Direct redirect to Gmail OAuth route - no page refresh
       window.location.href = '/auth/gmail'
@@ -22,6 +31,7 @@ export function GmailConnect({ isConnected, onRefresh }: GmailConnectProps) {
     } catch (error) {
       console.error('❌ [GMAIL OAUTH] Error:', error)
       setIsConnecting(false)
+      alert('OAuth Error: ' + error.message)
     }
   }
   
