@@ -91,9 +91,19 @@ export function ConnectionStatus({
           }`}>
             {slackConnected 
               ? 'Successfully connected. Workspace messages are being synced.' 
-              : 'Requires SLACK_BOT_TOKEN in environment variables. Generate a bot token at api.slack.com with channels:history, users:read scopes.'
+              : 'Connect your Slack workspace to access your channels and direct messages.'
             }
           </p>
+          
+          {!slackConnected && (
+            <a 
+              href="/auth/slack"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-md hover:bg-purple-700 transition-colors"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Connect Slack Workspace
+            </a>
+          )}
           
           {slackConnected && onRefresh && (
             <button
@@ -103,13 +113,6 @@ export function ConnectionStatus({
               <CheckCircle className="w-4 h-4" />
               Refresh Messages
             </button>
-          )}
-          
-          {!slackConnected && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-800 text-sm font-medium rounded-md">
-              <AlertCircle className="w-4 h-4" />
-              Admin Setup Required
-            </div>
           )}
         </div>
       </div>

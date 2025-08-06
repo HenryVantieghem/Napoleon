@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchGmailMessages } from '@/lib/gmail/client';
-import { fetchSlackMessages, isSlackConfigured } from '@/lib/slack/client';
+import { SlackMessagesClient } from '@/lib/slack-api/slack-messages-client';
 import type { UnifiedMessage, MessagePriority } from '@/types/message';
 
 // Priority calculation function
@@ -38,13 +38,17 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const days = parseInt(searchParams.get('days') || '7');
     
-    console.log('📋 [MESSAGES API] Fetching messages for', days, 'days');
-    console.log('🔍 [MESSAGES API] Slack configured:', isSlackConfigured());
+    // Create Slack client from cookies (request context)
+    const slackClient = SlackMessagesClient.fromCookies();
     
-    // Fetch messages from both sources
+    console.log('📋 [MESSAGES API] Fetching messages for', days, 'days');
+    console.log('🔍 [MESSAGES API] Slack OAuth connected:', slackClient.isConnected());
+    console.log('🔍 [MESSAGES API] Slack connection info:', slackClient.getConnectionInfo());
+    
+    // Fetch messages from both sources using Promise.allSettled for better error handling
     const results = await Promise.allSettled([
       fetchGmailMessages(days),
-      fetchSlackMessages(days)
+      slackClient.getRecentMessages(days)
     ]);
     
     const gmailResult = results[0];
@@ -53,7 +57,7 @@ export async function GET(request: NextRequest) {
     console.log('📊 [MESSAGES API] Results:', {
       gmail: gmailResult.status,
       slack: slackResult.status,
-      slackConfigured: isSlackConfigured()
+      slackConnected: slackClient.isConnected()
     });
     
     const response = {
@@ -76,22 +80,19 @@ export async function GET(request: NextRequest) {
     }
     
     if (slackResult.status === 'fulfilled') {
-      const slackMessagesWithPriority = slackResult.value.map(msg => ({
-        ...msg,
-        ...calculateMessagePriority(msg)
-      }));
-      response.messages.push(...slackMessagesWithPriority);
-      response.slackConnected = true;
-      console.log('✅ [MESSAGES API] Slack messages loaded:', slackResult.value.length);
+      // Slack messages from OAuth client already have priority calculated
+      response.messages.push(...slackResult.value);
+      response.slackConnected = slackClient.isConnected();
+      console.log('✅ [MESSAGES API] Slack OAuth messages loaded:', slackResult.value.length);
     } else {
-      console.error('❌ [MESSAGES API] Slack error:', slackResult.reason);
+      console.error('❌ [MESSAGES API] Slack OAuth error:', slackResult.reason);
       
-      // Check if Slack is configured but failing
-      if (isSlackConfigured()) {
-        response.errors.push(`Slack: ${slackResult.reason.message || 'Connection failed despite token being configured'}`);
+      // Check if Slack OAuth is connected but failing
+      if (slackClient.isConnected()) {
+        response.errors.push(`Slack OAuth: ${slackResult.reason.message || 'Connection failed despite OAuth being connected'}`);
       } else {
-        console.log('⚠️ [MESSAGES API] Slack not configured - skipping');
-        // Don't add to errors if not configured, just log
+        console.log('⚠️ [MESSAGES API] Slack OAuth not connected - skipping');
+        // Don't add to errors if not connected, just log
       }
     }
     

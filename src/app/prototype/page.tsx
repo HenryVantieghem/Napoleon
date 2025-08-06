@@ -82,12 +82,21 @@ export default function PrototypePage() {
       // Check for OAuth callback parameters
       const params = new URLSearchParams(window.location.search);
       const gmailStatus = params.get('gmail');
+      const slackStatus = params.get('slack_connected');
+      const slackError = params.get('slack_error');
       const oauthError = params.get('error');
       
-      console.log('🔍 [PROTOTYPE] OAuth callback check:', { gmailStatus, oauthError });
+      console.log('🔍 [PROTOTYPE] OAuth callback check:', { gmailStatus, slackStatus, slackError, oauthError });
       
       if (gmailStatus === 'connected') {
         console.log('✅ [PROTOTYPE] Gmail connected successfully');
+        window.history.replaceState({}, '', '/prototype');
+      } else if (slackStatus === 'true') {
+        console.log('✅ [PROTOTYPE] Slack connected successfully');
+        window.history.replaceState({}, '', '/prototype');
+      } else if (slackError) {
+        console.error('❌ [PROTOTYPE] Slack OAuth Error:', slackError);
+        setError(`Slack OAuth Error: ${slackError}. Please try connecting again.`);
         window.history.replaceState({}, '', '/prototype');
       } else if (oauthError) {
         console.error('❌ [PROTOTYPE] OAuth Error:', oauthError);

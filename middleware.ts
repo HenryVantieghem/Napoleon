@@ -7,6 +7,8 @@ export default authMiddleware({
     '/privacy',
     '/api/health',
     '/auth/gmail/callback',
+    '/auth/slack',
+    '/auth/slack/callback',
   ],
 })
 
