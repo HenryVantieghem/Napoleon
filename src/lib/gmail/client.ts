@@ -1,22 +1,61 @@
 import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
+import { cookies } from 'next/headers';
 import type { GmailMessage } from '@/types/gmail';
 
-const oauth2Client = new OAuth2Client(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/auth/gmail/callback`
-);
+async function createGmailClient() {
+  const oauth2Client = new OAuth2Client(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/auth/gmail/callback`
+  );
 
-// Set credentials if we have a stored refresh token
-if (process.env.GOOGLE_REFRESH_TOKEN) {
-  oauth2Client.setCredentials({
-    refresh_token: process.env.GOOGLE_REFRESH_TOKEN
-  });
+  try {
+    // Try to get tokens from cookies first (user OAuth flow)
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get('gmail_access_token')?.value;
+    const refreshToken = cookieStore.get('gmail_refresh_token')?.value;
+
+    console.log('🍪 [GMAIL CLIENT] Token check:', {
+      access_token: !!accessToken,
+      refresh_token: !!refreshToken,
+      env_refresh_token: !!process.env.GOOGLE_REFRESH_TOKEN
+    });
+
+    if (accessToken || refreshToken) {
+      // User has OAuth tokens from login flow
+      oauth2Client.setCredentials({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      });
+      console.log('✅ [GMAIL CLIENT] Using user OAuth tokens from cookies');
+    } else if (process.env.GOOGLE_REFRESH_TOKEN) {
+      // Fallback to environment token for development/testing
+      oauth2Client.setCredentials({
+        refresh_token: process.env.GOOGLE_REFRESH_TOKEN
+      });
+      console.log('✅ [GMAIL CLIENT] Using environment refresh token');
+    } else {
+      console.log('❌ [GMAIL CLIENT] No OAuth tokens available');
+    }
+  } catch (error) {
+    console.error('🍪 [GMAIL CLIENT] Cookie access error:', error);
+    // Fallback to environment token if cookies fail
+    if (process.env.GOOGLE_REFRESH_TOKEN) {
+      oauth2Client.setCredentials({
+        refresh_token: process.env.GOOGLE_REFRESH_TOKEN
+      });
+      console.log('✅ [GMAIL CLIENT] Using environment refresh token (cookies failed)');
+    }
+  }
+
+  return oauth2Client;
 }
 
 export async function fetchGmailMessages(days: number = 7): Promise<GmailMessage[]> {
   try {
+    console.log('📧 [GMAIL CLIENT] Starting Gmail message fetch...');
+    const oauth2Client = await createGmailClient();
     const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
     
     // Calculate date 7 days ago
@@ -107,7 +146,7 @@ export async function fetchGmailMessages(days: number = 7): Promise<GmailMessage
   }
 }
 
-export function getGmailAuthUrl(): string {
+export async function getGmailAuthUrl(): Promise<string> {
   // Log environment variables for debugging
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
   const redirectUri = `${appUrl}/auth/gmail/callback`;
@@ -120,6 +159,7 @@ export function getGmailAuthUrl(): string {
   console.log('  OAuth Client ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'MISSING');
   console.log('  OAuth Client Secret:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'MISSING');
 
+  const oauth2Client = await createGmailClient();
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: [
@@ -136,6 +176,7 @@ export function getGmailAuthUrl(): string {
 }
 
 export async function handleGmailCallback(code: string) {
+  const oauth2Client = await createGmailClient();
   const { tokens } = await oauth2Client.getToken(code);
   oauth2Client.setCredentials(tokens);
   return tokens;

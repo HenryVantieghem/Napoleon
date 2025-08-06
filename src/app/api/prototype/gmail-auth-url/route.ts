@@ -3,7 +3,7 @@ import { getGmailAuthUrl } from '@/lib/gmail/client';
 
 export async function GET() {
   try {
-    const authUrl = getGmailAuthUrl();
+    const authUrl = await getGmailAuthUrl();
     return NextResponse.json({ authUrl });
   } catch (error) {
     console.error('Error getting Gmail auth URL:', error);

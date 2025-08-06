@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchGmailMessages } from '@/lib/gmail/client';
-import { fetchSlackMessages } from '@/lib/slack/client';
+import { fetchSlackMessages, isSlackConfigured } from '@/lib/slack/client';
 import type { UnifiedMessage, MessagePriority } from '@/types/message';
 
 // Priority calculation function
@@ -38,6 +38,9 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const days = parseInt(searchParams.get('days') || '7');
     
+    console.log('📋 [MESSAGES API] Fetching messages for', days, 'days');
+    console.log('🔍 [MESSAGES API] Slack configured:', isSlackConfigured());
+    
     // Fetch messages from both sources
     const results = await Promise.allSettled([
       fetchGmailMessages(days),
@@ -46,6 +49,12 @@ export async function GET(request: NextRequest) {
     
     const gmailResult = results[0];
     const slackResult = results[1];
+    
+    console.log('📊 [MESSAGES API] Results:', {
+      gmail: gmailResult.status,
+      slack: slackResult.status,
+      slackConfigured: isSlackConfigured()
+    });
     
     const response = {
       messages: [] as UnifiedMessage[],
@@ -73,9 +82,17 @@ export async function GET(request: NextRequest) {
       }));
       response.messages.push(...slackMessagesWithPriority);
       response.slackConnected = true;
+      console.log('✅ [MESSAGES API] Slack messages loaded:', slackResult.value.length);
     } else {
-      console.error('Slack error:', slackResult.reason);
-      response.errors.push(`Slack: ${slackResult.reason.message || 'Connection failed'}`);
+      console.error('❌ [MESSAGES API] Slack error:', slackResult.reason);
+      
+      // Check if Slack is configured but failing
+      if (isSlackConfigured()) {
+        response.errors.push(`Slack: ${slackResult.reason.message || 'Connection failed despite token being configured'}`);
+      } else {
+        console.log('⚠️ [MESSAGES API] Slack not configured - skipping');
+        // Don't add to errors if not configured, just log
+      }
     }
     
     // Smart prioritization: Sort by priority first, then by timestamp within each priority
@@ -86,6 +103,21 @@ export async function GET(request: NextRequest) {
       
       // Within same priority, sort by timestamp (newest first)
       return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
+    
+    // Log final summary
+    const gmailCount = response.messages.filter(m => m.source === 'gmail').length;
+    const slackCount = response.messages.filter(m => m.source === 'slack').length;
+    const highPriorityCount = response.messages.filter(m => m.priority === 'high').length;
+    
+    console.log('📊 [MESSAGES API] Final summary:', {
+      total: response.messages.length,
+      gmail: gmailCount,
+      slack: slackCount,
+      highPriority: highPriorityCount,
+      gmailConnected: response.gmailConnected,
+      slackConnected: response.slackConnected,
+      errors: response.errors.length
     });
     
     return NextResponse.json(response);
