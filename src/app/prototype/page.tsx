@@ -69,14 +69,29 @@ export default function PrototypePage() {
   }, [isSignedIn]);
   
   useEffect(() => {
+    // Debug environment on page load
+    console.log('🌐 [PROTOTYPE] Environment debug:');
+    console.log('  Window location:', window.location.href);
+    console.log('  Expected app URL:', process.env.NEXT_PUBLIC_APP_URL || 'undefined');
+    console.log('  Current domain:', window.location.origin);
+    
     if (isLoaded && isSignedIn) {
       loadMessages();
       getGmailAuthUrl();
       
       // Check for OAuth callback parameters
       const params = new URLSearchParams(window.location.search);
-      if (params.get('gmail') === 'connected') {
-        console.log('Gmail connected successfully');
+      const gmailStatus = params.get('gmail');
+      const oauthError = params.get('error');
+      
+      console.log('🔍 [PROTOTYPE] OAuth callback check:', { gmailStatus, oauthError });
+      
+      if (gmailStatus === 'connected') {
+        console.log('✅ [PROTOTYPE] Gmail connected successfully');
+        window.history.replaceState({}, '', '/prototype');
+      } else if (oauthError) {
+        console.error('❌ [PROTOTYPE] OAuth Error:', oauthError);
+        setError(`OAuth Error: ${oauthError}. Please check the browser console for details.`);
         window.history.replaceState({}, '', '/prototype');
       }
     }

@@ -108,7 +108,19 @@ export async function fetchGmailMessages(days: number = 7): Promise<GmailMessage
 }
 
 export function getGmailAuthUrl(): string {
-  return oauth2Client.generateAuthUrl({
+  // Log environment variables for debugging
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+  const redirectUri = `${appUrl}/auth/gmail/callback`;
+  
+  console.log('🔍 [OAUTH DEBUG] Environment check:');
+  console.log('  NEXT_PUBLIC_APP_URL:', process.env.NEXT_PUBLIC_APP_URL);
+  console.log('  Fallback URL:', 'http://localhost:3001');
+  console.log('  Final App URL:', appUrl);
+  console.log('  Computed Redirect URI:', redirectUri);
+  console.log('  OAuth Client ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'MISSING');
+  console.log('  OAuth Client Secret:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'MISSING');
+
+  const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: [
       'https://www.googleapis.com/auth/gmail.readonly',
@@ -116,6 +128,11 @@ export function getGmailAuthUrl(): string {
     ],
     prompt: 'consent'
   });
+
+  console.log('🚀 [OAUTH DEBUG] Generated auth URL:', authUrl);
+  console.log('📍 [OAUTH DEBUG] Expected redirect after auth:', redirectUri);
+  
+  return authUrl;
 }
 
 export async function handleGmailCallback(code: string) {
