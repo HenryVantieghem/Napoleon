@@ -4,18 +4,29 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth, SignInButton } from '@clerk/nextjs';
 import { MessageList } from '@/components/prototype/MessageList';
 import { MessageHeader } from '@/components/prototype/MessageHeader';
-import { fetchGmailMessages, getGmailAuthUrl } from '@/lib/gmail/client';
-import { fetchSlackMessages, testSlackConnection } from '@/lib/slack/client';
 import type { UnifiedMessage } from '@/types/message';
 
 export default function PrototypePage() {
-  const { isLoaded, isSignedIn, userId } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
   const [messages, setMessages] = useState<UnifiedMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [gmailConnected, setGmailConnected] = useState(false);
   const [slackConnected, setSlackConnected] = useState(false);
+  const [gmailAuthUrl, setGmailAuthUrl] = useState<string>('');
   
+  const getGmailAuthUrl = useCallback(async () => {
+    try {
+      const response = await fetch('/api/prototype/gmail-auth-url');
+      const data = await response.json();
+      if (response.ok) {
+        setGmailAuthUrl(data.authUrl);
+      }
+    } catch (error) {
+      console.error('Error getting Gmail auth URL:', error);
+    }
+  }, []);
+
   const loadMessages = useCallback(async () => {
     if (!isSignedIn) return;
     
@@ -23,44 +34,32 @@ export default function PrototypePage() {
     setError(null);
     
     try {
-      const results = await Promise.allSettled([
-        fetchGmailMessages(7),
-        fetchSlackMessages(7)
-      ]);
+      const response = await fetch('/api/prototype/messages?days=7');
+      const data = await response.json();
       
-      const gmailResult = results[0];
-      const slackResult = results[1];
-      
-      const allMessages: UnifiedMessage[] = [];
-      
-      if (gmailResult.status === 'fulfilled') {
-        allMessages.push(...gmailResult.value);
-        setGmailConnected(true);
-      } else {
-        console.error('Gmail error:', gmailResult.reason);
-        setGmailConnected(false);
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch messages');
       }
       
-      if (slackResult.status === 'fulfilled') {
-        allMessages.push(...slackResult.value);
-        setSlackConnected(true);
-      } else {
-        console.error('Slack error:', slackResult.reason);
-        setSlackConnected(false);
+      setMessages(data.messages.map((msg: UnifiedMessage) => ({
+        ...msg,
+        timestamp: new Date(msg.timestamp)
+      })));
+      
+      setGmailConnected(data.gmailConnected);
+      setSlackConnected(data.slackConnected);
+      
+      if (data.errors && data.errors.length > 0) {
+        console.warn('Some services had errors:', data.errors);
       }
       
-      // Sort by timestamp (newest first)
-      allMessages.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-      
-      setMessages(allMessages);
-      
-      if (allMessages.length === 0 && !gmailConnected && !slackConnected) {
+      if (data.messages.length === 0 && !data.gmailConnected && !data.slackConnected) {
         setError('Unable to connect to Gmail or Slack. Please check your configuration.');
       }
       
     } catch (err) {
       console.error('Error loading messages:', err);
-      setError('Failed to load messages. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to load messages. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -69,6 +68,7 @@ export default function PrototypePage() {
   useEffect(() => {
     if (isLoaded && isSignedIn) {
       loadMessages();
+      getGmailAuthUrl();
       
       // Check for OAuth callback parameters
       const params = new URLSearchParams(window.location.search);
@@ -77,7 +77,7 @@ export default function PrototypePage() {
         window.history.replaceState({}, '', '/prototype');
       }
     }
-  }, [isLoaded, isSignedIn, loadMessages]);
+  }, [isLoaded, isSignedIn, loadMessages, getGmailAuthUrl]);
   
   // Loading state
   if (!isLoaded) {
@@ -122,12 +122,14 @@ export default function PrototypePage() {
           {!gmailConnected && (
             <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded mb-2">
               Gmail not connected. 
-              <a 
-                href={getGmailAuthUrl()} 
-                className="underline ml-2 font-medium"
-              >
-                Connect Gmail
-              </a>
+              {gmailAuthUrl && (
+                <a 
+                  href={gmailAuthUrl} 
+                  className="underline ml-2 font-medium"
+                >
+                  Connect Gmail
+                </a>
+              )}
             </div>
           )}
           {!slackConnected && (
@@ -143,7 +145,7 @@ export default function PrototypePage() {
         <MessageList 
           messages={messages} 
           loading={loading} 
-          error={error}
+          error={error || undefined}
         />
       </div>
     </div>

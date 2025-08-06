@@ -33,8 +33,7 @@ export async function fetchGmailMessages(days: number = 7): Promise<GmailMessage
     const listResponse = await gmail.users.messages.list({
       userId: 'me',
       q: query,
-      maxResults: 100,
-      orderBy: 'internalDate'
+      maxResults: 100
     });
     
     if (!listResponse.data.messages) {
@@ -60,14 +59,17 @@ export async function fetchGmailMessages(days: number = 7): Promise<GmailMessage
         let textBody = '';
         let htmlBody = '';
         
-        const extractBody = (parts: any[]): void => {
+        const extractBody = (parts: unknown[]): void => {
           for (const part of parts) {
-            if (part.mimeType === 'text/plain' && part.body?.data) {
-              textBody = Buffer.from(part.body.data, 'base64').toString();
-            } else if (part.mimeType === 'text/html' && part.body?.data) {
-              htmlBody = Buffer.from(part.body.data, 'base64').toString();
-            } else if (part.parts) {
-              extractBody(part.parts);
+            if (typeof part === 'object' && part !== null) {
+              const partObj = part as { mimeType?: string; body?: { data?: string }; parts?: unknown[] };
+              if (partObj.mimeType === 'text/plain' && partObj.body?.data) {
+                textBody = Buffer.from(partObj.body.data, 'base64').toString();
+              } else if (partObj.mimeType === 'text/html' && partObj.body?.data) {
+                htmlBody = Buffer.from(partObj.body.data, 'base64').toString();
+              } else if (partObj.parts) {
+                extractBody(partObj.parts);
+              }
             }
           }
         };
@@ -80,7 +82,7 @@ export async function fetchGmailMessages(days: number = 7): Promise<GmailMessage
         
         return {
           id: detail.data.id!,
-          threadId: detail.data.threadId,
+          threadId: detail.data.threadId || undefined,
           source: 'gmail' as const,
           subject: getHeader('Subject'),
           from: getHeader('From'),
@@ -91,7 +93,7 @@ export async function fetchGmailMessages(days: number = 7): Promise<GmailMessage
             text: textBody,
             html: htmlBody
           },
-          labelIds: detail.data.labelIds
+          labelIds: detail.data.labelIds || undefined
         };
       })
     );

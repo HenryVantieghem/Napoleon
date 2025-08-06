@@ -1,5 +1,5 @@
 import { WebClient } from '@slack/web-api';
-import type { SlackMessage, SlackChannel } from '@/types/slack';
+import type { SlackMessage } from '@/types/slack';
 
 const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
 

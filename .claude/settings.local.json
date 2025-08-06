@@ -63,7 +63,8 @@
       "Bash(ANALYZE=true npm run build)",
       "Bash(pkill:*)",
       "mcp__playwright__browser_click",
-      "mcp__playwright__browser_close"
+      "mcp__playwright__browser_close",
+      "Bash(git checkout:*)"
     ],
     "deny": []
   }
