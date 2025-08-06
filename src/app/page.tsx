@@ -13,7 +13,7 @@ import {
   ChevronDown,
   Zap
 } from 'lucide-react'
-import { ClerkAuthButton } from '@/components/auth'
+import ClerkAuthButton from '@/components/auth/ClerkAuthButton'
 import { OrbitalGlow } from '@/components/luxury-ui'
 import { Starfield } from '@/components/luxury-ui'
 
