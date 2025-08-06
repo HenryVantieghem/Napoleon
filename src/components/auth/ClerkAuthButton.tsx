@@ -46,15 +46,7 @@ export default function ClerkAuthButton({
           <span className="text-sm text-white/70">Executive:</span>
           <span className="ml-2 font-medium">{user.firstName || user.emailAddresses[0].emailAddress}</span>
         </div>
-        <UserButton 
-          appearance={{
-            elements: {
-              avatarBox: "h-10 w-10",
-              userButtonPopoverCard: "bg-black border border-white/10 shadow-2xl",
-              userButtonPopoverActionButton: "text-white hover:bg-white/5"
-            }
-          }}
-        />
+        <UserButton />
       </div>
     )
   }
@@ -150,17 +142,6 @@ export default function ClerkAuthButton({
     return (
       <SignUpButton 
         mode="modal"
-        appearance={{
-          elements: {
-            modalContent: "bg-black border border-white/10",
-            headerTitle: "text-white",
-            headerSubtitle: "text-white/70",
-            socialButtonsBlockButton: "border-white/10 text-white hover:bg-white/5",
-            formFieldInput: "bg-white/5 border-white/10 text-white",
-            formButtonPrimary: "bg-luxury-indigo hover:bg-luxury-indigo/80",
-            footerActionLink: "text-luxury-gold hover:text-luxury-gold/80"
-          }
-        }}
       >
         <ButtonContent>
           {children || 'Join Executive Access'}
@@ -172,20 +153,6 @@ export default function ClerkAuthButton({
   return (
     <SignInButton 
       mode="modal"
-      appearance={{
-        elements: {
-          modalContent: "bg-black border border-white/10 shadow-2xl",
-          headerTitle: "text-white font-space text-2xl",
-          headerSubtitle: "text-white/70",
-          socialButtonsBlockButton: "border-white/10 text-white hover:bg-white/5 transition-all",
-          socialButtonsBlockButtonText: "text-white font-medium",
-          formFieldInput: "bg-white/5 border-white/10 text-white placeholder:text-white/50",
-          formButtonPrimary: "bg-luxury-indigo hover:bg-luxury-indigo/80 transition-all",
-          footerActionLink: "text-luxury-gold hover:text-luxury-gold/80 transition-colors",
-          card: "bg-black",
-          formFieldLabel: "text-white/90"
-        }
-      }}
     >
       <ButtonContent>
         <Mail className="w-5 h-5" />
