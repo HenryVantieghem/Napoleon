@@ -1,7 +1,9 @@
 import { WebClient } from '@slack/web-api';
 import type { SlackMessage } from '@/types/slack';
 
-const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
+// Check if Slack bot token is available
+const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
+const slack = SLACK_BOT_TOKEN ? new WebClient(SLACK_BOT_TOKEN) : null;
 
 // Cache for user names
 const userCache = new Map<string, string>();
@@ -9,6 +11,10 @@ const userCache = new Map<string, string>();
 async function getUserName(userId: string): Promise<string> {
   if (userCache.has(userId)) {
     return userCache.get(userId)!;
+  }
+  
+  if (!slack) {
+    return userId;
   }
   
   try {
@@ -23,10 +29,20 @@ async function getUserName(userId: string): Promise<string> {
 
 export async function fetchSlackMessages(days: number = 7): Promise<SlackMessage[]> {
   try {
+    // Check if Slack bot token is configured
+    if (!SLACK_BOT_TOKEN) {
+      console.log('Slack bot token not configured - skipping Slack integration');
+      throw new Error('SLACK_BOT_TOKEN environment variable is required');
+    }
+
+    if (!slack) {
+      throw new Error('Slack client not initialized');
+    }
+    
     // Calculate timestamp 7 days ago
     const oldest = Math.floor((Date.now() - (days * 24 * 60 * 60 * 1000)) / 1000);
     
-    console.log(`Fetching Slack messages from last ${days} days`);
+    console.log(`Fetching Slack messages from last ${days} days with bot token`);
     
     // Get all conversations
     const channelsResult = await slack.conversations.list({
@@ -92,6 +108,11 @@ export async function fetchSlackMessages(days: number = 7): Promise<SlackMessage
 
 export async function testSlackConnection(): Promise<boolean> {
   try {
+    if (!SLACK_BOT_TOKEN || !slack) {
+      console.log('Slack bot token not configured');
+      return false;
+    }
+    
     const result = await slack.auth.test();
     console.log('Slack connection successful:', result.ok);
     return result.ok || false;
@@ -99,4 +120,8 @@ export async function testSlackConnection(): Promise<boolean> {
     console.error('Slack connection test failed:', error);
     return false;
   }
+}
+
+export function isSlackConfigured(): boolean {
+  return !!SLACK_BOT_TOKEN;
 }

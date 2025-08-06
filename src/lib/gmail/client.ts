@@ -5,7 +5,7 @@ import type { GmailMessage } from '@/types/gmail';
 const oauth2Client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI
+  `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/auth/gmail/callback`
 );
 
 // Set credentials if we have a stored refresh token

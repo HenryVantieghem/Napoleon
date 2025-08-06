@@ -91,7 +91,7 @@ export function ConnectionStatus({
           }`}>
             {slackConnected 
               ? 'Successfully connected. Workspace messages are being synced.' 
-              : 'Connection requires environment configuration. Contact admin for setup.'
+              : 'Requires SLACK_BOT_TOKEN in environment variables. Generate a bot token at api.slack.com with channels:history, users:read scopes.'
             }
           </p>
           

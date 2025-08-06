@@ -64,7 +64,8 @@
       "Bash(pkill:*)",
       "mcp__playwright__browser_click",
       "mcp__playwright__browser_close",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(git rev-parse:*)"
     ],
     "deny": []
   }
