@@ -80,7 +80,11 @@
       "Bash(# CRITICAL: Deploy from GitHub to Vercel\necho \"\"=== DEPLOYING TO PRODUCTION ===\"\"\nvercel --prod --force --yes)",
       "Bash(# Test all critical routes\necho \"\"=== PRODUCTION ROUTE TESTING ===\"\"\necho \"\"Testing root route:\"\"\ncurl -I https://napoleonai.app/ | head -1\n\necho \"\"Testing prototype route:\"\"  \ncurl -I https://napoleonai.app/prototype | head -1\n\necho \"\"Testing Gmail callback route:\"\"\ncurl -I https://napoleonai.app/auth/gmail/callback | head -1\n\necho \"\"Testing Slack callback route:\"\"\ncurl -I https://napoleonai.app/auth/slack/callback | head -1\n\n# ALL must return HTTP 200 status\necho \"\"✅ All routes must return 200 OK status\"\")",
       "mcp__playwright__browser_snapshot",
-      "Bash(# Add all changes\ngit add .\n\n# Verify staging\ngit status\necho \"\"Staged files: $(git diff --cached --name-only | wc -l)\"\")"
+      "Bash(# Add all changes\ngit add .\n\n# Verify staging\ngit status\necho \"\"Staged files: $(git diff --cached --name-only | wc -l)\"\")",
+      "Bash(# CRITICAL: Push to GitHub\ngit push origin main\n\n# Verify push success\ngit log --oneline -2\necho \"\"✅ GitHub push verification complete\"\")",
+      "Bash(# Wait for deployment and verify\nsleep 30\n\n# Verify deployment\necho \"\"=== DEPLOYMENT VERIFICATION ===\"\"\nvercel logs --prod | head -20)",
+      "Bash(# Test all critical routes\necho \"\"=== PRODUCTION ROUTE TESTING ===\"\"\necho \"\"Testing root route:\"\"\ncurl -I https://napoleonai.app/ | head -1\n\necho \"\"Testing prototype route:\"\"  \ncurl -I https://napoleonai.app/prototype | head -1\n\necho \"\"Testing Gmail OAuth route:\"\"\ncurl -I https://napoleonai.app/auth/gmail | head -1\n\necho \"\"Testing Slack OAuth route:\"\"\ncurl -I https://napoleonai.app/auth/slack | head -1\n\n# ALL must return HTTP 200 or 302 status\necho \"\"✅ OAuth routes should return 302 redirects to consent screens\"\")",
+      "Bash(# Scan for specific error patterns\necho \"\"=== SCANNING FOR COMMON ERROR PATTERNS ===\"\"\nfind src/ -name \"\"*.ts\"\" -o -name \"\"*.tsx\"\" | xargs grep -n \"\"error.message\"\" | head -20)"
     ],
     "deny": []
   }

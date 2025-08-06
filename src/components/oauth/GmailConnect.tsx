@@ -31,7 +31,8 @@ export function GmailConnect({ isConnected, onRefresh }: GmailConnectProps) {
     } catch (error) {
       console.error('❌ [GMAIL OAUTH] Error:', error)
       setIsConnecting(false)
-      alert('OAuth Error: ' + error.message)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      alert('OAuth Error: ' + errorMessage)
     }
   }
   
