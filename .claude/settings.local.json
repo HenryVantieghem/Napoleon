@@ -68,7 +68,8 @@
       "Bash(git rev-parse:*)",
       "Bash(./scripts/debug-oauth.sh:*)",
       "Bash(git reset:*)",
-      "WebFetch(domain:napoleonai.app)"
+      "WebFetch(domain:napoleonai.app)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }
