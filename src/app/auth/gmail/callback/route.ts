@@ -87,12 +87,16 @@ export async function GET(request: NextRequest) {
     console.log('✅ [OAUTH CALLBACK] OAuth tokens received:', { 
       access_token: !!tokens.access_token, 
       refresh_token: !!tokens.refresh_token,
-      expires_in: tokens.expires_in 
+      expires_in: tokens.expires_in,
+      scope: tokens.scope 
     })
     
     // Store tokens in secure HTTP-only cookie for user session
     // This allows the Gmail client to use the tokens for API calls
     const response = NextResponse.redirect(new URL('/prototype?gmail=connected', request.url))
+    
+    // Calculate token expiry time
+    const expiryTime = new Date(Date.now() + (tokens.expires_in || 3600) * 1000).getTime();
     
     // Set secure cookies with OAuth tokens
     if (tokens.access_token) {
@@ -110,12 +114,24 @@ export async function GET(request: NextRequest) {
         httpOnly: true,
         secure: true,
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 30, // 30 days
+        maxAge: 60 * 60 * 24 * 365, // 1 year (refresh tokens are long-lived)
         path: '/'
       })
+      console.log('🎉 [OAUTH CALLBACK] Refresh token received and stored!')
+    } else {
+      console.log('⚠️ [OAUTH CALLBACK] No refresh token received - user may need to re-authenticate')
     }
     
-    console.log('🍪 [OAUTH CALLBACK] Tokens stored in secure cookies')
+    // Store token expiry time
+    response.cookies.set('gmail_token_expiry', expiryTime.toString(), {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+      path: '/'
+    })
+    
+    console.log('🍪 [OAUTH CALLBACK] Tokens stored in secure cookies with expiry tracking')
     
     return response
   } catch (error) {

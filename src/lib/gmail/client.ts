@@ -15,26 +15,51 @@ async function createGmailClient() {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('gmail_access_token')?.value;
     const refreshToken = cookieStore.get('gmail_refresh_token')?.value;
+    const expiryDate = cookieStore.get('gmail_token_expiry')?.value;
 
     console.log('🍪 [GMAIL CLIENT] Token check:', {
       access_token: !!accessToken,
       refresh_token: !!refreshToken,
+      token_expiry: expiryDate,
       env_refresh_token: !!process.env.GOOGLE_REFRESH_TOKEN
     });
 
-    if (accessToken || refreshToken) {
-      // User has OAuth tokens from login flow
+    // Check if we have a refresh token (either from cookies or environment)
+    const effectiveRefreshToken = refreshToken || process.env.GOOGLE_REFRESH_TOKEN;
+    
+    if (effectiveRefreshToken) {
+      // Set the refresh token first
       oauth2Client.setCredentials({
-        access_token: accessToken,
-        refresh_token: refreshToken
+        refresh_token: effectiveRefreshToken
       });
-      console.log('✅ [GMAIL CLIENT] Using user OAuth tokens from cookies');
-    } else if (process.env.GOOGLE_REFRESH_TOKEN) {
-      // Fallback to environment token for development/testing
-      oauth2Client.setCredentials({
-        refresh_token: process.env.GOOGLE_REFRESH_TOKEN
-      });
-      console.log('✅ [GMAIL CLIENT] Using environment refresh token');
+      
+      // Check if access token is expired or missing
+      const isExpired = expiryDate ? new Date(parseInt(expiryDate)) < new Date() : true;
+      
+      if (accessToken && !isExpired) {
+        // Access token is still valid, use it
+        oauth2Client.setCredentials({
+          access_token: accessToken,
+          refresh_token: effectiveRefreshToken
+        });
+        console.log('✅ [GMAIL CLIENT] Using valid access token from cookies');
+      } else {
+        // Access token is expired or missing, refresh it
+        console.log('🔄 [GMAIL CLIENT] Access token expired or missing, refreshing...');
+        try {
+          const { credentials } = await oauth2Client.refreshAccessToken();
+          oauth2Client.setCredentials(credentials);
+          console.log('✅ [GMAIL CLIENT] Successfully refreshed access token');
+          
+          // Note: We can't update cookies here in server component
+          // The new access token will be used for this request
+        } catch (refreshError) {
+          console.error('❌ [GMAIL CLIENT] Failed to refresh access token:', refreshError);
+          // Continue with just the refresh token, might still work
+        }
+      }
+      
+      console.log('✅ [GMAIL CLIENT] Gmail client configured with tokens');
     } else {
       console.log('❌ [GMAIL CLIENT] No OAuth tokens available');
     }
