@@ -69,7 +69,11 @@
       "Bash(./scripts/debug-oauth.sh:*)",
       "Bash(git reset:*)",
       "WebFetch(domain:napoleonai.app)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(echo \"=== VERCEL PROJECT VERIFICATION ===\" vercel list)",
+      "Bash(git config:*)",
+      "Bash(# Add ALL modified files\ngit add .\n\n# Verify all changes are staged\ngit status\necho \"\"Staged files: $(git diff --cached --name-only | wc -l)\"\")"
     ],
     "deny": []
   }

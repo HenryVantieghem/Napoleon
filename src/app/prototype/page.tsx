@@ -16,19 +16,6 @@ export default function PrototypePage() {
   const [error, setError] = useState<string | null>(null);
   const [gmailConnected, setGmailConnected] = useState(false);
   const [slackConnected, setSlackConnected] = useState(false);
-  const [gmailAuthUrl, setGmailAuthUrl] = useState<string>('');
-  
-  const getGmailAuthUrl = useCallback(async () => {
-    try {
-      const response = await fetch('/api/prototype/gmail-auth-url');
-      const data = await response.json();
-      if (response.ok) {
-        setGmailAuthUrl(data.authUrl);
-      }
-    } catch (error) {
-      console.error('Error getting Gmail auth URL:', error);
-    }
-  }, []);
 
   const loadMessages = useCallback(async () => {
     if (!isSignedIn) return;
@@ -77,7 +64,6 @@ export default function PrototypePage() {
     
     if (isLoaded && isSignedIn) {
       loadMessages();
-      getGmailAuthUrl();
       
       // Check for OAuth callback parameters
       const params = new URLSearchParams(window.location.search);
@@ -104,7 +90,7 @@ export default function PrototypePage() {
         window.history.replaceState({}, '', '/prototype');
       }
     }
-  }, [isLoaded, isSignedIn, loadMessages, getGmailAuthUrl]);
+  }, [isLoaded, isSignedIn, loadMessages]);
   
   // Loading state
   if (!isLoaded) {
@@ -155,7 +141,6 @@ export default function PrototypePage() {
         <ConnectionStatus
           gmailConnected={gmailConnected}
           slackConnected={slackConnected}
-          gmailAuthUrl={gmailAuthUrl}
           onRefresh={loadMessages}
         />
         
