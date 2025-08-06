@@ -1,7 +1,14 @@
 import type { GmailMessage } from './gmail';
 import type { SlackMessage } from './slack';
 
-export type UnifiedMessage = GmailMessage | SlackMessage;
+export type MessagePriority = 'high' | 'normal';
+
+export interface PriorityMessage {
+  priority: MessagePriority;
+  priorityReason?: string;
+}
+
+export type UnifiedMessage = (GmailMessage | SlackMessage) & PriorityMessage;
 
 export interface MessageListProps {
   messages: UnifiedMessage[];

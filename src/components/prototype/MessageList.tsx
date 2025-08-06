@@ -1,70 +1,84 @@
 'use client';
 
-import { formatDistanceToNow } from 'date-fns';
+import { PriorityMessage } from './PriorityMessage';
+import { AlertTriangle, Mail } from 'lucide-react';
 import type { MessageListProps } from '@/types/message';
 
 export function MessageList({ messages, loading, error }: MessageListProps) {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
       </div>
     );
   }
   
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-        Error: {error}
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4" />
+          <span className="font-medium">Error:</span>
+          {error}
+        </div>
       </div>
     );
   }
   
   if (messages.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        No messages found in the last 7 days
+      <div className="text-center py-12">
+        <Mail className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No messages found</h3>
+        <p className="text-gray-500">
+          No messages found in the last 7 days. Check your Gmail and Slack connections.
+        </p>
       </div>
     );
   }
   
+  // Separate messages by priority
+  const highPriorityMessages = messages.filter(msg => msg.priority === 'high');
+  const normalPriorityMessages = messages.filter(msg => msg.priority === 'normal');
+  
   return (
-    <div className="space-y-4">
-      {messages.map((message) => (
-        <div
-          key={message.id}
-          className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-        >
-          <div className="flex justify-between items-start mb-2">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <span className={`px-2 py-1 rounded text-xs font-medium ${
-                  message.source === 'gmail' 
-                    ? 'bg-red-100 text-red-800' 
-                    : 'bg-purple-100 text-purple-800'
-                }`}>
-                  {message.source.toUpperCase()}
-                </span>
-                <span className="text-xs text-gray-500">
-                  {formatDistanceToNow(message.timestamp, { addSuffix: true })}
-                </span>
-              </div>
-              
-              <h3 className="font-semibold text-gray-900 mb-1">
-                {message.subject || '(No subject)'}
-              </h3>
-              
-              <p className="text-sm text-gray-600 mb-2">
-                From: {message.from}
-              </p>
-              
-              <p className="text-sm text-gray-700 line-clamp-2">
-                {message.snippet}
-              </p>
-            </div>
+    <div className="space-y-6">
+      {/* High Priority Messages */}
+      {highPriorityMessages.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-red-200">
+            <AlertTriangle className="w-5 h-5 text-red-600" />
+            <h2 className="text-lg font-semibold text-red-800">
+              High Priority ({highPriorityMessages.length})
+            </h2>
+          </div>
+          <div className="space-y-4">
+            {highPriorityMessages.map((message) => (
+              <PriorityMessage key={message.id} message={message} />
+            ))}
           </div>
         </div>
-      ))}
+      )}
+      
+      {/* Normal Priority Messages */}
+      {normalPriorityMessages.length > 0 && (
+        <div>
+          {highPriorityMessages.length > 0 && (
+            <div className="my-8 border-t border-gray-300"></div>
+          )}
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-200">
+            <Mail className="w-5 h-5 text-gray-600" />
+            <h2 className="text-lg font-semibold text-gray-800">
+              Normal Priority ({normalPriorityMessages.length})
+            </h2>
+          </div>
+          <div className="space-y-4">
+            {normalPriorityMessages.map((message) => (
+              <PriorityMessage key={message.id} message={message} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

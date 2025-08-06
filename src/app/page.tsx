@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 import { 
   Shield, 
   ArrowRight, 
@@ -9,7 +10,8 @@ import {
   Sparkles,
   Lock,
   Play,
-  ChevronDown
+  ChevronDown,
+  Zap
 } from 'lucide-react'
 import { ClerkAuthButton } from '@/components/auth'
 import { OrbitalGlow } from '@/components/luxury-ui'
@@ -182,6 +184,19 @@ export default function Home() {
               variants={fadeInUp}
               className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8"
             >
+              {/* Primary CTA - Try Prototype */}
+              <Link href="/prototype">
+                <motion.button
+                  className="btn-luxury-primary text-xl px-12 py-4 font-inter font-bold flex items-center gap-3 transform hover:scale-105 transition-all duration-300"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Zap className="w-6 h-6" />
+                  Try Prototype
+                  <ArrowRight className="w-5 h-5" />
+                </motion.button>
+              </Link>
+              
               <button 
                 onClick={handleWatchDemo}
                 className="btn-luxury-outline flex items-center gap-3 text-lg px-8 py-4 font-inter font-medium hover:bg-white/10 transition-all duration-300"
@@ -193,7 +208,7 @@ export default function Home() {
               <ClerkAuthButton 
                 variant="primary" 
                 size="lg" 
-                className="btn-luxury-primary text-lg px-8 py-4 font-inter font-semibold"
+                className="btn-luxury-secondary text-lg px-8 py-4 font-inter font-semibold"
               >
                 Get started for free
               </ClerkAuthButton>
@@ -354,10 +369,23 @@ export default function Home() {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+            {/* Primary CTA - Try Prototype */}
+            <Link href="/prototype">
+              <motion.button
+                className="btn-luxury-primary text-xl px-12 py-4 font-inter font-bold flex items-center gap-3"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Zap className="w-6 h-6" />
+                Try Prototype Now
+                <ArrowRight className="w-5 h-5" />
+              </motion.button>
+            </Link>
+            
             <ClerkAuthButton 
               variant="primary" 
               size="lg" 
-              className="btn-luxury-primary text-xl px-12 py-4 font-inter font-semibold"
+              className="btn-luxury-secondary text-xl px-12 py-4 font-inter font-semibold"
             >
               Begin Executive Access
             </ClerkAuthButton>

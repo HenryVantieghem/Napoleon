@@ -2,8 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth, SignInButton } from '@clerk/nextjs';
+import { Shield } from 'lucide-react';
 import { MessageList } from '@/components/prototype/MessageList';
 import { MessageHeader } from '@/components/prototype/MessageHeader';
+import { ConnectionStatus } from '@/components/prototype/ConnectionStatus';
+import { DashboardStats } from '@/components/prototype/DashboardStats';
 import type { UnifiedMessage } from '@/types/message';
 
 export default function PrototypePage() {
@@ -82,8 +85,11 @@ export default function PrototypePage() {
   // Loading state
   if (!isLoaded) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-gray-50 to-indigo-50/30">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-indigo-600 font-medium">Initializing Napoleon AI...</p>
+        </div>
       </div>
     );
   }
@@ -91,14 +97,17 @@ export default function PrototypePage() {
   // Not signed in
   if (!isSignedIn) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <h1 className="text-3xl font-bold mb-4">Napoleon AI Prototype</h1>
-        <p className="text-gray-600 mb-8">Please sign in to access your unified inbox</p>
-        <SignInButton mode="modal">
-          <button className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-            Sign In
-          </button>
-        </SignInButton>
+      <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-gray-50 to-indigo-50/30">
+        <div className="text-center max-w-md mx-auto px-6">
+          <h1 className="text-3xl font-bold mb-4 text-gray-900">Napoleon AI Executive Intelligence</h1>
+          <p className="text-gray-600 mb-8">Please sign in to access your priority-classified unified inbox</p>
+          <SignInButton mode="modal">
+            <button className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg">
+              <Shield className="w-4 h-4" />
+              Executive Sign In
+            </button>
+          </SignInButton>
+        </div>
       </div>
     );
   }
@@ -107,7 +116,7 @@ export default function PrototypePage() {
   const slackCount = messages.filter(m => m.source === 'slack').length;
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50/30">
       <MessageHeader
         totalMessages={messages.length}
         gmailCount={gmailCount}
@@ -116,32 +125,23 @@ export default function PrototypePage() {
         isRefreshing={loading}
       />
       
-      {/* Connection Status */}
-      {!loading && (!gmailConnected || !slackConnected) && (
-        <div className="mx-6 mt-4">
-          {!gmailConnected && (
-            <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded mb-2">
-              Gmail not connected. 
-              {gmailAuthUrl && (
-                <a 
-                  href={gmailAuthUrl} 
-                  className="underline ml-2 font-medium"
-                >
-                  Connect Gmail
-                </a>
-              )}
-            </div>
-          )}
-          {!slackConnected && (
-            <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded">
-              Slack not connected. Please add SLACK_BOT_TOKEN to environment variables.
-            </div>
-          )}
-        </div>
-      )}
-      
-      {/* Message List */}
-      <div className="max-w-4xl mx-auto px-6 py-6">
+      {/* Executive Dashboard */}
+      <div className="max-w-6xl mx-auto px-6 py-6 space-y-6">
+        {/* Connection Status - Executive Grade */}
+        <ConnectionStatus
+          gmailConnected={gmailConnected}
+          slackConnected={slackConnected}
+          gmailAuthUrl={gmailAuthUrl}
+          onRefresh={loadMessages}
+        />
+        
+        {/* Dashboard Stats */}
+        <DashboardStats 
+          messages={messages} 
+          loading={loading}
+        />
+        
+        {/* Message List */}
         <MessageList 
           messages={messages} 
           loading={loading} 

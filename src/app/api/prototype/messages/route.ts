@@ -1,7 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchGmailMessages } from '@/lib/gmail/client';
 import { fetchSlackMessages } from '@/lib/slack/client';
-import type { UnifiedMessage } from '@/types/message';
+import type { UnifiedMessage, MessagePriority } from '@/types/message';
+
+// Priority calculation function
+function calculateMessagePriority(message: { subject?: string; snippet?: string }): { priority: MessagePriority; priorityReason?: string } {
+  const subject = (message.subject || '').toLowerCase();
+  const snippet = (message.snippet || '').toLowerCase();
+  const content = `${subject} ${snippet}`;
+  
+  // Check for urgent keywords
+  const urgentKeywords = ['urgent', 'asap', 'immediately', 'emergency', 'critical'];
+  const hasUrgent = urgentKeywords.some(keyword => content.includes(keyword));
+  
+  // Check for question marks
+  const hasQuestion = content.includes('?');
+  
+  if (hasUrgent) {
+    return { 
+      priority: 'high', 
+      priorityReason: 'Contains urgent keywords' 
+    };
+  }
+  
+  if (hasQuestion) {
+    return { 
+      priority: 'high', 
+      priorityReason: 'Contains question' 
+    };
+  }
+  
+  return { priority: 'normal' };
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,7 +55,11 @@ export async function GET(request: NextRequest) {
     };
     
     if (gmailResult.status === 'fulfilled') {
-      response.messages.push(...gmailResult.value);
+      const gmailMessagesWithPriority = gmailResult.value.map(msg => ({
+        ...msg,
+        ...calculateMessagePriority(msg)
+      }));
+      response.messages.push(...gmailMessagesWithPriority);
       response.gmailConnected = true;
     } else {
       console.error('Gmail error:', gmailResult.reason);
@@ -33,15 +67,26 @@ export async function GET(request: NextRequest) {
     }
     
     if (slackResult.status === 'fulfilled') {
-      response.messages.push(...slackResult.value);
+      const slackMessagesWithPriority = slackResult.value.map(msg => ({
+        ...msg,
+        ...calculateMessagePriority(msg)
+      }));
+      response.messages.push(...slackMessagesWithPriority);
       response.slackConnected = true;
     } else {
       console.error('Slack error:', slackResult.reason);
       response.errors.push(`Slack: ${slackResult.reason.message || 'Connection failed'}`);
     }
     
-    // Sort messages by timestamp (newest first)
-    response.messages.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    // Smart prioritization: Sort by priority first, then by timestamp within each priority
+    response.messages.sort((a, b) => {
+      // High priority first
+      if (a.priority === 'high' && b.priority === 'normal') return -1;
+      if (a.priority === 'normal' && b.priority === 'high') return 1;
+      
+      // Within same priority, sort by timestamp (newest first)
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
     
     return NextResponse.json(response);
   } catch (error) {
