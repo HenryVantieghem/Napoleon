@@ -103,7 +103,9 @@
       "Bash(__NEW_LINE__ find src/app/auth -name \"*.ts\" -exec echo \"Checking {}\" ; -exec grep -l \"export const dynamic\" {} ;)",
       "Bash(__NEW_LINE__ echo \"4. Gmail OAuth-only authentication:\")",
       "Bash(__NEW_LINE__ grep -q \"GOOGLE_REFRESH_TOKEN\" src/lib/gmail/client.ts)",
-      "Bash(__NEW_LINE__ echo \"🔒 ALL OAUTH FIXES PERMANENTLY ENACTED IN GITHUB REPOSITORY\")"
+      "Bash(__NEW_LINE__ echo \"🔒 ALL OAUTH FIXES PERMANENTLY ENACTED IN GITHUB REPOSITORY\")",
+      "Bash(READY_DEPLOYMENT=\"napoleon-lhuvol412-napoleon.vercel.app\")",
+      "Bash(echo:*)"
     ],
     "deny": []
   }
