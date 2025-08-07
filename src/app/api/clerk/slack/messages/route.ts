@@ -1,6 +1,16 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
+interface SlackMessage {
+  ts: string
+  text: string
+  user?: string
+  bot_id?: string
+  type: string
+  channel: string
+  channelId: string
+}
+
 export async function GET() {
   console.log('Slack messages API called')
   
@@ -119,7 +129,7 @@ export async function GET() {
       console.log('Found', channelsData.channels?.length || 0, 'channels')
 
       // Get messages from channels (last 7 days)
-      const allMessages = []
+      const allMessages: SlackMessage[] = []
       if (channelsData.channels && channelsData.channels.length > 0) {
         console.log('Fetching message history from channels...')
         
