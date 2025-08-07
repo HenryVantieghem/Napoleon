@@ -4,6 +4,7 @@ import { useAuth, useUser, UserButton } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
 import { ConnectionStatus } from '@/components/clerk/ConnectionStatus'
 import { MessageStream } from '@/components/streaming/MessageStream'
+import { ApiDebugger } from '@/components/debug/ApiDebugger'
 import { Brain, Loader2, Menu, X, Settings, Activity } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -122,6 +123,11 @@ export default function PrototypePage() {
                   <span>Connection Status</span>
                 </h2>
                 <ConnectionStatus />
+              </div>
+
+              {/* Debug Panel */}
+              <div>
+                <ApiDebugger />
               </div>
             </div>
           </div>
