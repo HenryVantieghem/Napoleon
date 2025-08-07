@@ -1,14 +1,15 @@
 'use client'
 
-import { useAuth } from '@clerk/nextjs'
+import { useAuth, useUser, UserButton } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
 import { ConnectionStatus } from '@/components/clerk/ConnectionStatus'
 import { MessageStream } from '@/components/streaming/MessageStream'
-import { Brain, Loader2, UserButton } from 'lucide-react'
+import { Brain, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export default function PrototypePage() {
-  const { isSignedIn, isLoaded, user } = useAuth()
+  const { isSignedIn, isLoaded } = useAuth()
+  const { user } = useUser()
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
