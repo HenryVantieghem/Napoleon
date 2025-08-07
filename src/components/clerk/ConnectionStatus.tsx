@@ -17,10 +17,10 @@ export function ConnectionStatus({ onConnectionChange }: ConnectionStatusProps) 
 
   // Check Clerk external accounts for connected services
   const gmailAccount = user?.externalAccounts?.find(
-    account => account.provider === 'google' || account.provider === 'oauth_google'
+    account => account.provider === 'google'
   )
   const slackAccount = user?.externalAccounts?.find(
-    account => account.provider === 'slack' || account.provider === 'oauth_slack'  
+    account => account.provider === 'slack'
   )
 
   const handleGmailConnect = async () => {
