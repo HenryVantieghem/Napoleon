@@ -81,3 +81,6 @@ Phase-by-phase prototype implementation focusing on:
 - Simplification over features
 - Functionality over aesthetics
 - Data display over processing
+
+## MEMORY
+- to memorize

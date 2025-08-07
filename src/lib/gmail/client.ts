@@ -7,71 +7,48 @@ async function createGmailClient() {
   const oauth2Client = new OAuth2Client(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/auth/gmail/callback`
+    'https://napoleonai.app/auth/gmail/callback'
   );
 
   try {
-    // Try to get tokens from cookies first (user OAuth flow)
+    // Use ONLY OAuth cookies - remove environment token confusion
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('gmail_access_token')?.value;
     const refreshToken = cookieStore.get('gmail_refresh_token')?.value;
     const expiryDate = cookieStore.get('gmail_token_expiry')?.value;
 
-    console.log('🍪 [GMAIL CLIENT] Token check:', {
+    console.log('🍪 [GMAIL CLIENT] OAuth Token Check:', {
       access_token: !!accessToken,
       refresh_token: !!refreshToken,
-      token_expiry: expiryDate,
-      env_refresh_token: !!process.env.GOOGLE_REFRESH_TOKEN
+      token_expiry: expiryDate
     });
 
-    // Check if we have a refresh token (either from cookies or environment)
-    const effectiveRefreshToken = refreshToken || process.env.GOOGLE_REFRESH_TOKEN;
+    if (!refreshToken) {
+      throw new Error('No OAuth refresh token - user needs to authenticate');
+    }
+
+    oauth2Client.setCredentials({
+      refresh_token: refreshToken
+    });
     
-    if (effectiveRefreshToken) {
-      // Set the refresh token first
+    const isExpired = expiryDate ? new Date(parseInt(expiryDate)) < new Date() : true;
+    
+    if (accessToken && !isExpired) {
       oauth2Client.setCredentials({
-        refresh_token: effectiveRefreshToken
+        access_token: accessToken,
+        refresh_token: refreshToken
       });
-      
-      // Check if access token is expired or missing
-      const isExpired = expiryDate ? new Date(parseInt(expiryDate)) < new Date() : true;
-      
-      if (accessToken && !isExpired) {
-        // Access token is still valid, use it
-        oauth2Client.setCredentials({
-          access_token: accessToken,
-          refresh_token: effectiveRefreshToken
-        });
-        console.log('✅ [GMAIL CLIENT] Using valid access token from cookies');
-      } else {
-        // Access token is expired or missing, refresh it
-        console.log('🔄 [GMAIL CLIENT] Access token expired or missing, refreshing...');
-        try {
-          const { credentials } = await oauth2Client.refreshAccessToken();
-          oauth2Client.setCredentials(credentials);
-          console.log('✅ [GMAIL CLIENT] Successfully refreshed access token');
-          
-          // Note: We can't update cookies here in server component
-          // The new access token will be used for this request
-        } catch (refreshError) {
-          console.error('❌ [GMAIL CLIENT] Failed to refresh access token:', refreshError);
-          // Continue with just the refresh token, might still work
-        }
-      }
-      
-      console.log('✅ [GMAIL CLIENT] Gmail client configured with tokens');
+      console.log('✅ [GMAIL CLIENT] Using valid access token');
     } else {
-      console.log('❌ [GMAIL CLIENT] No OAuth tokens available');
+      console.log('🔄 [GMAIL CLIENT] Refreshing expired access token...');
+      const { credentials } = await oauth2Client.refreshAccessToken();
+      oauth2Client.setCredentials(credentials);
+      console.log('✅ [GMAIL CLIENT] Token refreshed successfully');
     }
+
   } catch (error) {
-    console.error('🍪 [GMAIL CLIENT] Cookie access error:', error);
-    // Fallback to environment token if cookies fail
-    if (process.env.GOOGLE_REFRESH_TOKEN) {
-      oauth2Client.setCredentials({
-        refresh_token: process.env.GOOGLE_REFRESH_TOKEN
-      });
-      console.log('✅ [GMAIL CLIENT] Using environment refresh token (cookies failed)');
-    }
+    console.error('❌ [GMAIL CLIENT] Authentication error:', error);
+    throw new Error('Gmail OAuth authentication required - please connect Gmail');
   }
 
   return oauth2Client;

@@ -6,6 +6,7 @@ export default authMiddleware({
     '/terms',
     '/privacy',
     '/api/health',
+    '/auth/gmail',           // ✅ CRITICAL: Add OAuth initiation route
     '/auth/gmail/callback',
     '/auth/slack',
     '/auth/slack/callback',
