@@ -47,13 +47,17 @@ export function MessageStream() {
       setLoading(true)
       setError(null)
 
+      console.log('Fetching messages...')
+
       // Fetch Gmail messages
       const gmailResponse = await fetch('/api/clerk/gmail/messages')
       const gmailData = await gmailResponse.json()
+      console.log('Gmail response:', gmailData)
 
       // Fetch Slack messages
       const slackResponse = await fetch('/api/clerk/slack/messages')
       const slackData = await slackResponse.json()
+      console.log('Slack response:', slackData)
 
       const allMessages: Message[] = []
 
@@ -125,9 +129,21 @@ export function MessageStream() {
       setStats(stats)
       setLastUpdate(new Date())
 
-      if (allMessages.length === 0) {
-        setError('No messages found. Make sure your Gmail and Slack accounts are connected above.')
-      }
+                if (allMessages.length === 0) {
+            const errorDetails = []
+            if (!gmailData.success) {
+              errorDetails.push(`Gmail: ${gmailData.error || 'Unknown error'}`)
+            }
+            if (!slackData.success) {
+              errorDetails.push(`Slack: ${slackData.error || 'Unknown error'}`)
+            }
+            
+            if (errorDetails.length > 0) {
+              setError(`API Errors: ${errorDetails.join(', ')}`)
+            } else {
+              setError('No messages found. Make sure your Gmail and Slack accounts are connected above.')
+            }
+          }
 
     } catch (err) {
       console.error('Error fetching messages:', err)
