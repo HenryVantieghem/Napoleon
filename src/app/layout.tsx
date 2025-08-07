@@ -1,89 +1,61 @@
-import type { Metadata } from "next";
-import { Inter, Playfair_Display, Crimson_Text } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
-import "./globals.css";
+import type { Metadata } from 'next'
+import { Inter, Playfair_Display } from 'next/font/google'
+import { ClerkProvider } from '@clerk/nextjs'
+import { Toaster } from 'sonner'
+import './globals.css'
 
-// Napoleon AI Luxury Typography System
-const inter = Inter({ 
-  subsets: ["latin"], 
-  variable: "--font-inter",
-  display: "swap",
-  weight: ["400", "500", "600"]
-});
-
-const playfairDisplay = Playfair_Display({ 
-  subsets: ["latin"], 
-  variable: "--font-playfair",
-  display: "swap",
-  weight: ["400", "700"],
-  style: ["normal", "italic"]
-});
-
-const crimsonText = Crimson_Text({ 
-  subsets: ["latin"], 
-  variable: "--font-crimson",
-  display: "swap",
-  weight: ["400", "600", "700"]
-});
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
 
 export const metadata: Metadata = {
-  title: "Napoleon AI - Executive Intelligence Platform",
-  description: "Transform email chaos into strategic clarity with military-grade AI intelligence. Designed exclusively for Fortune 500 executives.",
-  keywords: "executive email, AI intelligence, Gmail analytics, priority scoring, luxury email client",
-  authors: [{ name: "Napoleon AI" }],
+  title: 'Napoleon AI - Enterprise Intelligence Platform',
+  description: 'Transform executive communications into strategic clarity with military-grade AI intelligence. Stream Gmail and Slack messages with smart prioritization.',
+  keywords: ['AI', 'Enterprise', 'Email Intelligence', 'Slack Integration', 'Executive Dashboard', 'Communication Analysis'],
+  authors: [{ name: 'Napoleon AI' }],
+  viewport: 'width=device-width, initial-scale=1',
+  themeColor: '#3b82f6',
   openGraph: {
-    title: "Napoleon AI - Executive Intelligence Platform",
-    description: "Military-grade AI transforms email chaos into executive clarity",
-    type: "website",
-    images: ["/og-image.png"],
+    title: 'Napoleon AI - Enterprise Intelligence Platform',
+    description: 'Military-grade AI intelligence for executive communications',
+    url: 'https://napoleonai.app',
+    siteName: 'Napoleon AI',
+    type: 'website',
   },
   twitter: {
-    card: "summary_large_image",
-    title: "Napoleon AI - Executive Intelligence",
-    description: "Transform executive communications with AI intelligence",
+    card: 'summary_large_image',
+    title: 'Napoleon AI - Enterprise Intelligence Platform',
+    description: 'Military-grade AI intelligence for executive communications',
   },
-  viewport: "width=device-width, initial-scale=1",
-  themeColor: "#000000",
-};
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <ClerkProvider
-      afterSignInUrl="/prototype"
-      afterSignUpUrl="/prototype"
-      signInUrl="/sign-in"
-      signUpUrl="/sign-up"
-      appearance={{
-        baseTheme: undefined,
-        variables: {
-          colorPrimary: "var(--orbital-blue)",
-          colorBackground: "var(--imperial-dark)",
-          colorText: "var(--executive-white)",
-          colorInputBackground: "var(--glass-1)",
-          colorInputText: "var(--executive-white)",
-        },
-        elements: {
-          formButtonPrimary: "bg-orbital-blue hover:bg-orbital-blue/80 text-executive-white",
-          socialButtonsBlockButton: "border-glass-border text-executive-white hover:bg-glass-1",
-          card: "bg-imperial-dark border border-glass-border shadow-2xl",
-          headerTitle: "text-executive-white",
-          headerSubtitle: "text-text-secondary",
-          formFieldInput: "bg-glass-1 border-glass-border text-executive-white",
-          footerActionLink: "text-imperial-gold hover:text-imperial-gold/80",
-          dividerLine: "bg-glass-border",
-          dividerText: "text-text-tertiary",
-        },
-      }}
-    >
-      <html lang="en">
-        <body className={`${inter.variable} ${playfairDisplay.variable} ${crimsonText.variable} font-interface bg-imperial-dark text-executive-white antialiased`}>
-          {children}
+    <ClerkProvider>
+      <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+        <body className={`${inter.className} antialiased`}>
+          <main className="min-h-screen">
+            {children}
+          </main>
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#ffffff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '0.75rem',
+                padding: '1rem',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+              }
+            }}
+          />
         </body>
       </html>
     </ClerkProvider>
-  );
+  )
 }
