@@ -90,7 +90,20 @@
       "Bash(then echo \"✅ COMMIT SUCCESSFUL\")",
       "Bash(else echo \"❌ COMMIT FAILED\")",
       "Bash(exit 1)",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(__NEW_LINE__ echo \"\")",
+      "Bash(__NEW_LINE__ echo \"COMMIT CHAIN VERIFICATION:\")",
+      "Bash(__NEW_LINE__ git log --oneline -3)",
+      "Bash(__NEW_LINE__ echo \"CRITICAL FILES VERIFICATION:\")",
+      "Bash(__NEW_LINE__ echo \"1. Middleware OAuth route access:\")",
+      "Bash(__NEW_LINE__ grep \"/auth/gmail\" middleware.ts)",
+      "Bash(__NEW_LINE__ echo \"2. Next.js Slack package support:\")",
+      "Bash(__NEW_LINE__ grep \"@slack/web-api\" next.config.js)",
+      "Bash(__NEW_LINE__ echo \"3. OAuth routes dynamic rendering:\")",
+      "Bash(__NEW_LINE__ find src/app/auth -name \"*.ts\" -exec echo \"Checking {}\" ; -exec grep -l \"export const dynamic\" {} ;)",
+      "Bash(__NEW_LINE__ echo \"4. Gmail OAuth-only authentication:\")",
+      "Bash(__NEW_LINE__ grep -q \"GOOGLE_REFRESH_TOKEN\" src/lib/gmail/client.ts)",
+      "Bash(__NEW_LINE__ echo \"🔒 ALL OAUTH FIXES PERMANENTLY ENACTED IN GITHUB REPOSITORY\")"
     ],
     "deny": []
   }

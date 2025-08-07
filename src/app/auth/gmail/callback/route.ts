@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
 
 // Force dynamic rendering for this OAuth callback route
 export const dynamic = 'force-dynamic'
@@ -9,17 +8,16 @@ export async function GET(request: NextRequest) {
     console.log('🔄 [OAUTH CALLBACK] Gmail OAuth callback started')
     console.log('🌐 [OAUTH CALLBACK] Request URL:', request.url)
     
-    const { userId } = await auth()
     const { searchParams } = new URL(request.url)
     
     const code = searchParams.get('code')
     const state = searchParams.get('state')
     const error = searchParams.get('error')
 
-    console.log('📋 [OAUTH CALLBACK] OAuth params:', { code: !!code, state, error, userId })
+    console.log('📋 [OAUTH CALLBACK] OAuth params:', { code: !!code, state, error })
     
     // Log environment variables for debugging
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://napoleonai.app';
     const redirectUri = `${appUrl}/auth/gmail/callback`;
     
     console.log('🔍 [OAUTH CALLBACK] Environment check:');
@@ -35,6 +33,13 @@ export async function GET(request: NextRequest) {
     if (!code) {
       console.error('No OAuth code received')
       return NextResponse.redirect(new URL('/prototype?error=no_oauth_code', request.url))
+    }
+
+    // Validate state parameter for CSRF protection
+    const storedState = request.cookies.get('oauth_state')?.value
+    if (!storedState || state !== storedState) {
+      console.error('❌ [OAUTH CALLBACK] Invalid state parameter')
+      return NextResponse.redirect(new URL('/prototype?error=invalid_state', request.url))
     }
 
     // Check environment variables
@@ -97,6 +102,9 @@ export async function GET(request: NextRequest) {
     // Store tokens in secure HTTP-only cookie for user session
     // This allows the Gmail client to use the tokens for API calls
     const response = NextResponse.redirect(new URL('/prototype?gmail=connected', request.url))
+    
+    // Clear the OAuth state cookie
+    response.cookies.delete('oauth_state')
     
     // Calculate token expiry time
     const expiryTime = new Date(Date.now() + (tokens.expires_in || 3600) * 1000).getTime();
