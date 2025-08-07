@@ -99,6 +99,11 @@ export function ConnectionStatus({ onConnectionChange }: ConnectionStatusProps) 
     })
   }
 
+  // Get connection date safely
+  const getConnectionDate = (account: any) => {
+    return account?.createdAt || account?.created_at || new Date().toISOString()
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -172,7 +177,7 @@ export function ConnectionStatus({ onConnectionChange }: ConnectionStatusProps) 
                       <div className="flex items-center gap-4 text-xs text-green-600">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          Connected {formatConnectionDate(gmailAccount.createdAt)}
+                          Connected {formatConnectionDate(getConnectionDate(gmailAccount))}
                         </span>
                         <span className="flex items-center gap-1">
                           <Shield className="h-3 w-3" />
@@ -312,7 +317,7 @@ export function ConnectionStatus({ onConnectionChange }: ConnectionStatusProps) 
                       <div className="flex items-center gap-4 text-xs text-green-600">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          Connected {formatConnectionDate(slackAccount.createdAt)}
+                          Connected {formatConnectionDate(getConnectionDate(slackAccount))}
                         </span>
                         <span className="flex items-center gap-1">
                           <Shield className="h-3 w-3" />
