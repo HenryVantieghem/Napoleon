@@ -105,355 +105,259 @@ export function ConnectionStatus({ onConnectionChange }: ConnectionStatusProps) 
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-3">
-          <Shield className="h-6 w-6 text-blue-600" />
-          <h3 className="text-2xl font-bold">Account Connections</h3>
-        </div>
-        <p className="text-muted-foreground text-lg">
-          Connect your communication accounts to enable intelligent message streaming
-        </p>
-      </div>
-
+    <div className="space-y-6">
       {/* Connection Overview */}
-      <div className="grid md:grid-cols-2 gap-2 p-4 bg-blue-50 rounded-xl border border-blue-200">
+      <div className="grid grid-cols-2 gap-4 p-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl">
         <div className="text-center">
-          <div className="text-2xl font-bold text-blue-600">
+          <div className="text-2xl font-bold text-blue-400">
             {(gmailAccount ? 1 : 0) + (slackAccount ? 1 : 0)}/2
           </div>
-          <div className="text-sm text-blue-600">Connected Services</div>
+          <div className="text-sm text-gray-400">Connected Services</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-green-600">
+          <div className="text-lg font-bold text-green-400">
             {gmailAccount && slackAccount ? 'Ready' : 'Setup Required'}
           </div>
-          <div className="text-sm text-green-600">Streaming Status</div>
+          <div className="text-sm text-gray-400">Streaming Status</div>
         </div>
       </div>
 
       {/* Connection Cards */}
-      <div className="grid gap-8 md:grid-cols-2">
+      <div className="space-y-4">
         {/* Gmail Connection Card */}
-        <Card className={`border-2 transition-all duration-200 ${
-          gmailAccount ? 'border-green-300 bg-green-50' : 'border-blue-300 bg-blue-50'
-        } hover:shadow-xl`}>
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-blue-100">
-                <Mail className="h-6 w-6 text-blue-600" />
+        <div className={`bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 transition-all duration-200 ${
+          gmailAccount ? 'border-green-500/30' : 'border-blue-500/30'
+        }`}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                <Mail className="w-5 h-5 text-white" />
               </div>
-              <div className="flex-1">
-                <div className="text-xl font-bold">Gmail Integration</div>
-                <div className="text-sm text-muted-foreground">Email intelligence & analysis</div>
+              <div>
+                <h3 className="font-semibold text-white">Gmail Integration</h3>
+                <p className="text-sm text-gray-400">Email intelligence & analysis</p>
               </div>
-              {gmailAccount ? (
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              ) : (
-                <XCircle className="h-6 w-6 text-gray-400" />
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+            </div>
             {gmailAccount ? (
-              <>
-                {/* Connected State */}
-                <div className="space-y-4">
-                  <Badge className="bg-green-500 hover:bg-green-600 text-white text-sm px-3 py-1">
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Connected & Verified
-                  </Badge>
-                  
-                  <div className="p-4 bg-green-100 rounded-xl border border-green-200">
-                    <div className="space-y-2">
-                      <p className="font-semibold text-green-800 flex items-center gap-2">
-                        <Mail className="h-4 w-4" />
-                        {gmailAccount.emailAddress}
-                      </p>
-                      <p className="text-sm text-green-700">
-                        ✅ Email streaming enabled • Ready for AI analysis
-                      </p>
-                      <div className="flex items-center gap-4 text-xs text-green-600">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          Connected {formatConnectionDate(getConnectionDate(gmailAccount))}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Shield className="h-3 w-3" />
-                          OAuth 2.0 Secured
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3 text-center">
-                    <div className="p-3 bg-blue-50 rounded-lg">
-                      <div className="text-lg font-bold text-blue-600">7</div>
-                      <div className="text-xs text-blue-600">Days History</div>
-                    </div>
-                    <div className="p-3 bg-purple-50 rounded-lg">
-                      <div className="text-lg font-bold text-purple-600">📧</div>
-                      <div className="text-xs text-purple-600">Inbox Access</div>
-                    </div>
-                    <div className="p-3 bg-green-50 rounded-lg">
-                      <div className="text-lg font-bold text-green-600">⚡</div>
-                      <div className="text-xs text-green-600">Real-time</div>
-                    </div>
-                  </div>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => handleDisconnect(gmailAccount.id, 'Gmail')}
-                    className="w-full text-sm"
-                  >
-                    Disconnect Gmail
-                  </Button>
-                </div>
-              </>
+              <CheckCircle className="h-6 w-6 text-green-400" />
             ) : (
-              <>
-                {/* Not Connected State */}
-                <div className="space-y-4">
-                  <Badge variant="secondary" className="text-sm px-3 py-1">
-                    <XCircle className="h-4 w-4 mr-2" />
-                    Not Connected
-                  </Badge>
-                  
-                  <div className="p-4 bg-blue-100 rounded-xl border border-blue-200">
-                    <p className="font-semibold text-blue-800 mb-3">
-                      Connect Gmail to unlock:
-                    </p>
-                    <ul className="space-y-2 text-sm text-blue-700">
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        AI-powered email insights & summaries
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        Communication pattern analysis
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        Executive briefing generation
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        Urgent message prioritization
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 flex items-start gap-2">
-                    <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5" />
-                    <div className="text-xs text-amber-800">
-                      <p className="font-medium">Secure OAuth 2.0 Connection</p>
-                      <p>Napoleon AI never stores your email credentials. All access is managed securely through Clerk Social Connections.</p>
-                    </div>
-                  </div>
-                  
-                  <Button
-                    onClick={handleGmailConnect}
-                    disabled={loading.gmail}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-                  >
-                    {loading.gmail ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Connecting Gmail...
-                      </>
-                    ) : (
-                      <>
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Connect Gmail Account
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </>
+              <XCircle className="h-6 w-6 text-gray-500" />
             )}
-          </CardContent>
-        </Card>
+          </div>
+
+          {gmailAccount ? (
+            <div className="space-y-3">
+              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Connected & Verified
+              </Badge>
+              
+              <div className="p-3 bg-white/5 border border-white/10 rounded-lg">
+                <p className="font-medium text-white flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  {gmailAccount.emailAddress}
+                </p>
+                <p className="text-sm text-gray-400 mt-1">
+                  ✅ Email streaming enabled • Ready for AI analysis
+                </p>
+                <div className="flex items-center gap-4 text-xs text-gray-500 mt-2">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    Connected {formatConnectionDate(getConnectionDate(gmailAccount))}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Shield className="h-3 w-3" />
+                    OAuth 2.0 Secured
+                  </span>
+                </div>
+              </div>
+              
+              <Button
+                variant="outline"
+                onClick={() => handleDisconnect(gmailAccount.id, 'Gmail')}
+                className="w-full border-white/20 text-white hover:bg-white/10"
+                size="sm"
+              >
+                Disconnect Gmail
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Badge variant="outline" className="border-white/20 text-gray-400">
+                <XCircle className="h-3 w-3 mr-1" />
+                Not Connected
+              </Badge>
+              
+              <div className="p-3 bg-white/5 border border-white/10 rounded-lg">
+                <p className="font-medium text-white mb-2">
+                  Connect Gmail to unlock:
+                </p>
+                <ul className="space-y-1 text-sm text-gray-400">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-3 w-3" />
+                    AI-powered email insights
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-3 w-3" />
+                    Urgent message prioritization
+                  </li>
+                </ul>
+              </div>
+              
+              <Button
+                onClick={handleGmailConnect}
+                disabled={loading.gmail}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
+                size="sm"
+              >
+                {loading.gmail ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Connect Gmail
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
 
         {/* Slack Connection Card */}
-        <Card className={`border-2 transition-all duration-200 ${
-          slackAccount ? 'border-green-300 bg-green-50' : 'border-purple-300 bg-purple-50'
-        } hover:shadow-xl`}>
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-purple-100">
-                <MessageSquare className="h-6 w-6 text-purple-600" />
+        <div className={`bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 transition-all duration-200 ${
+          slackAccount ? 'border-green-500/30' : 'border-purple-500/30'
+        }`}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <MessageSquare className="w-5 h-5 text-white" />
               </div>
-              <div className="flex-1">
-                <div className="text-xl font-bold">Slack Integration</div>
-                <div className="text-sm text-muted-foreground">Team communication insights</div>
+              <div>
+                <h3 className="font-semibold text-white">Slack Integration</h3>
+                <p className="text-sm text-gray-400">Team communication insights</p>
               </div>
-              {slackAccount ? (
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              ) : (
-                <XCircle className="h-6 w-6 text-gray-400" />
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+            </div>
             {slackAccount ? (
-              <>
-                {/* Connected State */}
-                <div className="space-y-4">
-                  <Badge className="bg-green-500 hover:bg-green-600 text-white text-sm px-3 py-1">
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Connected & Verified
-                  </Badge>
-                  
-                  <div className="p-4 bg-green-100 rounded-xl border border-green-200">
-                    <div className="space-y-2">
-                      <p className="font-semibold text-green-800 flex items-center gap-2">
-                        <Users className="h-4 w-4" />
-                        Slack workspace connected
-                      </p>
-                      <p className="text-sm text-green-700">
-                        ✅ Channel access enabled • Ready for team insights
-                      </p>
-                      <div className="flex items-center gap-4 text-xs text-green-600">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          Connected {formatConnectionDate(getConnectionDate(slackAccount))}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Shield className="h-3 w-3" />
-                          OAuth 2.0 Secured
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3 text-center">
-                    <div className="p-3 bg-purple-50 rounded-lg">
-                      <div className="text-lg font-bold text-purple-600">7</div>
-                      <div className="text-xs text-purple-600">Days History</div>
-                    </div>
-                    <div className="p-3 bg-blue-50 rounded-lg">
-                      <div className="text-lg font-bold text-blue-600">💬</div>
-                      <div className="text-xs text-blue-600">Channels</div>
-                    </div>
-                    <div className="p-3 bg-green-50 rounded-lg">
-                      <div className="text-lg font-bold text-green-600">⚡</div>
-                      <div className="text-xs text-green-600">Real-time</div>
-                    </div>
-                  </div>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => handleDisconnect(slackAccount.id, 'Slack')}
-                    className="w-full text-sm"
-                  >
-                    Disconnect Slack
-                  </Button>
-                </div>
-              </>
+              <CheckCircle className="h-6 w-6 text-green-400" />
             ) : (
-              <>
-                {/* Not Connected State */}
-                <div className="space-y-4">
-                  <Badge variant="secondary" className="text-sm px-3 py-1">
-                    <XCircle className="h-4 w-4 mr-2" />
-                    Not Connected
-                  </Badge>
-                  
-                  <div className="p-4 bg-purple-100 rounded-xl border border-purple-200">
-                    <p className="font-semibold text-purple-800 mb-3">
-                      Connect Slack to unlock:
-                    </p>
-                    <ul className="space-y-2 text-sm text-purple-700">
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        Team communication analysis
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        Channel sentiment tracking
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        Leadership engagement metrics
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        Cross-channel message streaming
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 flex items-start gap-2">
-                    <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5" />
-                    <div className="text-xs text-amber-800">
-                      <p className="font-medium">Enterprise-Grade Permissions</p>
-                      <p>Napoleon AI only accesses public channels and respects all Slack privacy settings and permissions.</p>
-                    </div>
-                  </div>
-                  
-                  <Button
-                    onClick={handleSlackConnect}
-                    disabled={loading.slack}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3"
-                  >
-                    {loading.slack ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Connecting Slack...
-                      </>
-                    ) : (
-                      <>
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Connect Slack Workspace
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </>
+              <XCircle className="h-6 w-6 text-gray-500" />
             )}
-          </CardContent>
-        </Card>
+          </div>
+
+          {slackAccount ? (
+            <div className="space-y-3">
+              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Connected & Verified
+              </Badge>
+              
+              <div className="p-3 bg-white/5 border border-white/10 rounded-lg">
+                <p className="font-medium text-white flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Slack workspace connected
+                </p>
+                <p className="text-sm text-gray-400 mt-1">
+                  ✅ Channel access enabled • Ready for team insights
+                </p>
+                <div className="flex items-center gap-4 text-xs text-gray-500 mt-2">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    Connected {formatConnectionDate(getConnectionDate(slackAccount))}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Shield className="h-3 w-3" />
+                    OAuth 2.0 Secured
+                  </span>
+                </div>
+              </div>
+              
+              <Button
+                variant="outline"
+                onClick={() => handleDisconnect(slackAccount.id, 'Slack')}
+                className="w-full border-white/20 text-white hover:bg-white/10"
+                size="sm"
+              >
+                Disconnect Slack
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Badge variant="outline" className="border-white/20 text-gray-400">
+                <XCircle className="h-3 w-3 mr-1" />
+                Not Connected
+              </Badge>
+              
+              <div className="p-3 bg-white/5 border border-white/10 rounded-lg">
+                <p className="font-medium text-white mb-2">
+                  Connect Slack to unlock:
+                </p>
+                <ul className="space-y-1 text-sm text-gray-400">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-3 w-3" />
+                    Team communication analysis
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-3 w-3" />
+                    Channel sentiment tracking
+                  </li>
+                </ul>
+              </div>
+              
+              <Button
+                onClick={handleSlackConnect}
+                disabled={loading.slack}
+                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
+                size="sm"
+              >
+                {loading.slack ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Connect Slack
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Connection Progress */}
-      {(!gmailAccount || !slackAccount) && (
-        <div className="text-center space-y-4">
-          <div className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border-2 border-dashed border-blue-300">
-            <h4 className="text-lg font-semibold text-blue-800 mb-2">
-              🚀 Next Steps to Complete Setup
-            </h4>
-            <div className="text-blue-700 space-y-2">
-              {!gmailAccount && (
-                <p>1. Connect your Gmail account to start streaming email messages</p>
-              )}
-              {!slackAccount && (
-                <p>{!gmailAccount ? '2' : '1'}. Connect your Slack workspace to monitor team communications</p>
-              )}
-              <p className="text-sm font-medium">
-                Once connected, messages will automatically stream with smart prioritization!
+      {/* Success State */}
+      {gmailAccount && slackAccount && (
+        <div className="p-4 bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/30 rounded-xl">
+          <div className="flex items-center space-x-3">
+            <CheckCircle className="h-6 w-6 text-green-400" />
+            <div>
+              <h4 className="font-semibold text-white">🎉 Setup Complete!</h4>
+              <p className="text-sm text-gray-400">
+                Both accounts connected. Message streaming is now active.
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Success State */}
-      {gmailAccount && slackAccount && (
-        <div className="text-center space-y-4">
-          <div className="p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border-2 border-green-300">
-            <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-            <h4 className="text-xl font-bold text-green-800 mb-2">
-              🎉 Setup Complete!
-            </h4>
-            <p className="text-green-700">
-              Both Gmail and Slack are connected. Your message stream is now active with intelligent prioritization.
-            </p>
-            <div className="mt-4 flex items-center justify-center gap-6 text-sm text-green-600">
-              <span>✓ 7-day message history</span>
-              <span>✓ Urgent detection</span>
-              <span>✓ Question prioritization</span>
-              <span>✓ Auto-refresh</span>
+      {/* Setup Instructions */}
+      {(!gmailAccount || !slackAccount) && (
+        <div className="p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-xl">
+          <div className="flex items-start space-x-3">
+            <AlertCircle className="h-5 w-5 text-blue-400 mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-white mb-1">Complete Your Setup</h4>
+              <div className="text-sm text-gray-400 space-y-1">
+                {!gmailAccount && <p>• Connect Gmail for email intelligence</p>}
+                {!slackAccount && <p>• Connect Slack for team insights</p>}
+                <p className="text-xs text-gray-500 mt-2">
+                  All connections use secure OAuth 2.0 • No credentials stored
+                </p>
+              </div>
             </div>
           </div>
         </div>
