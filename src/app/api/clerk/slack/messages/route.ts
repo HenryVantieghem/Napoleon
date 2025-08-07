@@ -36,7 +36,7 @@ export async function GET() {
 
     // Find Slack external account from Clerk Social Connections
     const slackAccount = user.externalAccounts?.find(
-      account => account.provider === 'slack' || account.provider === 'oauth_slack'
+      account => account.provider === 'slack'
     )
 
     console.log('External accounts:', user.externalAccounts?.map(acc => ({ provider: acc.provider, verified: acc.verification?.status })))
@@ -77,7 +77,127 @@ export async function GET() {
       if (!tokenResponse.ok) {
         const errorText = await tokenResponse.text()
         console.error('Clerk Slack token API failed:', tokenResponse.status, errorText)
-        throw new Error(`Clerk token API error: ${tokenResponse.status} ${tokenResponse.statusText}`)
+        
+        // Try alternative token URL
+        const altTokenUrl = `https://api.clerk.com/v1/users/${userId}/oauth_access_tokens/slack`
+        console.log('Trying alternative token URL:', altTokenUrl)
+        
+        const altTokenResponse = await fetch(altTokenUrl, {
+          headers: {
+            'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        })
+        
+        if (!altTokenResponse.ok) {
+          throw new Error(`Clerk token API error: ${tokenResponse.status} ${tokenResponse.statusText}`)
+        }
+        
+        const tokenData = await altTokenResponse.json()
+        console.log('Alternative token response:', tokenData)
+        
+        const accessToken = tokenData[0]?.token
+
+        if (!accessToken) {
+          console.log('No access token in response')
+          return NextResponse.json({ 
+            error: 'No access token available',
+            message: 'Please reconnect Slack to refresh your access token.',
+            connected: false
+          }, { status: 400 })
+        }
+
+        console.log('Access token obtained, fetching Slack channels...')
+
+        // Calculate 7 days ago timestamp for Slack API
+        const sevenDaysAgo = new Date()
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+        const oldest = Math.floor(sevenDaysAgo.getTime() / 1000)
+
+        // Get user's accessible channels
+        const channelsUrl = 'https://slack.com/api/conversations.list?limit=20&types=public_channel,private_channel'
+        console.log('Fetching channels from Slack API:', channelsUrl)
+        
+        const channelsResponse = await fetch(channelsUrl, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (!channelsResponse.ok) {
+          const errorText = await channelsResponse.text()
+          console.error('Slack channels API failed:', channelsResponse.status, errorText)
+          throw new Error(`Slack channels API error: ${channelsResponse.status} ${channelsResponse.statusText}`)
+        }
+
+        const channelsData = await channelsResponse.json()
+        console.log('Slack channels response:', channelsData)
+        
+        if (!channelsData.ok) {
+          console.error('Slack API error:', channelsData.error)
+          throw new Error(`Slack API error: ${channelsData.error}`)
+        }
+
+        console.log('Found', channelsData.channels?.length || 0, 'channels')
+
+        // Get messages from channels (last 7 days)
+        const allMessages: SlackMessage[] = []
+        if (channelsData.channels && channelsData.channels.length > 0) {
+          console.log('Fetching message history from channels...')
+          
+          for (const channel of channelsData.channels.slice(0, 10)) { // Limit channels for performance
+            try {
+              const historyUrl = `https://slack.com/api/conversations.history?channel=${channel.id}&limit=15&oldest=${oldest}`
+              const historyResponse = await fetch(historyUrl, {
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`,
+                  'Content-Type': 'application/json',
+                },
+              })
+              
+              if (historyResponse.ok) {
+                const historyData = await historyResponse.json()
+                
+                if (historyData.ok && historyData.messages) {
+                  console.log(`Found ${historyData.messages.length} messages in #${channel.name}`)
+                  
+                  historyData.messages.forEach((msg: any) => {
+                    // Skip bot messages and system messages
+                    if (!msg.bot_id && msg.type === 'message' && msg.text) {
+                      allMessages.push({
+                        ...msg,
+                        channel: channel.name,
+                        channelId: channel.id
+                      })
+                    }
+                  })
+                }
+              }
+            } catch (channelError) {
+              console.error(`Error fetching history for channel ${channel.name}:`, channelError)
+            }
+          }
+        }
+        
+        console.log('Successfully processed', allMessages.length, 'Slack messages')
+        
+        return NextResponse.json({
+          success: true,
+          connected: true,
+          messageCount: allMessages.length,
+          messages: allMessages,
+          channelCount: channelsData.channels?.length || 0,
+          user: {
+            provider: 'slack',
+            team: 'Workspace'
+          },
+          metadata: {
+            source: 'clerk_social_connections',
+            timeRange: '7_days',
+            fetchedAt: new Date().toISOString()
+          }
+        })
       }
 
       const tokenData = await tokenResponse.json()

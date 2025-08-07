@@ -1,10 +1,10 @@
 'use client'
+
 import { useState, useEffect } from 'react'
-import { useUser } from '@clerk/nextjs'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Mail, MessageSquare, Clock, AlertTriangle, RefreshCw, Loader2, TrendingUp } from 'lucide-react'
+import { Mail, MessageCircle, AlertTriangle, RefreshCw, Loader2, Clock, User, Hash, Zap, Brain } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Message {
@@ -13,410 +13,330 @@ interface Message {
   sender: string
   timestamp: string
   source: 'gmail' | 'slack'
-  isUrgent: boolean
-  hasQuestion: boolean
-  snippet: string
+  snippet?: string
   subject?: string
   channel?: string
   threadId?: string
+  isUrgent: boolean
+  hasQuestion: boolean
 }
 
 interface StreamStats {
-  totalMessages: number
-  gmailCount: number
-  slackCount: number
-  urgentCount: number
-  questionCount: number
-  lastUpdate: Date
+  total: number
+  gmail: number
+  slack: number
+  urgent: number
+  questions: number
 }
 
 export function MessageStream() {
-  const { user } = useUser()
   const [messages, setMessages] = useState<Message[]>([])
   const [stats, setStats] = useState<StreamStats>({
-    totalMessages: 0,
-    gmailCount: 0,
-    slackCount: 0,
-    urgentCount: 0,
-    questionCount: 0,
-    lastUpdate: new Date()
+    total: 0,
+    gmail: 0,
+    slack: 0,
+    urgent: 0,
+    questions: 0
   })
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
+
   const fetchMessages = async () => {
-    if (!user) return
-    
-    setLoading(true)
-    setError(null)
-    
     try {
-      console.log('Fetching messages for streaming dashboard...')
-      
-      // Fetch Gmail messages (last 7 days)
-      const gmailResponse = await fetch('/api/clerk/gmail/messages', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
+      setLoading(true)
+      setError(null)
+
+      // Fetch Gmail messages
+      const gmailResponse = await fetch('/api/clerk/gmail/messages')
       const gmailData = await gmailResponse.json()
-      console.log('Gmail response:', gmailData)
-      
-      // Fetch Slack messages (last 7 days)
-      const slackResponse = await fetch('/api/clerk/slack/messages', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
+
+      // Fetch Slack messages
+      const slackResponse = await fetch('/api/clerk/slack/messages')
       const slackData = await slackResponse.json()
-      console.log('Slack response:', slackData)
-      
-      // Process and combine messages
+
       const allMessages: Message[] = []
-      
+
       // Process Gmail messages
       if (gmailData.success && gmailData.messages) {
         gmailData.messages.forEach((msg: any) => {
-          const content = msg.snippet || msg.subject || 'No preview available'
-          const fullContent = `${msg.subject || ''} ${content}`.toLowerCase()
-          const isUrgent = fullContent.includes('urgent') || fullContent.includes('asap') || fullContent.includes('priority')
-          const hasQuestion = content.includes('?') || msg.subject?.includes('?')
-          
+          const content = msg.snippet || msg.subject || 'No content'
+          const isUrgent = content.toLowerCase().includes('urgent') || 
+                          content.toLowerCase().includes('asap') || 
+                          content.toLowerCase().includes('priority')
+          const hasQuestion = content.includes('?')
+
           allMessages.push({
-            id: `gmail-${msg.id}`,
-            content,
-            sender: msg.from?.replace(/<.*?>/g, '').trim() || 'Unknown',
-            timestamp: msg.internalDate || Date.now().toString(),
-            source: 'gmail',
-            isUrgent,
-            hasQuestion,
-            snippet: content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+            id: msg.id,
+            content: content,
+            sender: msg.from || 'Unknown',
+            timestamp: msg.internalDate,
+            source: 'gmail' as const,
+            snippet: msg.snippet,
             subject: msg.subject,
-            threadId: msg.threadId
+            threadId: msg.threadId,
+            isUrgent,
+            hasQuestion
           })
         })
-      } else if (gmailData.error && !gmailData.requiresConnection) {
-        console.error('Gmail API error:', gmailData.error)
       }
-      
+
       // Process Slack messages
       if (slackData.success && slackData.messages) {
         slackData.messages.forEach((msg: any) => {
-          const content = msg.text || 'No text available'
-          const isUrgent = content.toLowerCase().includes('urgent') || content.toLowerCase().includes('asap') || content.toLowerCase().includes('priority')
+          const content = msg.text || 'No content'
+          const isUrgent = content.toLowerCase().includes('urgent') || 
+                          content.toLowerCase().includes('asap') || 
+                          content.toLowerCase().includes('priority')
           const hasQuestion = content.includes('?')
-          
+
           allMessages.push({
-            id: `slack-${msg.ts}`,
-            content,
-            sender: msg.user || 'Unknown User',
-            timestamp: (parseFloat(msg.ts || '0') * 1000).toString(),
-            source: 'slack',
+            id: msg.ts,
+            content: content,
+            sender: msg.user || 'Unknown',
+            timestamp: msg.ts,
+            source: 'slack' as const,
+            channel: msg.channel,
             isUrgent,
-            hasQuestion,
-            snippet: content.substring(0, 200) + (content.length > 200 ? '...' : ''),
-            channel: msg.channel
+            hasQuestion
           })
         })
-      } else if (slackData.error && !slackData.requiresConnection) {
-        console.error('Slack API error:', slackData.error)
       }
-      
+
       // Sort messages: urgent first, then questions, then by timestamp (newest first)
-      const sortedMessages = allMessages.sort((a, b) => {
-        // Priority 1: Urgent messages
+      allMessages.sort((a, b) => {
         if (a.isUrgent && !b.isUrgent) return -1
         if (!a.isUrgent && b.isUrgent) return 1
-        
-        // Priority 2: Question messages
         if (a.hasQuestion && !b.hasQuestion) return -1
         if (!a.hasQuestion && b.hasQuestion) return 1
-        
-        // Priority 3: Most recent first
-        const aTime = new Date(parseInt(a.timestamp)).getTime()
-        const bTime = new Date(parseInt(b.timestamp)).getTime()
-        return bTime - aTime
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       })
-      
-      setMessages(sortedMessages)
-      setStats({
-        totalMessages: sortedMessages.length,
-        gmailCount: sortedMessages.filter(m => m.source === 'gmail').length,
-        slackCount: sortedMessages.filter(m => m.source === 'slack').length,
-        urgentCount: sortedMessages.filter(m => m.isUrgent).length,
-        questionCount: sortedMessages.filter(m => m.hasQuestion).length,
-        lastUpdate: new Date()
-      })
-      
-      if (sortedMessages.length === 0) {
+
+      // Calculate stats
+      const stats: StreamStats = {
+        total: allMessages.length,
+        gmail: allMessages.filter(m => m.source === 'gmail').length,
+        slack: allMessages.filter(m => m.source === 'slack').length,
+        urgent: allMessages.filter(m => m.isUrgent).length,
+        questions: allMessages.filter(m => m.hasQuestion).length
+      }
+
+      setMessages(allMessages)
+      setStats(stats)
+      setLastUpdate(new Date())
+
+      if (allMessages.length === 0) {
         setError('No messages found. Make sure your Gmail and Slack accounts are connected above.')
       }
-      
-    } catch (error) {
-      console.error('Failed to fetch messages:', error)
+
+    } catch (err) {
+      console.error('Error fetching messages:', err)
       setError('Failed to load messages. Please try again.')
       toast.error('Failed to load messages')
     } finally {
       setLoading(false)
     }
   }
-  
+
   useEffect(() => {
-    if (user) {
-      fetchMessages()
-      
-      // Auto-refresh every 30 seconds
-      const interval = setInterval(fetchMessages, 30000)
-      return () => clearInterval(interval)
-    }
-  }, [user])
-  
-  const formatTimestamp = (timestamp: string) => {
-    const date = new Date(parseInt(timestamp))
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffHours = diffMs / (1000 * 60 * 60)
-    const diffDays = diffMs / (1000 * 60 * 60 * 24)
+    fetchMessages()
     
-    if (diffHours < 1) return 'Just now'
-    if (diffHours < 24) return `${Math.floor(diffHours)}h ago`
-    if (diffDays < 7) return `${Math.floor(diffDays)}d ago`
-    return date.toLocaleDateString()
-  }
-  
-  const formatUpdateTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { 
-      hour12: true, 
-      hour: 'numeric', 
-      minute: '2-digit' 
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(fetchMessages, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(parseInt(timestamp) * 1000)
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     })
   }
-  
+
+  const getSourceIcon = (source: 'gmail' | 'slack') => {
+    return source === 'gmail' ? (
+      <Mail className="w-4 h-4 text-blue-400" />
+    ) : (
+      <MessageCircle className="w-4 h-4 text-purple-400" />
+    )
+  }
+
+  const getPriorityBadge = (message: Message) => {
+    if (message.isUrgent) {
+      return (
+        <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+          <Zap className="w-3 h-3 mr-1" />
+          Urgent
+        </Badge>
+      )
+    }
+    if (message.hasQuestion) {
+      return (
+        <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30">
+          <Brain className="w-3 h-3 mr-1" />
+          Question
+        </Badge>
+      )
+    }
+    return null
+  }
+
   return (
     <div className="space-y-6">
-      {/* Header with Live Stats */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Live Message Stream
-          </h2>
-          <p className="text-muted-foreground flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            Past 7 days • {stats.totalMessages} messages • Updated {formatUpdateTime(stats.lastUpdate)}
-          </p>
+      {/* Stats Dashboard */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 rounded-xl p-4">
+          <div className="text-2xl font-bold text-blue-400">{stats.total}</div>
+          <div className="text-sm text-blue-300">Total Messages</div>
         </div>
-        
-        <Button 
-          onClick={fetchMessages} 
-          disabled={loading} 
-          variant="outline" 
-          size="lg"
-          className="min-w-[180px]"
+        <div className="bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-xl p-4">
+          <div className="text-2xl font-bold text-blue-400">{stats.gmail}</div>
+          <div className="text-sm text-blue-300">Gmail</div>
+        </div>
+        <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-xl p-4">
+          <div className="text-2xl font-bold text-purple-400">{stats.slack}</div>
+          <div className="text-sm text-purple-300">Slack</div>
+        </div>
+        <div className="bg-gradient-to-br from-red-500/20 to-red-600/20 border border-red-500/30 rounded-xl p-4">
+          <div className="text-2xl font-bold text-red-400">{stats.urgent}</div>
+          <div className="text-sm text-red-300">Urgent</div>
+        </div>
+        <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 rounded-xl p-4">
+          <div className="text-2xl font-bold text-orange-400">{stats.questions}</div>
+          <div className="text-sm text-orange-300">Questions</div>
+        </div>
+      </div>
+
+      {/* Header with refresh */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <Clock className="w-4 h-4 text-gray-400" />
+            <span className="text-sm text-gray-400">
+              Last updated: {lastUpdate.toLocaleTimeString()}
+            </span>
+          </div>
+        </div>
+        <Button
+          onClick={fetchMessages}
+          disabled={loading}
+          variant="outline"
+          size="sm"
+          className="border-white/20 text-white hover:bg-white/10"
         >
           {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Streaming...
-            </>
+            <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh Stream
-            </>
+            <RefreshCw className="w-4 h-4" />
           )}
+          <span className="ml-2">Refresh</span>
         </Button>
       </div>
-      
-      {/* Live Stats Dashboard */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card className="border-2 border-blue-200 bg-blue-50/50">
-          <CardContent className="p-4 text-center">
-            <div className="text-3xl font-bold text-blue-600">{stats.totalMessages}</div>
-            <div className="text-sm text-blue-600 font-medium">Total Messages</div>
-          </CardContent>
-        </Card>
-        <Card className="border-2 border-indigo-200 bg-indigo-50/50">
-          <CardContent className="p-4 text-center">
-            <div className="text-3xl font-bold text-indigo-600">{stats.gmailCount}</div>
-            <div className="text-sm text-indigo-600 font-medium">Gmail</div>
-          </CardContent>
-        </Card>
-        <Card className="border-2 border-purple-200 bg-purple-50/50">
-          <CardContent className="p-4 text-center">
-            <div className="text-3xl font-bold text-purple-600">{stats.slackCount}</div>
-            <div className="text-sm text-purple-600 font-medium">Slack</div>
-          </CardContent>
-        </Card>
-        <Card className="border-2 border-red-200 bg-red-50/50">
-          <CardContent className="p-4 text-center">
-            <div className="text-3xl font-bold text-red-600">{stats.urgentCount}</div>
-            <div className="text-sm text-red-600 font-medium">Urgent</div>
-          </CardContent>
-        </Card>
-        <Card className="border-2 border-orange-200 bg-orange-50/50">
-          <CardContent className="p-4 text-center">
-            <div className="text-3xl font-bold text-orange-600">{stats.questionCount}</div>
-            <div className="text-sm text-orange-600 font-medium">Questions</div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* Message Stream */}
-      <div className="space-y-4">
-        {loading && messages.length === 0 ? (
-          <div className="text-center py-16">
-            <Loader2 className="h-16 w-16 animate-spin text-blue-600 mx-auto mb-6" />
-            <h3 className="text-2xl font-semibold mb-2">Loading Message Stream</h3>
-            <p className="text-muted-foreground text-lg">
-              Fetching Gmail and Slack messages from the past 7 days...
-            </p>
-            <div className="mt-4 flex items-center justify-center gap-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-blue-600" />
-                <span>Connecting to Gmail</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-purple-600" />
-                <span>Connecting to Slack</span>
-              </div>
-            </div>
+
+      {/* Messages */}
+      {loading && messages.length === 0 ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-purple-400 mx-auto mb-4" />
+            <p className="text-gray-400">Loading messages...</p>
           </div>
-        ) : error ? (
-          <Card className="border-2 border-red-200 bg-red-50">
-            <CardContent className="p-12 text-center space-y-4">
-              <AlertTriangle className="h-16 w-16 text-red-500 mx-auto" />
-              <div>
-                <h3 className="text-2xl font-bold text-red-800 mb-2">Unable to Load Messages</h3>
-                <p className="text-red-700 text-lg">{error}</p>
-              </div>
-              <Button onClick={fetchMessages} variant="destructive" size="lg">
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Try Again
-              </Button>
-            </CardContent>
-          </Card>
-        ) : messages.length === 0 ? (
-          <Card className="border-2 border-dashed border-gray-300">
-            <CardContent className="p-16 text-center space-y-6">
-              <div className="p-8 rounded-full bg-blue-50 w-fit mx-auto">
-                <Mail className="h-16 w-16 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="text-3xl font-bold mb-3">No Messages Found</h3>
-                <p className="text-muted-foreground text-xl mb-4">
-                  Connect your Gmail and Slack accounts above to start streaming messages
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Once connected, you'll see messages from the past 7 days with smart prioritization
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            {/* Priority Messages Notice */}
-            {(stats.urgentCount > 0 || stats.questionCount > 0) && (
-              <div className="p-4 bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-xl">
-                <p className="text-center text-red-800 font-medium">
-                  🚨 {stats.urgentCount + stats.questionCount} priority messages detected and shown first
-                </p>
-              </div>
-            )}
-            
-            {/* Message Cards */}
-            {messages.map((message, index) => (
-              <Card 
-                key={message.id} 
-                className={`border-2 transition-all duration-200 hover:shadow-xl ${
-                  message.isUrgent 
-                    ? 'border-red-300 bg-red-50 shadow-red-100' 
-                    : message.hasQuestion 
-                    ? 'border-orange-300 bg-orange-50 shadow-orange-100' 
-                    : 'border-gray-200 hover:border-blue-300 hover:shadow-blue-100'
-                }`}
-              >
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    {/* Message Header */}
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-center gap-3 flex-wrap min-w-0 flex-1">
-                        {message.source === 'gmail' ? (
-                          <Mail className="h-5 w-5 text-blue-600 flex-shrink-0" />
-                        ) : (
-                          <MessageSquare className="h-5 w-5 text-purple-600 flex-shrink-0" />
-                        )}
-                        
-                        <span className="font-semibold text-base truncate">{message.sender}</span>
-                        
-                        <Badge 
-                          variant={message.source === 'gmail' ? 'default' : 'secondary'} 
-                          className="text-xs flex-shrink-0"
-                        >
-                          {message.source.toUpperCase()}
-                        </Badge>
-                        
-                        {message.channel && (
-                          <Badge variant="outline" className="text-xs flex-shrink-0">
-                            #{message.channel}
-                          </Badge>
-                        )}
-                        
-                        {message.isUrgent && (
-                          <Badge className="bg-red-500 hover:bg-red-600 text-white text-xs flex-shrink-0">
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            URGENT
-                          </Badge>
-                        )}
-                        
-                        {message.hasQuestion && (
-                          <Badge className="bg-orange-500 hover:bg-orange-600 text-white text-xs flex-shrink-0">
-                            ❓ Question
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground flex-shrink-0">
-                        <Clock className="h-4 w-4" />
-                        <span className="whitespace-nowrap">{formatTimestamp(message.timestamp)}</span>
-                      </div>
+        </div>
+      ) : error && messages.length === 0 ? (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-8 text-center">
+          <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-red-400 mb-2">Unable to Load Messages</h3>
+          <p className="text-red-300 mb-4">{error}</p>
+          <Button
+            onClick={fetchMessages}
+            className="bg-red-500 hover:bg-red-600 text-white"
+          >
+            Try Again
+          </Button>
+        </div>
+      ) : messages.length === 0 ? (
+        <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-center">
+          <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-300 mb-2">No Messages Found</h3>
+          <p className="text-gray-400">Connect your accounts to start streaming messages.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {messages.map((message, index) => (
+            <Card key={message.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-2">
+                      {getSourceIcon(message.source)}
+                      <span className="text-sm font-medium text-gray-300">
+                        {message.source === 'gmail' ? 'Gmail' : 'Slack'}
+                      </span>
                     </div>
-                    
-                    {/* Subject Line (Gmail) */}
-                    {message.subject && (
-                      <div className="pl-8">
-                        <p className="font-semibold text-gray-900 text-base leading-tight">
-                          {message.subject}
-                        </p>
+                    {message.channel && (
+                      <div className="flex items-center space-x-1">
+                        <Hash className="w-3 h-3 text-gray-500" />
+                        <span className="text-xs text-gray-500">{message.channel}</span>
                       </div>
                     )}
-                    
-                    {/* Message Content */}
-                    <div className="pl-8">
-                      <p className="text-gray-700 leading-relaxed">
-                        {message.snippet}
-                      </p>
-                    </div>
-                    
-                    {/* Message Separator Line */}
-                    <div className="border-b border-gray-200 mt-4"></div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
-      
-      {/* Auto-refresh Notice */}
-      {messages.length > 0 && (
-        <div className="text-center py-4">
-          <p className="text-sm text-muted-foreground">
-            🔄 Stream auto-refreshes every 30 seconds • Last update: {formatUpdateTime(stats.lastUpdate)}
-          </p>
+                  <div className="flex items-center space-x-2">
+                    {getPriorityBadge(message)}
+                    <div className="flex items-center space-x-1 text-xs text-gray-500">
+                      <Clock className="w-3 h-3" />
+                      <span>{formatTimestamp(message.timestamp)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <User className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm font-medium text-gray-300">{message.sender}</span>
+                  </div>
+                  
+                  {message.subject && (
+                    <div>
+                      <h4 className="font-semibold text-white mb-2">{message.subject}</h4>
+                    </div>
+                  )}
+                  
+                  <p className="text-gray-300 leading-relaxed">
+                    {message.content.length > 200 
+                      ? `${message.content.substring(0, 200)}...` 
+                      : message.content
+                    }
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
+
+      {/* Footer */}
+      <div className="border-t border-white/10 pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-gray-400">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+            <span>Enterprise-grade security</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+            <span>Real-time message streaming</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+            <span>Smart prioritization</span>
+          </div>
+        </div>
+        <div className="mt-4 text-xs text-gray-500 space-y-1">
+          <p>All OAuth tokens securely managed by Clerk Social Connections • GDPR compliant • SOC 2 certified infrastructure</p>
+          <p>Messages with "urgent" keyword or questions (?) automatically prioritized • Auto-refresh every 30 seconds • Past 7 days data retention</p>
+        </div>
+      </div>
     </div>
   )
 }

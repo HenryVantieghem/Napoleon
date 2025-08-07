@@ -26,7 +26,7 @@ export async function GET() {
 
     // Find Google external account from Clerk Social Connections
     const googleAccount = user.externalAccounts?.find(
-      account => account.provider === 'google' || account.provider === 'oauth_google'
+      account => account.provider === 'google'
     )
 
     console.log('External accounts:', user.externalAccounts?.map(acc => ({ provider: acc.provider, verified: acc.verification?.status })))
@@ -67,7 +67,129 @@ export async function GET() {
       if (!tokenResponse.ok) {
         const errorText = await tokenResponse.text()
         console.error('Clerk token API failed:', tokenResponse.status, errorText)
-        throw new Error(`Clerk token API error: ${tokenResponse.status} ${tokenResponse.statusText}`)
+        
+        // Try alternative token URL
+        const altTokenUrl = `https://api.clerk.com/v1/users/${userId}/oauth_access_tokens/google`
+        console.log('Trying alternative token URL:', altTokenUrl)
+        
+        const altTokenResponse = await fetch(altTokenUrl, {
+          headers: {
+            'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        })
+        
+        if (!altTokenResponse.ok) {
+          throw new Error(`Clerk token API error: ${tokenResponse.status} ${tokenResponse.statusText}`)
+        }
+        
+        const tokenData = await altTokenResponse.json()
+        console.log('Alternative token response:', tokenData)
+        
+        const accessToken = tokenData[0]?.token
+
+        if (!accessToken) {
+          console.log('No access token in response')
+          return NextResponse.json({ 
+            error: 'No access token available',
+            message: 'Please reconnect Gmail to refresh your access token.',
+            connected: false
+          }, { status: 400 })
+        }
+
+        console.log('Access token obtained, fetching Gmail messages...')
+
+        // Calculate 7 days ago timestamp for Gmail API
+        const sevenDaysAgo = new Date()
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+        const afterTimestamp = Math.floor(sevenDaysAgo.getTime() / 1000)
+
+        // Fetch Gmail messages from last 7 days
+        const gmailUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=50&labelIds=INBOX&q=after:${afterTimestamp}`
+        console.log('Fetching from Gmail API:', gmailUrl)
+        
+        const gmailResponse = await fetch(gmailUrl, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (!gmailResponse.ok) {
+          const errorText = await gmailResponse.text()
+          console.error('Gmail API failed:', gmailResponse.status, errorText)
+          
+          if (gmailResponse.status === 401) {
+            return NextResponse.json({ 
+              error: 'Gmail access token expired',
+              message: 'Please reconnect Gmail to refresh access.',
+              connected: false
+            }, { status: 401 })
+          }
+          throw new Error(`Gmail API error: ${gmailResponse.status} ${gmailResponse.statusText}`)
+        }
+
+        const gmailData = await gmailResponse.json()
+        console.log('Gmail data received:', gmailData.messages?.length || 0, 'messages')
+        
+        // Get detailed message information
+        const messages = []
+        if (gmailData.messages && gmailData.messages.length > 0) {
+          console.log('Fetching detailed message data...')
+          
+          for (const msg of gmailData.messages.slice(0, 25)) { // Limit for performance
+            try {
+              const messageResponse = await fetch(
+                `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msg.id}`,
+                {
+                  headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                  },
+                }
+              )
+              
+              if (messageResponse.ok) {
+                const messageData = await messageResponse.json()
+                
+                // Extract headers safely
+                const headers = messageData.payload?.headers || []
+                const fromHeader = headers.find((h: any) => h.name === 'From')
+                const subjectHeader = headers.find((h: any) => h.name === 'Subject')
+                
+                messages.push({
+                  id: messageData.id,
+                  snippet: messageData.snippet || 'No preview available',
+                  internalDate: messageData.internalDate,
+                  from: fromHeader?.value || 'Unknown Sender',
+                  subject: subjectHeader?.value || 'No Subject',
+                  threadId: messageData.threadId
+                })
+              }
+            } catch (msgError) {
+              console.error('Error fetching message details for', msg.id, ':', msgError)
+            }
+          }
+        }
+        
+        console.log('Successfully processed', messages.length, 'Gmail messages')
+        
+        return NextResponse.json({
+          success: true,
+          connected: true,
+          messageCount: messages.length,
+          messages,
+          user: {
+            email: googleAccount.emailAddress,
+            provider: 'google',
+            verified: true
+          },
+          metadata: {
+            source: 'clerk_social_connections',
+            timeRange: '7_days',
+            fetchedAt: new Date().toISOString()
+          }
+        })
       }
 
       const tokenData = await tokenResponse.json()
