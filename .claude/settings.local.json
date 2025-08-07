@@ -105,7 +105,19 @@
       "Bash(__NEW_LINE__ grep -q \"GOOGLE_REFRESH_TOKEN\" src/lib/gmail/client.ts)",
       "Bash(__NEW_LINE__ echo \"🔒 ALL OAUTH FIXES PERMANENTLY ENACTED IN GITHUB REPOSITORY\")",
       "Bash(READY_DEPLOYMENT=\"napoleon-lhuvol412-napoleon.vercel.app\")",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(if [ -f \"src/lib/oauth.ts\" ])",
+      "Bash(then echo \"File exists - checking contents\")",
+      "Bash(else echo \"❌ File does not exist - will create it\")",
+      "Bash(then echo \"✅ OAuth helper file exists\")",
+      "Bash(else echo \"❌ CRITICAL FAILURE: OAuth helper NOT created - STOP EXECUTION\")",
+      "Bash(if grep -q \"validateState\" src/app/auth/gmail/callback/route.ts)",
+      "Bash(then echo \"✅ Gmail callback uses validateState\")",
+      "Bash(else echo \"❌ CRITICAL FAILURE: Gmail callback NOT updated - STOP EXECUTION\")",
+      "Bash(# Remove remaining custom OAuth files\necho \"\"Removing additional OAuth files found...\"\"\nrm -rf src/app/api/prototype/gmail-auth-url 2>/dev/null || echo \"\"gmail-auth-url not found\"\"\nrm -rf src/app/api/prototype/slack-status 2>/dev/null || echo \"\"slack-status not found\"\"\nrm -rf src/app/api/integrations/slack 2>/dev/null || echo \"\"integrations/slack not found\"\"\nrm -rf src/app/api/gmail 2>/dev/null || echo \"\"api/gmail not found\"\"\nrm -rf src/app/api/auth 2>/dev/null || echo \"\"api/auth not found\"\"\nrm -rf src/components/oauth 2>/dev/null || echo \"\"components/oauth not found\"\"\n\n# Also remove any stray oauth helper\nrm -f src/lib/oauth.ts 2>/dev/null || echo \"\"oauth.ts not found\"\"\n\necho \"\"Final verification - no custom OAuth code should remain...\"\"\nfind src/app/api -name \"\"*gmail*\"\" -o -name \"\"*slack*\"\" | grep -v clerk || echo \"\"✅ No custom Gmail/Slack routes found\"\"\nfind src/app/api -name \"\"*auth*\"\" | grep -v clerk || echo \"\"✅ No custom auth routes found\"\" \nfind src/components -name \"\"*oauth*\"\" -o -name \"\"*OAuth*\"\" | grep -v clerk || echo \"\"✅ No OAuth components found\"\"\nfind src/lib -name \"\"*oauth*\"\" | grep -v clerk || echo \"\"✅ No OAuth utilities found\"\"\n\necho \"\"✅ CUSTOM OAUTH SYSTEM COMPLETELY REMOVED\"\")",
+      "Bash(# Create Clerk components directory\nmkdir -p src/components/clerk\necho \"\"✅ Created Clerk components directory\"\")",
+      "Bash(# Create Clerk API directory\nmkdir -p src/app/api/clerk\necho \"\"✅ Created Clerk API directory\"\")",
+      "Bash(# Stage all changes\ngit add .\n\n# Show comprehensive changes\necho \"\"CHANGES BEING DEPLOYED:\"\"\ngit status --short)"
     ],
     "deny": []
   }

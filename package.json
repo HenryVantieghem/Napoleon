@@ -23,6 +23,7 @@
     "framer-motion": "^12.23.12",
     "googleapis": "^130.0.0",
     "lucide-react": "^0.536.0",
+    "nanoid": "^5.1.5",
     "next": "^14.2.18",
     "openai": "^5.11.0",
     "react": "^18.3.1",
