@@ -85,7 +85,12 @@
       "Bash(# Wait for deployment and verify\nsleep 30\n\n# Verify deployment\necho \"\"=== DEPLOYMENT VERIFICATION ===\"\"\nvercel logs --prod | head -20)",
       "Bash(# Test all critical routes\necho \"\"=== PRODUCTION ROUTE TESTING ===\"\"\necho \"\"Testing root route:\"\"\ncurl -I https://napoleonai.app/ | head -1\n\necho \"\"Testing prototype route:\"\"  \ncurl -I https://napoleonai.app/prototype | head -1\n\necho \"\"Testing Gmail OAuth route:\"\"\ncurl -I https://napoleonai.app/auth/gmail | head -1\n\necho \"\"Testing Slack OAuth route:\"\"\ncurl -I https://napoleonai.app/auth/slack | head -1\n\n# ALL must return HTTP 200 or 302 status\necho \"\"✅ OAuth routes should return 302 redirects to consent screens\"\")",
       "Bash(# Scan for specific error patterns\necho \"\"=== SCANNING FOR COMMON ERROR PATTERNS ===\"\"\nfind src/ -name \"\"*.ts\"\" -o -name \"\"*.tsx\"\" | xargs grep -n \"\"error.message\"\" | head -20)",
-      "Bash(# MANDATORY: Verify push succeeded\nsleep 10\nREMOTE_COMMIT=$(git ls-remote origin main | cut -f1)\nLOCAL_COMMIT=$(git rev-parse HEAD)\n\necho \"\"📊 PUSH VERIFICATION:\"\"\necho \"\"Local commit:  $LOCAL_COMMIT\"\"\necho \"\"Remote commit: $REMOTE_COMMIT\"\"\n\nif [ \"\"$LOCAL_COMMIT\"\" = \"\"$REMOTE_COMMIT\"\" ]; then\n  echo \"\"✅ GITHUB SYNCHRONIZATION CONFIRMED - PROCEEDING TO DEPLOYMENT\"\"\nelse\n  echo \"\"❌ GITHUB SYNC FAILED - EMERGENCY PROTOCOL ACTIVATED\"\"\n  \n  # Emergency GitHub sync protocol\n  git fetch origin\n  git rebase origin/main\n  git push origin main --force\nfi)"
+      "Bash(# MANDATORY: Verify push succeeded\nsleep 10\nREMOTE_COMMIT=$(git ls-remote origin main | cut -f1)\nLOCAL_COMMIT=$(git rev-parse HEAD)\n\necho \"\"📊 PUSH VERIFICATION:\"\"\necho \"\"Local commit:  $LOCAL_COMMIT\"\"\necho \"\"Remote commit: $REMOTE_COMMIT\"\"\n\nif [ \"\"$LOCAL_COMMIT\"\" = \"\"$REMOTE_COMMIT\"\" ]; then\n  echo \"\"✅ GITHUB SYNCHRONIZATION CONFIRMED - PROCEEDING TO DEPLOYMENT\"\"\nelse\n  echo \"\"❌ GITHUB SYNC FAILED - EMERGENCY PROTOCOL ACTIVATED\"\"\n  \n  # Emergency GitHub sync protocol\n  git fetch origin\n  git rebase origin/main\n  git push origin main --force\nfi)",
+      "Bash(if [ $? -eq 0 ])",
+      "Bash(then echo \"✅ COMMIT SUCCESSFUL\")",
+      "Bash(else echo \"❌ COMMIT FAILED\")",
+      "Bash(exit 1)",
+      "Bash(fi)"
     ],
     "deny": []
   }
