@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
+// Force dynamic rendering for this OAuth callback route
+export const dynamic = 'force-dynamic'
+
 const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID
 const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET
 const SLACK_REDIRECT_URI = process.env.NEXT_PUBLIC_APP_URL + '/auth/slack/callback'

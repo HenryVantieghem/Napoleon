@@ -3,6 +3,9 @@ import { fetchGmailMessages } from '@/lib/gmail/client';
 import { SlackMessagesClient } from '@/lib/slack-api/slack-messages-client';
 import type { UnifiedMessage, MessagePriority } from '@/types/message';
 
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic'
+
 // Priority calculation function
 function calculateMessagePriority(message: { subject?: string; snippet?: string }): { priority: MessagePriority; priorityReason?: string } {
   const subject = (message.subject || '').toLowerCase();

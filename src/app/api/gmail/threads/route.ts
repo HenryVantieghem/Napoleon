@@ -5,6 +5,9 @@ import { PriorityScorer } from '@/lib/ai/priority-scorer'
 import { OpenAIAnalyzer } from '@/lib/ai/openai-analyzer'
 // import type { ThreadWithPriority } from '@/lib/types'
 
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     // Authenticate the user
