@@ -1,6 +1,8 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
+export const runtime = 'nodejs'
+
 interface SlackMessage {
   ts: string
   text: string
@@ -66,52 +68,62 @@ export async function GET() {
     let accessToken = null
     let tokenData = null
 
-    // Try primary token URL first
-    const tokenUrl = `https://api.clerk.com/v1/users/${userId}/oauth_access_tokens/oauth_slack`
-    console.log('Fetching token from:', tokenUrl)
-    
-    const tokenResponse = await fetch(tokenUrl, {
-      headers: {
-        'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
-      },
-    })
+    // Get access token using Clerk's recommended approach
+    let tokenUrls = [
+      `https://api.clerk.com/v1/users/${userId}/oauth_access_tokens/oauth_slack`,
+      `https://api.clerk.com/v1/users/${userId}/oauth_access_tokens/slack`
+    ]
 
-    if (tokenResponse.ok) {
-      tokenData = await tokenResponse.json()
-      console.log('Primary token response:', tokenData)
-      accessToken = tokenData[0]?.token
-    } else {
-      console.log('Primary token failed, trying alternative...')
-      
-      // Try alternative token URL
-      const altTokenUrl = `https://api.clerk.com/v1/users/${userId}/oauth_access_tokens/slack`
-      console.log('Trying alternative token URL:', altTokenUrl)
-      
-      const altTokenResponse = await fetch(altTokenUrl, {
-        headers: {
-          'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      })
-      
-      if (altTokenResponse.ok) {
-        tokenData = await altTokenResponse.json()
-        console.log('Alternative token response:', tokenData)
-        accessToken = tokenData[0]?.token
-      } else {
-        const errorText = await altTokenResponse.text()
-        console.error('Both token URLs failed:', errorText)
-        throw new Error(`Clerk token API error: ${altTokenResponse.status} ${altTokenResponse.statusText}`)
+    let tokenError = null
+    
+    for (const tokenUrl of tokenUrls) {
+      try {
+        console.log('Trying token URL:', tokenUrl)
+        
+        const tokenResponse = await fetch(tokenUrl, {
+          headers: {
+            'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (tokenResponse.ok) {
+          tokenData = await tokenResponse.json()
+          console.log('Token response:', { 
+            url: tokenUrl, 
+            status: tokenResponse.status,
+            dataLength: Array.isArray(tokenData) ? tokenData.length : 'not array',
+            firstToken: tokenData[0] ? 'exists' : 'missing'
+          })
+          
+          if (Array.isArray(tokenData) && tokenData.length > 0 && tokenData[0].token) {
+            accessToken = tokenData[0].token
+            console.log('Access token obtained successfully')
+            break
+          }
+        } else {
+          const errorText = await tokenResponse.text()
+          console.log(`Token URL ${tokenUrl} failed:`, tokenResponse.status, errorText)
+          tokenError = errorText
+        }
+      } catch (error) {
+        console.log(`Error with token URL ${tokenUrl}:`, error)
+        tokenError = error
       }
     }
 
     if (!accessToken) {
-      console.log('No access token in response')
+      console.log('No access token found after trying all URLs')
       return NextResponse.json({ 
         error: 'No access token available',
         message: 'Please reconnect Slack to refresh your access token.',
-        connected: false
+        connected: false,
+        debug: {
+          userId,
+          slackAccountId: slackAccount.id,
+          slackAccountVerified: slackAccount.verification?.status,
+          lastError: tokenError instanceof Error ? tokenError.message : tokenError
+        }
       }, { status: 400 })
     }
 

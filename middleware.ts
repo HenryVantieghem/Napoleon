@@ -14,9 +14,7 @@ const isProtectedApiRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware((auth, req) => {
-  if (isProtectedApiRoute(req)) {
-    auth().protect();
-  } else if (!isPublicRoute(req)) {
+  if (!isPublicRoute(req)) {
     auth().protect();
   }
 });
