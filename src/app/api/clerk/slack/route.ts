@@ -1,4 +1,4 @@
-import { auth, currentUser } from '@clerk/nextjs'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
@@ -20,7 +20,7 @@ export async function GET() {
 
     // Find Slack external account from Clerk Social Connections
     const slackAccount = user.externalAccounts?.find(
-      account => account.provider === 'slack' || account.provider === 'oauth_slack'
+      account => account.provider === 'slack'
     )
 
     if (!slackAccount) {
@@ -44,7 +44,7 @@ export async function GET() {
     // Get access token from Clerk's token management
     try {
       const tokenResponse = await fetch(
-        `https://api.clerk.com/v1/users/${userId}/oauth_access_tokens/oauth_slack`,
+        `https://api.clerk.com/v1/users/${userId}/oauth_access_tokens/slack`,
         {
           headers: {
             'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
@@ -104,7 +104,7 @@ export async function GET() {
         user: {
           provider: 'slack',
           team: slackData.team || 'Workspace',
-          connectedAt: slackAccount.createdAt
+          connectedAt: new Date().toISOString()
         },
         metadata: {
           source: 'clerk_social_connections',

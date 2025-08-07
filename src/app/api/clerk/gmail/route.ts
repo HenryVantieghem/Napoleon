@@ -1,4 +1,4 @@
-import { auth, currentUser } from '@clerk/nextjs'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
@@ -20,7 +20,7 @@ export async function GET() {
 
     // Find Google external account from Clerk Social Connections
     const googleAccount = user.externalAccounts?.find(
-      account => account.provider === 'google' || account.provider === 'oauth_google'
+      account => account.provider === 'google'
     )
 
     if (!googleAccount) {
@@ -44,7 +44,7 @@ export async function GET() {
     // Get access token from Clerk's token management
     try {
       const tokenResponse = await fetch(
-        `https://api.clerk.com/v1/users/${userId}/oauth_access_tokens/oauth_google`,
+        `https://api.clerk.com/v1/users/${userId}/oauth_access_tokens/google`,
         {
           headers: {
             'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
@@ -101,7 +101,7 @@ export async function GET() {
           email: googleAccount.emailAddress,
           provider: 'google',
           verified: true,
-          connectedAt: googleAccount.createdAt
+          connectedAt: new Date().toISOString()
         },
         metadata: {
           source: 'clerk_social_connections',
