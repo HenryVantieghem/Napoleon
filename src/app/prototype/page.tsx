@@ -4,13 +4,14 @@ import { useAuth, useUser, UserButton } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
 import { ConnectionStatus } from '@/components/clerk/ConnectionStatus'
 import { MessageStream } from '@/components/streaming/MessageStream'
-import { Brain, Loader2 } from 'lucide-react'
+import { Brain, Loader2, Menu, X, Settings, Activity } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export default function PrototypePage() {
   const { isSignedIn, isLoaded } = useAuth()
   const { user } = useUser()
   const [loading, setLoading] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     if (isLoaded) {
@@ -56,31 +57,87 @@ export default function PrototypePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
-      {/* Header */}
-      <header className="border-b border-white/10 bg-white/5 backdrop-blur-sm">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`fixed inset-y-0 left-0 z-50 w-80 bg-white/5 backdrop-blur-xl border-r border-white/10 transform transition-transform duration-300 lg:translate-x-0 lg:static lg:inset-0 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="flex flex-col h-full">
+          {/* Sidebar Header */}
+          <div className="flex items-center justify-between p-6 border-b border-white/10">
+            <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
                 <Brain className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                <h1 className="text-lg font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
                   Napoleon AI
                 </h1>
-                <p className="text-sm text-gray-400">Streaming Message Intelligence</p>
+                <p className="text-xs text-gray-400">Intelligence Dashboard</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-white">Welcome back, {user?.firstName || 'User'}!</p>
-                <p className="text-xs text-gray-400">Ready to stream your messages</p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden text-white hover:bg-white/10"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
+
+          {/* Sidebar Content */}
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="space-y-6">
+              {/* User Info */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
+                    <span className="text-lg font-bold text-white">
+                      {user?.firstName?.[0] || user?.emailAddresses?.[0]?.emailAddress?.[0] || 'U'}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-white truncate">
+                      {user?.firstName || user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] || 'User'}
+                    </p>
+                    <p className="text-sm text-gray-400 truncate">
+                      {user?.emailAddresses?.[0]?.emailAddress || 'user@example.com'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Connection Status */}
+              <div>
+                <h2 className="text-lg font-semibold mb-4 flex items-center space-x-2">
+                  <Activity className="w-5 h-5 text-green-400" />
+                  <span>Connection Status</span>
+                </h2>
+                <ConnectionStatus />
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar Footer */}
+          <div className="p-6 border-t border-white/10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-sm text-gray-400">Live</span>
               </div>
               <UserButton 
                 afterSignOutUrl="/"
                 appearance={{
                   elements: {
-                    avatarBox: "w-10 h-10 border-2 border-white/20 rounded-xl shadow-lg",
+                    avatarBox: "w-8 h-8 border-2 border-white/20 rounded-lg shadow-lg",
                     userButtonPopoverCard: "bg-slate-800/95 backdrop-blur-md border border-white/10 shadow-2xl",
                     userButtonPopoverActionButton: "text-white hover:bg-white/10 transition-colors"
                   }
@@ -89,28 +146,72 @@ export default function PrototypePage() {
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left Sidebar - Connection Status */}
-          <div className="lg:col-span-1">
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 sticky top-8">
-              <h2 className="text-lg font-semibold mb-6 flex items-center space-x-2">
+      <div className="lg:ml-80">
+        {/* Top Header */}
+        <header className="bg-white/5 backdrop-blur-sm border-b border-white/10">
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden text-white hover:bg-white/10"
+              >
+                <Menu className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                  Streaming Message Intelligence
+                </h1>
+                <p className="text-sm text-gray-400">Real-time communication analysis</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="hidden md:flex items-center space-x-2 text-sm text-gray-400">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span>Connection Status</span>
-              </h2>
-              <ConnectionStatus />
+                <span>Connected</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/10"
+              >
+                <Settings className="w-5 h-5" />
+              </Button>
             </div>
           </div>
+        </header>
 
-          {/* Main Content - Message Stream */}
-          <div className="lg:col-span-2">
+        {/* Main Dashboard */}
+        <main className="p-6">
+          <div className="max-w-7xl mx-auto">
+            {/* Welcome Section */}
+            <div className="mb-8">
+              <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center">
+                    <Brain className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white mb-2">
+                      Welcome back, {user?.firstName || 'Commander'}!
+                    </h2>
+                    <p className="text-gray-300">
+                      Your intelligent message stream is ready. Monitor communications across Gmail and Slack with AI-powered insights.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Message Stream */}
             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold mb-2">Live Message Stream</h2>
+                  <h2 className="text-xl font-bold text-white mb-1">Live Message Stream</h2>
                   <p className="text-gray-400">Real-time intelligence from your connected accounts</p>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -121,12 +222,12 @@ export default function PrototypePage() {
               <MessageStream />
             </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-8 mt-16">
-        <div className="container mx-auto px-6">
+      <footer className="lg:ml-80 border-t border-white/10 py-6">
+        <div className="px-6">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center space-x-4 mb-4 md:mb-0">
               <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
