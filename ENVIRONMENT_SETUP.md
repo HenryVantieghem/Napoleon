@@ -6,10 +6,10 @@
 ```
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/prototype
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/prototype
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=https://accounts.napoleonai.app/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=https://accounts.napoleonai.app/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
 ```
 
 ### Google OAuth (REQUIRED)

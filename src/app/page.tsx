@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuth } from "@clerk/nextjs"
+import { useAuth, SignInButton, SignedIn, SignedOut } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -11,11 +11,11 @@ export default function HomePage() {
   const router = useRouter()
   const [isRedirecting, setIsRedirecting] = useState(false)
 
-  // Redirect authenticated users to prototype
+  // Redirect authenticated users to dashboard
   useEffect(() => {
     if (isLoaded && isSignedIn) {
       setIsRedirecting(true)
-      router.push('/prototype')
+      router.push('/dashboard')
     }
   }, [isLoaded, isSignedIn, router])
 
@@ -52,13 +52,25 @@ export default function HomePage() {
             Napoleon AI
           </span>
         </div>
-        <Button 
-          onClick={() => router.push('/sign-in')}
-          variant="ghost" 
-          className="text-white hover:bg-white/10 border border-white/20"
-        >
-          Sign In
-        </Button>
+        <SignedOut>
+          <SignInButton mode="modal">
+            <Button 
+              variant="ghost" 
+              className="text-white hover:bg-white/10 border border-white/20"
+            >
+              Sign In
+            </Button>
+          </SignInButton>
+        </SignedOut>
+        <SignedIn>
+          <Button 
+            onClick={() => router.push('/dashboard')}
+            variant="ghost" 
+            className="text-white hover:bg-white/10 border border-white/20"
+          >
+            Dashboard
+          </Button>
+        </SignedIn>
       </nav>
 
       {/* Hero Section */}
@@ -89,14 +101,27 @@ export default function HomePage() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Button 
-              onClick={() => router.push('/sign-in')}
-              size="lg" 
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105"
-            >
-              Start Streaming Messages
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105"
+                >
+                  Start Streaming Messages
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <Button 
+                onClick={() => router.push('/dashboard')}
+                size="lg" 
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105"
+              >
+                Go to Dashboard
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </SignedIn>
             <Button 
               variant="outline" 
               size="lg"

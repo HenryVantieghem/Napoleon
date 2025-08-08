@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuth, useUser, UserButton } from '@clerk/nextjs'
+import { useAuth, useUser, UserButton, SignInButton } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
 import { ConnectionStatus } from '@/components/clerk/ConnectionStatus'
 import { MessageStream } from '@/components/streaming/MessageStream'
@@ -45,12 +45,13 @@ export default function PrototypePage() {
           <p className="text-gray-400 mb-8">
             Please sign in to access your streaming message dashboard.
           </p>
-          <Button 
-            onClick={() => window.location.href = '/sign-in'}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-semibold"
-          >
-            Sign In
-          </Button>
+          <SignInButton mode="modal">
+            <Button 
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-semibold"
+            >
+              Sign In
+            </Button>
+          </SignInButton>
         </div>
       </div>
     )

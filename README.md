@@ -81,8 +81,31 @@ NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=G-...
 1. **Create Application**: Go to [clerk.com](https://clerk.com) → Create Application
 2. **Google OAuth**: Enable Google provider in Social Connections
 3. **Gmail Scopes**: Add `https://www.googleapis.com/auth/gmail.readonly`
-4. **Redirect URLs**: Configure for your domain
-5. **Environment Variables**: Copy keys to `.env.local`
+4. **Hosted Pages**: Configure hosted sign-in/up at `https://accounts.napoleonai.app`
+5. **Redirect URLs**: Configure for your domain
+6. **Environment Variables**: Copy keys to `.env.local`
+
+#### Clerk Hosted Pages Setup
+
+**Allowed Origins:**
+- `https://napoleonai.app`
+- `https://*.vercel.app` (for preview deployments)
+
+**Sign-in/up URLs:**
+- `https://accounts.napoleonai.app/sign-in`
+- `https://accounts.napoleonai.app/sign-up`
+
+**After Auth Redirects:**
+- After sign-in: `/dashboard`
+- After sign-up: `/dashboard`
+
+**Environment Variables:**
+```bash
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=https://accounts.napoleonai.app/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=https://accounts.napoleonai.app/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
+```
 
 ## 🧪 Testing
 
