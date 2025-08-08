@@ -1,6 +1,8 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
+export const runtime = 'nodejs'
+
 export async function GET() {
   try {
     const { userId } = auth()

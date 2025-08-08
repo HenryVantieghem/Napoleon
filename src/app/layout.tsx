@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
+import { ErrorBoundary } from '@/components/shared/error-boundary'
 import { Toaster } from 'sonner'
 import './globals.css'
 
@@ -38,7 +39,9 @@ export default function RootLayout({
       <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
         <body className={`${inter.className} antialiased`}>
           <main className="min-h-screen">
-            {children}
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
           </main>
           <Toaster 
             position="top-right"
