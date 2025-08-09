@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Napoleon AI - Executive Gmail Command Center</title>
+    <link rel="stylesheet" href="napoleon_bio_theme.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        /* Base styles */
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+            font-family: var(--font-sans);
+        }
+
+        /* Bioluminescent orb effect */
+        .bio-orb {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, 
+                rgba(125, 255, 179, 0.4) 0%,
+                rgba(125, 255, 179, 0.1) 30%,
+                rgba(125, 255, 179, 0) 70%
+            );
+            filter: blur(30px);
+            mix-blend-mode: screen;
+        }
+
+        .bio-orb::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle at center,
+                rgba(255, 255, 255, 0.2) 0%,
+                transparent 70%
+            );
+            filter: blur(15px);
+        }
+
+        /* Spikes effect */
+        .spikes {
+            position: relative;
+            overflow: hidden;
+            height: 60vh;
+            width: 100%;
+            transform-origin: center bottom;
+        }
+
+        .spike {
+            position: absolute;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to top,
+                var(--primary) 0%,
+                rgba(125, 255, 179, 0) 100%
+            );
+            animation: spikeGlow 4s infinite ease-in-out;
+        }
+
+        @keyframes spikeGlow {
+            0%, 100% { opacity: 0.5; height: 100%; }
+            50% { opacity: 1; height: 90%; }
+        }
+
+        /* Notification badge */
+        .notification {
+            background: rgba(125, 255, 179, 0.1);
+            border: 1px solid rgba(125, 255, 179, 0.2);
+            backdrop-filter: var(--glass-blur);
+            border-radius: var(--radius-full);
+            padding: 0.5rem 1.25rem;
+            color: var(--primary);
+            font-size: var(--small);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .notification::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Navigation */
+        .nav-link {
+            position: relative;
+            color: var(--muted-foreground);
+            transition: color var(--transition-fast);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -2px;
+            height: 1px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transition: transform var(--transition-fast);
+        }
+
+        .nav-link:hover {
+            color: var(--foreground);
+        }
+
+        .nav-link:hover::after {
+            transform: scaleX(1);
+        }
+
+        /* Button styles */
+        .btn-primary {
+            background: rgba(125, 255, 179, 0.1);
+            border: 1px solid rgba(125, 255, 179, 0.2);
+            color: var(--primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-full);
+            font-weight: 500;
+            transition: all var(--transition-normal);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary);
+            color: var(--background);
+            box-shadow: 0 0 30px var(--glow-1);
+        }
+
+        /* Animations */
+        @keyframes floatIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-float-in {
+            animation: floatIn 1s ease-out forwards;
+        }
+
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Background effects -->
+    <div class="fixed inset-0 overflow-hidden -z-10">
+        <div class="bio-orb w-[800px] h-[800px] left-[-200px] top-[-200px] opacity-30"></div>
+        <div class="bio-orb w-[600px] h-[600px] right-[-100px] top-[20%] opacity-20"></div>
+        <div class="bio-orb w-[400px] h-[400px] left-[30%] bottom-[-100px] opacity-25"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 backdrop-blur-md border-b border-[var(--glass-border)]">
+        <div class="max-w-[var(--container-max)] mx-auto px-[var(--container-padding)]">
+            <div class="flex justify-between items-center h-20">
+                <div class="text-2xl font-serif">Napoleon AI</div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="nav-link">Features</a>
+                    <a href="#pricing" class="nav-link">Pricing</a>
+                    <a href="#about" class="nav-link">About</a>
+                    <button class="btn-primary">Take Command</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="min-h-screen flex items-center relative overflow-hidden">
+        <div class="absolute inset-0 -z-10">
+            <div class="spikes">
+                <!-- Spikes will be generated by JavaScript -->
+            </div>
+        </div>
+        
+        <div class="max-w-[var(--container-max)] mx-auto px-[var(--container-padding)] pt-20 text-center">
+            <div class="notification mb-8 mx-auto inline-block animate-float-in">
+                Just now: Your AI Commander is here
+            </div>
+            
+            <h1 class="text-[var(--h1)] font-serif leading-[var(--leading-tight)] mb-6 animate-float-in delay-1">
+                Transform Communication<br/>
+                <span class="text-[var(--primary)]">Chaos</span> into Strategic
+                <span class="text-[var(--primary)]">Clarity</span>
+            </h1>
+            
+            <p class="text-[var(--body)] text-[var(--muted-foreground)] max-w-2xl mx-auto mb-12 animate-float-in delay-2">
+                We are here to revolutionize how executives manage their Gmail inbox, 
+                powered by cutting-edge AI technology.
+            </p>
+            
+            <div class="animate-float-in delay-3">
+                <button class="btn-primary text-lg">Take Command Now</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-[var(--section-spacing)]">
+        <div class="max-w-[var(--container-max)] mx-auto px-[var(--container-padding)]">
+            <h2 class="text-[var(--h2)] font-serif text-center mb-16">
+                Explore the features of<br/>
+                <span class="text-[var(--primary)]">unique AI-driven platform</span>
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="glass-card p-8 rounded-[var(--radius)] border border-[var(--glass-border)] backdrop-blur-xl">
+                    <div class="h-12 w-12 rounded-full bg-[var(--accent)] flex items-center justify-center mb-6">
+                        <i data-lucide="inbox" class="text-[var(--primary)]"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">AI Priority Triage</h3>
+                    <p class="text-[var(--muted-foreground)]">Advanced algorithms automatically prioritize your emails based on importance and urgency.</p>
+                </div>
+
+                <div class="glass-card p-8 rounded-[var(--radius)] border border-[var(--glass-border)] backdrop-blur-xl">
+                    <div class="h-12 w-12 rounded-full bg-[var(--accent)] flex items-center justify-center mb-6">
+                        <i data-lucide="users" class="text-[var(--primary)]"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">VIP Recognition</h3>
+                    <p class="text-[var(--muted-foreground)]">Never miss important messages from key stakeholders with intelligent contact management.</p>
+                </div>
+
+                <div class="glass-card p-8 rounded-[var(--radius)] border border-[var(--glass-border)] backdrop-blur-xl">
+                    <div class="h-12 w-12 rounded-full bg-[var(--accent)] flex items-center justify-center mb-6">
+                        <i data-lucide="activity" class="text-[var(--primary)]"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Smart Analytics</h3>
+                    <p class="text-[var(--muted-foreground)]">Gain insights into your communication patterns with detailed analytics and reports.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-[var(--section-spacing)] relative overflow-hidden">
+        <div class="max-w-[var(--container-max)] mx-auto px-[var(--container-padding)] relative z-10">
+            <div class="text-center max-w-3xl mx-auto">
+                <h2 class="text-[var(--h3)] font-serif mb-8">Ready to transform your inbox?</h2>
+                <p class="text-[var(--body)] text-[var(--muted-foreground)] mb-12">Join the executive revolution in email management</p>
+                <div class="glass-card p-8 rounded-[var(--radius)] border border-[var(--glass-border)] backdrop-blur-xl">
+                    <form class="flex flex-col sm:flex-row gap-4">
+                        <input type="email" placeholder="Enter your email" class="flex-1 px-6 py-4 rounded-[var(--radius)] bg-[var(--input)] border border-[var(--glass-border)] focus:border-[var(--primary)] outline-none">
+                        <button class="btn-primary whitespace-nowrap">Get Early Access</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-[var(--glass-border)]">
+        <div class="max-w-[var(--container-max)] mx-auto px-[var(--container-padding)]">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="text-[var(--muted-foreground)]">© 2024 Napoleon AI</div>
+                <div class="flex space-x-8 mt-4 md:mt-0">
+                    <a href="#" class="nav-link">Privacy</a>
+                    <a href="#" class="nav-link">Terms</a>
+                    <a href="#" class="nav-link">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Generate spikes
+        function generateSpikes() {
+            const spikesContainer = document.querySelector('.spikes');
+            const numberOfSpikes = 100;
+            
+            for (let i = 0; i < numberOfSpikes; i++) {
+                const spike = document.createElement('div');
+                spike.className = 'spike';
+                spike.style.left = `${(i / numberOfSpikes) * 100}%`;
+                spike.style.animationDelay = `${Math.random() * 4}s`;
+                spikesContainer.appendChild(spike);
+            }
+        }
+
+        // Initialize spikes
+        generateSpikes();
+
+        // Intersection Observer for animations
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-float-in');
+                    }
+                });
+            },
+            { threshold: 0.1 }
+        );
+
+        document.querySelectorAll('section > div').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>

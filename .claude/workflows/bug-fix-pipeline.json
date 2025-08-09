@@ -1,0 +1,57 @@
+{
+  "name": "bug-fix-pipeline",
+  "description": "Rapid bug diagnosis and resolution workflow for executive-critical issues",
+  "coordination_pattern": "conditional",
+  "agents": [
+    {
+      "name": "performance-monitor",
+      "phase": "diagnosis",
+      "parallel": false,
+      "dependencies": [],
+      "trigger_conditions": ["performance", "error", "crash", "timeout"]
+    },
+    {
+      "name": "authentication-specialist",
+      "phase": "diagnosis", 
+      "parallel": false,
+      "dependencies": [],
+      "trigger_conditions": ["oauth", "login", "session", "jwt", "unauthorized"]
+    },
+    {
+      "name": "database-architect",
+      "phase": "diagnosis",
+      "parallel": false,
+      "dependencies": [],
+      "trigger_conditions": ["database", "query", "rls", "connection", "migration"]
+    },
+    {
+      "name": "ai-integration-expert",
+      "phase": "diagnosis",
+      "parallel": false,
+      "dependencies": [],
+      "trigger_conditions": ["ai", "openai", "priority", "analysis", "token"]
+    },
+    {
+      "name": "luxury-ui-designer",
+      "phase": "diagnosis",
+      "parallel": false,
+      "dependencies": [],
+      "trigger_conditions": ["ui", "animation", "responsive", "glassmorphism", "layout"]
+    },
+    {
+      "name": "deployment-engineer",
+      "phase": "resolution",
+      "parallel": false,
+      "dependencies": ["*diagnosis_phase*"],
+      "trigger_conditions": ["always"]
+    }
+  ],
+  "workflow_description": "Intelligent bug triage with specialist agent routing followed by coordinated resolution and deployment",
+  "use_cases": [
+    "Authentication failures blocking executives",
+    "Performance degradation during market hours",
+    "AI analysis errors in executive emails",
+    "UI/UX issues affecting executive productivity",
+    "Database connectivity or performance issues"
+  ]
+}
