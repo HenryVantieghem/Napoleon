@@ -9,21 +9,41 @@ import { hasSlackToken } from '@/server/lib/slack';
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  const user = await currentUser();
-  const useMock = process.env.USE_MOCK === 'true';
-  const messages = useMock ? getMessages() : await getLiveMessages(user?.id || '');
-  const [googleConnected, slackConnected] = await Promise.all([
-    hasGoogleToken(user?.id || ''),
-    hasSlackToken(user?.id || ''),
-  ]);
+  const useMock = process.env.USE_MOCK !== 'false';
+  let email: string | undefined = undefined;
+  let messages = getMessages();
+  let googleConnected = false;
+  let slackConnected = false;
+
+  if (!useMock) {
+    try {
+      const user = await currentUser();
+      email = user?.emailAddresses?.[0]?.emailAddress;
+      messages = await getLiveMessages(user?.id || '');
+      [googleConnected, slackConnected] = await Promise.all([
+        hasGoogleToken(user?.id || ''),
+        hasSlackToken(user?.id || ''),
+      ]);
+    } catch {
+      // fall back to mock without crashing
+      messages = getMessages();
+      googleConnected = false;
+      slackConnected = false;
+    }
+  }
 
   return (
     <main className="mx-auto max-w-5xl p-6 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Inbox Intelligence</h2>
-        <div className="text-sm opacity-70">Signed in as {user?.emailAddresses?.[0]?.emailAddress}</div>
+        {email && <div className="text-sm opacity-70">Signed in as {email}</div>}
       </div>
-      <AutoRefresh intervalMs={30000} />
+      <div className="flex items-center gap-3">
+        <AutoRefresh intervalMs={30000} />
+        <form action="/dashboard">
+          <button className="rounded-2xl px-3 py-1 border text-sm" formAction="/dashboard">Refresh now</button>
+        </form>
+      </div>
       {!googleConnected && !slackConnected && (
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-2xl border p-4">
