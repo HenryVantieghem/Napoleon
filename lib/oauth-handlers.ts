@@ -87,3 +87,23 @@ export function isGmailTokenExpired(tokens: UserTokens): boolean {
   if (!tokens.gmail_expires_at) return true;
   return Date.now() > tokens.gmail_expires_at;
 }
+
+export async function getValidSlackToken(userId: string): Promise<string | null> {
+  try {
+    const user = await clerkClient.users.getUser(userId);
+    const metadata = user.privateMetadata as UserTokens;
+    
+    const slackToken = metadata.slack_access_token;
+
+    if (!slackToken) {
+      return null;
+    }
+
+    // Slack tokens generally don't expire for bot tokens
+    // but we should validate they're still working
+    return slackToken;
+  } catch (error) {
+    console.error('Error getting valid Slack token:', error);
+    return null;
+  }
+}
