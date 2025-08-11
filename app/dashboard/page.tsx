@@ -1,7 +1,8 @@
 import { currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { Metadata } from 'next'
-import { MessageSquare, Mail, Settings, Shield } from 'lucide-react'
+import { MessageSquare, Settings, Shield } from 'lucide-react'
+import { ConnectAccounts } from '@/components/dashboard/ConnectAccounts'
 
 export const metadata: Metadata = {
   title: 'Dashboard - Napoleon AI',
@@ -44,54 +45,8 @@ export default async function DashboardPage() {
         </div>
 
         {/* Connection Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {/* Gmail Connection */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                  <Mail className="w-6 h-6 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Gmail</h3>
-                  <p className="text-sm text-gray-500">Connect your Gmail account</p>
-                </div>
-              </div>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                Not Connected
-              </span>
-            </div>
-            <p className="text-gray-600 mb-4">
-              Access your Gmail messages from the last 7 days with secure OAuth authentication.
-            </p>
-            <button className="w-full bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors">
-              Connect Gmail
-            </button>
-          </div>
-
-          {/* Slack Connection */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <MessageSquare className="w-6 h-6 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Slack</h3>
-                  <p className="text-sm text-gray-500">Connect your Slack workspace</p>
-                </div>
-              </div>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                Not Connected
-              </span>
-            </div>
-            <p className="text-gray-600 mb-4">
-              View messages from your Slack channels and direct messages in one place.
-            </p>
-            <button className="w-full bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
-              Connect Slack
-            </button>
-          </div>
+        <div className="mb-8">
+          <ConnectAccounts />
         </div>
 
         {/* Security Notice */}
