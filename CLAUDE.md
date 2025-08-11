@@ -1,86 +1,47 @@
-# NAPOLEON AI - PROTOTYPE CONFIGURATION
+# NAPOLEON AI - SIMPLE PROTOTYPE
 
-## IMMEDIATE CONTEXT
-Building simplified prototype with 3 requirements:
-1. Single page showing messages chronologically
+## OBJECTIVE
+Build minimal working prototype with 5 core features:
+1. User authentication (Clerk)
 2. Gmail messages from past 7 days
-3. Slack messages from past 7 days
+3. Slack messages from past 7 days  
+4. Single chronological timeline view
+5. Priority scoring (simple)
 
 ## TECH STACK
 - Framework: Next.js 14.2.18
-- Runtime: Node.js 18+
-- Language: TypeScript 5.3 (strict mode)
-- Styling: Tailwind CSS 3.4
-- Auth: Clerk 5.12.0
-- Database: PostgreSQL + Prisma
+- Language: TypeScript (strict)
+- Styling: Tailwind CSS
+- Auth: Clerk 5.x
 - APIs: Gmail API, Slack Web API
-- Deployment: Vercel
 
 ## PROJECT STRUCTURE
-app/                # Next.js App Router
-├── prototype/      # Prototype pages (CREATE THIS)
-components/         # React components
-├── prototype/      # Prototype components (CREATE THIS)
-lib/               # Utilities and clients
-├── gmail/         # Gmail integration
-├── slack/         # Slack integration
-actions/           # Server actions
-hooks/             # Custom React hooks
-types/             # TypeScript definitions
+```
+app/
+├── page.tsx              # Landing/auth page
+├── dashboard/
+│   └── page.tsx          # Main prototype dashboard
+components/
+├── MessageCard.tsx       # Individual message display
+├── MessageList.tsx       # Timeline of all messages
+└── auth/                 # Auth components
+lib/
+├── gmail.ts              # Gmail API client
+├── slack.ts              # Slack API client  
+└── types.ts              # TypeScript types
+```
 
-## CRITICAL COMMANDS
-npm run dev         # Start on port 3000
-npm run build       # Production build
-npm run test        # Run existing tests
-npm run lint        # Check code quality
-npx prisma studio   # Database GUI
+## DEVELOPMENT PHASES
+1. Basic Next.js setup ✅
+2. Authentication with Clerk
+3. Gmail API integration
+4. Slack API integration  
+5. Message timeline UI
+6. Priority scoring
 
-## CODE STANDARDS
-- ES modules only (import/export)
-- Arrow functions for components
-- Async/await over promises
-- Destructure imports
-- Handle all errors explicitly
-- Add TypeScript types for everything
-
-## GIT WORKFLOW
-- Work ONLY on prototype-simple-v1 branch
-- Commit after EVERY phase completion
-- Format: type(scope): message
-- Types: feat, fix, chore, docs, test
-- Push after major milestones
-
-## ENVIRONMENT VARIABLES
-Required in .env.local:
-- NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-- CLERK_SECRET_KEY
-- DATABASE_URL
-- GOOGLE_CLIENT_ID
-- GOOGLE_CLIENT_SECRET
-- GOOGLE_REDIRECT_URI
-- SLACK_BOT_TOKEN
-- SLACK_SIGNING_SECRET
-- OPENAI_API_KEY (optional for prototype)
-
-## TESTING PROTOCOL
-After each phase:
-1. Run npm run lint - fix any issues
-2. Run npm run test - ensure no breaks
-3. Test manually in browser
-4. Commit working code
-
-## DO NOT MODIFY
-- Main branch files
-- Core authentication logic
-- Database migrations
-- Node_modules
-- .env.local without backup
-
-## CURRENT TASK
-Phase-by-phase prototype implementation focusing on:
-- Simplification over features
-- Functionality over aesthetics
-- Data display over processing
-
-## MEMORY
-- to memorize
+## REQUIREMENTS
+- Minimal viable product approach
+- No complex features or enterprise UI
+- Focus on functionality over aesthetics
+- Single page application
+- Real data from APIs

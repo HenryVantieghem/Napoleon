@@ -128,7 +128,9 @@
       "Bash(# Test the build again\nnpm run build)",
       "Bash(# Test build one more time\nnpm run build)",
       "Bash(# Test final build\nnpm run build)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(git branch:*)",
+      "Bash(true)"
     ],
     "deny": []
   }
