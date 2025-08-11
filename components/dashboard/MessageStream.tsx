@@ -1,12 +1,20 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useOptimisticMessages } from '@/hooks/useOptimisticMessages'
+import { useUnifiedMessages, useRefreshMessages, useSmartInvalidation } from '@/hooks/useMessageQueries'
 import { MessageCard } from './MessageCard'
 import { MessageLoadingSkeleton } from '@/components/ui/LoadingSkeleton'
 import { KeyboardShortcutsHelp } from '@/components/ui/KeyboardShortcutsHelp'
+import { ApiErrorBoundary } from '@/components/error/ApiErrorBoundary'
+import { useVirtualListHeight } from '@/components/ui/VirtualMessageList'
+import { LazyPriorityGroupedVirtualList } from '@/components/ui/LazyVirtualMessageList'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import { retryFetch } from '@/lib/api-retry'
 import { Button } from '@/components/ui/button'
-import { RefreshCw, AlertCircle, Mail, MessageSquare, Filter } from 'lucide-react'
+import { OptimisticButton } from '@/components/ui/OptimisticButton'
+import { OptimisticRefreshFeedback, OptimisticCacheFeedback } from '@/components/ui/OptimisticFeedback'
+import { RefreshCw, AlertCircle, Mail, MessageSquare, Filter, Clock, Wifi, WifiOff } from 'lucide-react'
 import type { Message, ConnectionStatus } from '@/types'
 
 interface MessageStreamProps {
@@ -50,20 +58,82 @@ interface UnifiedResponse {
 }
 
 export function MessageStream({ connectionStatus }: MessageStreamProps) {
-  const [messages, setMessages] = useState<Message[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [lastFetch, setLastFetch] = useState<Date | null>(null)
-  const [refreshing, setRefreshing] = useState(false)
+  // React Query integration
+  const { 
+    data: queryData, 
+    isLoading, 
+    isError, 
+    error: queryError,
+    isFetching,
+    isRefetching,
+    dataUpdatedAt 
+  } = useUnifiedMessages({
+    enabled: true,
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  })
+  
+  const refreshMutation = useRefreshMessages()
+  const { invalidateMessages, softRefresh } = useSmartInvalidation()
+
+  // Local state for UI
   const [filter, setFilter] = useState<'all' | 'urgent' | 'question' | 'gmail' | 'slack'>('all')
-  const [stats, setStats] = useState<UnifiedResponse['stats'] | null>(null)
-  const [serviceErrors, setServiceErrors] = useState<Array<{ service: string; error: string }>>([])
+  const [cacheHit, setCacheHit] = useState(false)
   const [selectedMessageIndex, setSelectedMessageIndex] = useState(-1)
   const filterSelectRef = useRef<HTMLSelectElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
+  // Derive data from React Query
+  const rawMessages = queryData?.messages || []
+  const stats = queryData?.stats || null
+  const serviceErrors = queryData?.errors || []
+  const loading = isLoading
+  const refreshing = isRefetching || refreshMutation.isPending
+  const error = isError ? (queryError as Error)?.message || 'Failed to load messages' : null
+  const lastFetch = dataUpdatedAt ? new Date(dataUpdatedAt) : null
+  const lastSuccessfulFetch = queryData?.fetchedAt ? new Date(queryData.fetchedAt) : null
+
+  // Use optimistic updates hook with React Query data
+  const {
+    messages,
+    isUpdating: isOptimisticUpdating,
+    hasOptimisticUpdates
+  } = useOptimisticMessages(rawMessages, {
+    onOptimisticUpdate: (update) => {
+      console.log('🚀 Optimistic update applied:', update.type)
+    },
+    onRollback: (update, error) => {
+      console.warn('🔙 Optimistic update rolled back:', update.type, error.message)
+    }
+  })
+
+  // Update cache hit status
   useEffect(() => {
-    fetchMessages()
-  }, [])
+    setCacheHit(queryData?.cacheHit || false)
+  }, [queryData?.cacheHit])
+
+  // Calculate virtual list height based on available space
+  const virtualListHeight = useVirtualListHeight(containerRef, 300)
+
+  // Determine whether to use virtual scrolling (for performance with large lists)
+  const useVirtualScrolling = useMemo(() => {
+    return messages.length > 50 // Use virtual scrolling for 50+ messages
+  }, [messages.length])
+
+  // Enhanced refresh handler using React Query
+  const handleRefresh = useCallback(async () => {
+    try {
+      await refreshMutation.mutateAsync()
+      console.log('✅ Messages refreshed successfully with React Query')
+    } catch (error) {
+      console.error('❌ Failed to refresh messages:', error)
+      // React Query handles error states automatically
+    }
+  }, [refreshMutation])
+
+  // Retry handler for failed queries
+  const handleRetry = useCallback(() => {
+    invalidateMessages()
+  }, [invalidateMessages])
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -101,58 +171,130 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
     }
   })
 
-  const fetchMessages = async (isRefresh = false) => {
+  const fetchMessages = useCallback(async (isRefresh = false, isRetryAttempt = false) => {
+    const cacheKey = `unified-messages-${Date.now()}`
+    
     if (isRefresh) {
       setRefreshing(true)
-    } else {
+    } else if (!isRetryAttempt) {
       setLoading(true)
     }
     
+    if (isRetryAttempt) {
+      setIsRetrying(true)
+    }
+    
     setError(null)
-    setServiceErrors([])
+    setCacheHit(false)
+    if (!isRetryAttempt) {
+      setServiceErrors([])
+    }
 
     try {
-      // Use the unified endpoint for aggregated messages
-      const response = await fetch('/api/messages/unified')
+      console.log(`📶 Fetching messages (refresh: ${isRefresh}, retry: ${isRetryAttempt})...`);
       
-      if (!response.ok) {
-        const errorData = await response.json()
+      // Use optimistic cache update for better UX
+      const fetchFn = async (): Promise<Message[]> => {
+        const response = await retryFetch('/api/messages/unified', {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }, {
+          maxAttempts: isRetryAttempt ? 1 : 2,
+          onRetry: (attempt, error) => {
+            console.log(`🔄 Retrying unified API call (attempt ${attempt}):`, error.message);
+          }
+        });
         
-        // Handle no connections error specially
-        if (errorData.code === 'NO_CONNECTIONS') {
-          setMessages([])
-          setStats(null)
-          return
-        }
+        const data: UnifiedResponse = await response.json()
         
-        throw new Error(errorData.error || 'Failed to fetch messages')
+        console.log(`✅ Messages fetched successfully:`, {
+          messageCount: data.messages?.length || 0,
+          hasErrors: (data.errors?.length || 0) > 0,
+          status: response.status
+        });
+
+        // Update state with unified data
+        setStats(data.stats)
+        setServiceErrors(data.errors || [])
+        setLastFetch(new Date(data.fetchedAt))
+        setLastSuccessfulFetch(new Date())
+        setCacheHit(false)
+        
+        return data.messages || []
+      }
+
+      // Use optimistic cache update for immediate feedback
+      const messages = await optimisticCacheUpdate(cacheKey, fetchFn, !isRetryAttempt)
+      setRawMessages(messages)
+      
+      // Reset retry count on success
+      if (retryCount > 0) {
+        setRetryCount(0)
       }
       
-      const data: UnifiedResponse = await response.json()
+    } catch (err: any) {
+      console.error('🚨 Error fetching messages:', err);
       
-      // Update state with unified data
-      setMessages(data.messages || [])
-      setStats(data.stats)
-      setServiceErrors(data.errors || [])
-      setLastFetch(new Date(data.fetchedAt))
+      // Enhanced error handling with retry logic
+      const isNetworkError = !err.status || err.name === 'TypeError'
+      const isServerError = err.status >= 500
+      const isTimeoutError = err.name === 'AbortError' || err.message.includes('timeout')
       
-    } catch (err) {
-      console.error('Error fetching messages:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch messages. Please try again.')
-      setMessages([])
-      setStats(null)
+      let errorMessage = 'Unable to fetch messages.'
+      
+      if (isTimeoutError) {
+        errorMessage = 'Request timed out. Please check your connection and try again.'
+      } else if (isNetworkError) {
+        errorMessage = 'Network connection issue. Please check your internet and try again.'
+      } else if (isServerError) {
+        errorMessage = 'Server temporarily unavailable. We\'ll automatically retry in a moment.'
+      } else if (err.status === 401) {
+        errorMessage = 'Authentication expired. Please refresh the page and sign in again.'
+      } else {
+        errorMessage = err.message || 'An unexpected error occurred. Please try again.'
+      }
+      
+      setError(errorMessage)
+      
+      // Only set empty state if this isn't a retry attempt
+      if (!isRetryAttempt) {
+        setRawMessages([])
+        setStats(null)
+      }
+      
+      // Schedule automatic retry for retryable errors
+      const canRetry = (isNetworkError || isServerError || isTimeoutError) && retryCount < 3
+      if (canRetry && !isRefresh && !isRetryAttempt) {
+        const delay = Math.min(1000 * Math.pow(2, retryCount), 10000) // Exponential backoff, max 10s
+        console.log(`⏰ Scheduling automatic retry in ${delay}ms (attempt ${retryCount + 1}/3)`);
+        
+        setRetryCount(prev => prev + 1)
+        
+        retryTimeoutRef.current = setTimeout(() => {
+          fetchMessages(false, true)
+        }, delay)
+      }
+      
     } finally {
       setLoading(false)
       setRefreshing(false)
+      setIsRetrying(false)
     }
-  }
+  }, [retryCount])
 
+  
+  // Cleanup retry timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current)
+      }
+    }
+  }, [])
 
-  const handleRefresh = () => {
-    fetchMessages(true)
-  }
-
-  const getFilteredMessages = () => {
+  // Memoize filtered messages for performance
+  const filteredMessages = useMemo(() => {
     switch (filter) {
       case 'urgent':
         return messages.filter(msg => msg.priority === 'urgent')
@@ -165,22 +307,44 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
       default:
         return messages
     }
-  }
+  }, [messages, filter])
 
-  const filteredMessages = getFilteredMessages()
-  const priorityCounts = stats?.priority || {
-    urgent: messages.filter(msg => msg.priority === 'urgent').length,
-    question: messages.filter(msg => msg.priority === 'question').length,
-    normal: messages.filter(msg => msg.priority === 'normal').length,
-    total: messages.length
-  }
+  // Memoize priority counts for performance
+  const priorityCounts = useMemo(() => {
+    return stats?.priority || {
+      urgent: messages.filter(msg => msg.priority === 'urgent').length,
+      question: messages.filter(msg => msg.priority === 'question').length,
+      normal: messages.filter(msg => msg.priority === 'normal').length,
+      total: messages.length
+    }
+  }, [stats, messages])
+
+  // Optimized message click handler
+  const handleMessageClick = useCallback((message: Message) => {
+    console.log('Open message:', message)
+    
+    // TODO: Implement message opening logic
+    // This could open Gmail/Slack in new tab or show message details
+    const url = message.source === 'gmail' 
+      ? `https://mail.google.com/mail/u/0/#inbox/${message.id}`
+      : `https://app.slack.com/client/${message.metadata?.teamId || 'T00000000'}/${message.metadata?.channelId || 'C00000000'}/thread/${message.id}`
+    
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }, [])
+
+  // Legacy method for backward compatibility
+  const getFilteredMessages = useCallback(() => filteredMessages, [filteredMessages])
 
   // Show connection prompt if no services connected
   const hasConnections = connectionStatus?.gmail || connectionStatus?.slack
   
   if (!hasConnections) {
     return (
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-sm border border-blue-200 p-12 text-center relative overflow-hidden">
+      <div 
+        className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-sm border border-blue-200 p-12 text-center relative overflow-hidden"
+        data-state="welcome"
+        data-testid="welcome-state"
+      >
         {/* Background decoration */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-100/20 to-purple-100/20 opacity-50"></div>
         <div className="relative z-10">
@@ -213,20 +377,69 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
 
   return (
     <div className="space-y-6">
-      {/* Service Errors Alert */}
+      {/* Service Errors Alert with Enhanced Details */}
       {serviceErrors.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+        <div 
+          className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-4 mb-6 shadow-sm"
+          data-error-type="api"
+          data-testid="service-errors"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+              <WifiOff className="w-4 h-4 text-white" />
+            </div>
             <div className="flex-1">
-              <p className="text-amber-800 text-sm font-medium">Some services encountered issues</p>
-              <ul className="mt-1 text-amber-700 text-xs space-y-0.5">
-                {serviceErrors.map((err, idx) => (
-                  <li key={idx}>
-                    <span className="font-medium capitalize">{err.service}:</span> {err.error}
-                  </li>
+              <h4 className="text-amber-900 font-semibold mb-2">Service Connection Issues</h4>
+              <div className="space-y-2">
+                {serviceErrors.map((err: any, idx) => (
+                  <div key={idx} className="bg-white/60 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium text-amber-900 capitalize flex items-center gap-2">
+                        {err.service === 'gmail' ? <Mail className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
+                        {err.service}
+                      </span>
+                      {err.retryable && (
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                          Retryable
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-amber-800 text-sm">{err.error}</p>
+                    {err.code && (
+                      <p className="text-amber-600 text-xs mt-1 font-mono">Code: {err.code}</p>
+                    )}
+                  </div>
                 ))}
-              </ul>
+              </div>
+              
+              {/* Retry button for retryable errors */}
+              {serviceErrors.some((err: any) => err.retryable) && (
+                <div className="mt-3 flex items-center gap-2">
+                  <Button
+                    onClick={handleRetry}
+                    disabled={isRetrying}
+                    size="sm"
+                    className="bg-amber-600 hover:bg-amber-700 text-white"
+                  >
+                    {isRetrying ? (
+                      <>
+                        <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                        Retrying...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="w-3 h-3 mr-1" />
+                        Retry Failed Services
+                      </>
+                    )}
+                  </Button>
+                  {lastSuccessfulFetch && (
+                    <span className="text-xs text-amber-700">
+                      Last successful: {lastSuccessfulFetch.toLocaleTimeString()}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -293,147 +506,203 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
             )}
           </select>
           
-          {/* Refresh Button */}
-          <Button
+          {/* Optimistic Refresh Button */}
+          <OptimisticButton
             onClick={handleRefresh}
-            disabled={refreshing}
+            disabled={refreshing || isOptimisticUpdating}
             variant="outline"
             size="sm"
             className="flex items-center gap-2"
+            loadingText="Refreshing..."
+            successText="Updated!"
+            errorText="Failed"
+            showFeedback={true}
+            feedbackDuration={2000}
           >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            {refreshing ? 'Refreshing...' : 'Refresh'}
-          </Button>
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </OptimisticButton>
         </div>
       </div>
 
-      {/* Error State */}
+      {/* Enhanced Error State */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-          <div>
-            <p className="text-red-800 font-medium">Error loading messages</p>
-            <p className="text-red-600 text-sm">{error}</p>
+        <div 
+          className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-200 rounded-xl p-6 shadow-sm"
+          data-error-type="network"
+          data-testid="main-error"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-red-900 font-semibold mb-2">Unable to Load Messages</h4>
+              <p className="text-red-700 mb-4">{error}</p>
+              
+              <div className="flex items-center gap-3">
+                <Button 
+                  onClick={handleRefresh} 
+                  disabled={refreshing}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {refreshing ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Retrying...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Try Again
+                    </>
+                  )}
+                </Button>
+                
+                {retryCount > 0 && (
+                  <div className="flex items-center gap-2 text-xs text-red-600">
+                    <Clock className="w-3 h-3" />
+                    <span>Retry attempt {retryCount}/3</span>
+                  </div>
+                )}
+                
+                {lastSuccessfulFetch && (
+                  <span className="text-xs text-red-600">
+                    Last successful: {lastSuccessfulFetch.toLocaleTimeString()}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
-          <Button onClick={handleRefresh} variant="outline" size="sm" className="ml-auto">
-            Try Again
-          </Button>
         </div>
       )}
 
       {/* Loading State */}
       {loading && <MessageLoadingSkeleton count={5} />}
 
-      {/* Messages List with Priority Sections */}
+      {/* Messages List - Virtual or Standard based on count */}
       {!loading && filteredMessages.length > 0 && (
-        <div className="space-y-6">
-          {/* Urgent Messages Section */}
-          {filter === 'all' && filteredMessages.filter(m => m.priority === 'urgent').length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                <h4 className="text-sm font-semibold text-red-900 uppercase tracking-wider">
-                  Urgent Messages ({filteredMessages.filter(m => m.priority === 'urgent').length})
-                </h4>
-              </div>
-              <div className="space-y-3">
-                {filteredMessages
-                  .filter(m => m.priority === 'urgent')
-                  .map((message, index) => (
-                    <div
-                      key={`${message.source}-${message.id}`}
-                      className="animate-in fade-in slide-in-from-bottom-2 duration-300"
-                      style={{ animationDelay: `${index * 30}ms` }}
-                    >
-                      <MessageCard
-                        message={message}
-                        onClick={() => {
-                          console.log('Open message:', message)
-                        }}
-                      />
-                    </div>
-                  ))}
-              </div>
-            </div>
-          )}
-
-          {/* Questions Section */}
-          {filter === 'all' && filteredMessages.filter(m => m.priority === 'question').length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <h4 className="text-sm font-semibold text-blue-900 uppercase tracking-wider">
-                  Questions ({filteredMessages.filter(m => m.priority === 'question').length})
-                </h4>
-              </div>
-              <div className="space-y-3">
-                {filteredMessages
-                  .filter(m => m.priority === 'question')
-                  .map((message, index) => (
-                    <div
-                      key={`${message.source}-${message.id}`}
-                      className="animate-in fade-in slide-in-from-bottom-2 duration-300"
-                      style={{ animationDelay: `${index * 30}ms` }}
-                    >
-                      <MessageCard
-                        message={message}
-                        onClick={() => {
-                          console.log('Open message:', message)
-                        }}
-                      />
-                    </div>
-                  ))}
-              </div>
-            </div>
-          )}
-
-          {/* Normal Messages Section */}
-          {filter === 'all' && filteredMessages.filter(m => m.priority === 'normal').length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                  Other Messages ({filteredMessages.filter(m => m.priority === 'normal').length})
-                </h4>
-              </div>
-              <div className="space-y-3">
-                {filteredMessages
-                  .filter(m => m.priority === 'normal')
-                  .map((message, index) => (
-                    <div
-                      key={`${message.source}-${message.id}`}
-                      className="animate-in fade-in slide-in-from-bottom-2 duration-300"
-                      style={{ animationDelay: `${index * 30}ms` }}
-                    >
-                      <MessageCard
-                        message={message}
-                        onClick={() => {
-                          console.log('Open message:', message)
-                        }}
-                      />
-                    </div>
-                  ))}
-              </div>
-            </div>
-          )}
-
-          {/* Filtered View (non-priority filters) */}
-          {filter !== 'all' && (
-            <div className="space-y-3">
-              {filteredMessages.map((message, index) => (
-                <div
-                  key={`${message.source}-${message.id}`}
-                  className="animate-in fade-in slide-in-from-bottom-2 duration-300"
-                  style={{ animationDelay: `${index * 30}ms` }}
-                >
-                  <MessageCard
-                    message={message}
-                    onClick={() => {
-                      console.log('Open message:', message)
-                    }}
-                  />
+        <div ref={containerRef}>
+          {useVirtualScrolling ? (
+            /* Virtual scrolling for large lists (50+ messages) - lazy loaded */
+            <LazyPriorityGroupedVirtualList
+              messages={filteredMessages}
+              height={virtualListHeight}
+              onMessageClick={handleMessageClick}
+              showPrioritySections={filter === 'all'}
+              className="border rounded-lg shadow-sm bg-white"
+            />
+          ) : (
+            /* Standard rendering for smaller lists */
+            <div className="space-y-6">
+              {/* Performance indicator for developers */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="text-xs text-gray-400 text-center py-2 border-b">
+                  Standard rendering ({filteredMessages.length} messages) • Virtual scrolling activates at 50+ messages
                 </div>
-              ))}
+              )}
+
+              {/* Urgent Messages Section */}
+              {filter === 'all' && filteredMessages.filter(m => m.priority === 'urgent').length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                    <h4 className="text-sm font-semibold text-red-900 uppercase tracking-wider">
+                      Urgent Messages ({filteredMessages.filter(m => m.priority === 'urgent').length})
+                    </h4>
+                  </div>
+                  <div className="space-y-3">
+                    {filteredMessages
+                      .filter(m => m.priority === 'urgent')
+                      .map((message, index) => (
+                        <div
+                          key={`${message.source}-${message.id}`}
+                          className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+                          style={{ animationDelay: `${index * 30}ms` }}
+                        >
+                          <MessageCard
+                            message={message}
+                            onClick={() => handleMessageClick(message)}
+                          />
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Questions Section */}
+              {filter === 'all' && filteredMessages.filter(m => m.priority === 'question').length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <h4 className="text-sm font-semibold text-blue-900 uppercase tracking-wider">
+                      Questions ({filteredMessages.filter(m => m.priority === 'question').length})
+                    </h4>
+                  </div>
+                  <div className="space-y-3">
+                    {filteredMessages
+                      .filter(m => m.priority === 'question')
+                      .map((message, index) => (
+                        <div
+                          key={`${message.source}-${message.id}`}
+                          className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+                          style={{ animationDelay: `${index * 30}ms` }}
+                        >
+                          <MessageCard
+                            message={message}
+                            onClick={() => handleMessageClick(message)}
+                          />
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Normal Messages Section */}
+              {filter === 'all' && filteredMessages.filter(m => m.priority === 'normal').length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                    <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                      Other Messages ({filteredMessages.filter(m => m.priority === 'normal').length})
+                    </h4>
+                  </div>
+                  <div className="space-y-3">
+                    {filteredMessages
+                      .filter(m => m.priority === 'normal')
+                      .map((message, index) => (
+                        <div
+                          key={`${message.source}-${message.id}`}
+                          className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+                          style={{ animationDelay: `${index * 30}ms` }}
+                        >
+                          <MessageCard
+                            message={message}
+                            onClick={() => handleMessageClick(message)}
+                          />
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Filtered View (non-priority filters) */}
+              {filter !== 'all' && (
+                <div className="space-y-3">
+                  {filteredMessages.map((message, index) => (
+                    <div
+                      key={`${message.source}-${message.id}`}
+                      className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+                      style={{ animationDelay: `${index * 30}ms` }}
+                    >
+                      <MessageCard
+                        message={message}
+                        onClick={() => handleMessageClick(message)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -474,7 +743,11 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
 
       {/* No Messages State */}
       {!loading && messages.length === 0 && hasConnections && (
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl shadow-sm border border-green-200 p-12 text-center relative overflow-hidden">
+        <div 
+          className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl shadow-sm border border-green-200 p-12 text-center relative overflow-hidden"
+          data-state="empty"
+          data-testid="empty-state"
+        >
           {/* Background decoration */}
           <div className="absolute inset-0 bg-gradient-to-r from-green-100/20 to-emerald-100/20 opacity-50"></div>
           <div className="relative z-10">
@@ -515,6 +788,26 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
       
       {/* Keyboard Shortcuts Help */}
       <KeyboardShortcutsHelp />
+      
+      {/* Optimistic Feedback Components */}
+      <OptimisticRefreshFeedback isRefreshing={refreshing || isOptimisticUpdating} />
+      <OptimisticCacheFeedback isCacheHit={cacheHit} isFetching={loading && !refreshing} />
+      
+      {/* Retry Status Indicator */}
+      {isRetrying && (
+        <div className="fixed bottom-20 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-in slide-in-from-bottom-2 duration-300">
+          <RefreshCw className="w-4 h-4 animate-spin" />
+          <span className="text-sm font-medium">Retrying connection...</span>
+        </div>
+      )}
+      
+      {/* Optimistic Updates Indicator */}
+      {hasOptimisticUpdates && (
+        <div className="fixed bottom-4 left-4 bg-green-600 text-white px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-in slide-in-from-bottom-2 duration-300">
+          <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
+          <span className="text-sm font-medium">Optimistic updates active</span>
+        </div>
+      )}
     </div>
   )
 }

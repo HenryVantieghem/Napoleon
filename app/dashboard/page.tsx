@@ -5,6 +5,8 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { ConnectAccounts } from '@/components/dashboard/ConnectAccounts'
 import { MessageStream } from '@/components/dashboard/MessageStream'
 import { PageTransition, StaggeredTransition } from '@/components/ui/PageTransition'
+import { ErrorBoundary } from '@/components/error/ErrorBoundary'
+import { ApiErrorBoundary } from '@/components/error/ApiErrorBoundary'
 import { getUserTokens, isGmailConnected, isSlackConnected } from '@/lib/oauth-handlers'
 
 export const metadata: Metadata = {
@@ -32,20 +34,29 @@ export default async function DashboardPage() {
   }
 
   return (
-    <DashboardLayout activeTab="dashboard">
-      <PageTransition>
-        <div className="space-y-8">
-          {/* Connection Cards */}
-          <StaggeredTransition delay={0}>
-            <ConnectAccounts />
-          </StaggeredTransition>
+    <ErrorBoundary>
+      <DashboardLayout activeTab="dashboard">
+        <PageTransition>
+          <div className="space-y-8">
+            {/* Connection Cards with Error Boundary */}
+            <StaggeredTransition delay={0}>
+              <ErrorBoundary>
+                <ConnectAccounts />
+              </ErrorBoundary>
+            </StaggeredTransition>
 
-          {/* Live Message Stream */}
-          <StaggeredTransition delay={200}>
-            <MessageStream connectionStatus={connectionStatus} />
-          </StaggeredTransition>
-        </div>
-      </PageTransition>
-    </DashboardLayout>
+            {/* Live Message Stream with API Error Boundary */}
+            <StaggeredTransition delay={200}>
+              <ApiErrorBoundary 
+                serviceName="Message Stream"
+                onRetry={() => window.location.reload()}
+              >
+                <MessageStream connectionStatus={connectionStatus} />
+              </ApiErrorBoundary>
+            </StaggeredTransition>
+          </div>
+        </PageTransition>
+      </DashboardLayout>
+    </ErrorBoundary>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { OAuthConnectionCard } from './OAuthConnectionCard'
 import { ConnectionLoadingSkeleton } from '@/components/ui/LoadingSkeleton'
 
@@ -32,7 +32,7 @@ interface TokenStatusResponse {
   details: TokenDetails
 }
 
-export function ConnectAccounts() {
+export const ConnectAccounts = memo(function ConnectAccounts() {
   const [tokenStatus, setTokenStatus] = useState<TokenStatusResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -58,7 +58,7 @@ export function ConnectAccounts() {
     }
   }, [])
 
-  const fetchTokenStatus = async () => {
+  const fetchTokenStatus = useCallback(async () => {
     try {
       const response = await fetch('/api/user/tokens')
       if (response.ok) {
@@ -71,15 +71,15 @@ export function ConnectAccounts() {
       setLoading(false)
       setRefreshing(false)
     }
-  }
+  }, [])
 
-  const handleGmailConnect = () => {
+  const handleGmailConnect = useCallback(() => {
     window.location.href = '/api/oauth/gmail/auth'
-  }
+  }, [])
 
-  const handleSlackConnect = () => {
+  const handleSlackConnect = useCallback(() => {
     window.location.href = '/api/oauth/slack/auth'
-  }
+  }, [])
 
   if (loading) {
     return (
@@ -151,4 +151,4 @@ export function ConnectAccounts() {
       )}
     </div>
   )
-}
+})

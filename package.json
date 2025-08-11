@@ -7,11 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test:performance": "node scripts/performance-test.js"
   },
   "dependencies": {
     "@clerk/nextjs": "^5.0.0",
     "@slack/web-api": "^6.10.0",
+    "@tanstack/react-query": "^5.84.2",
+    "@tanstack/react-query-devtools": "^5.84.2",
+    "@types/react-window": "^1.8.8",
     "autoprefixer": "^10.4.16",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
@@ -19,9 +23,12 @@
     "googleapis": "^129.0.0",
     "lucide-react": "^0.263.1",
     "next": "^14.2.0",
+    "node-cache": "^5.1.2",
     "postcss": "^8.4.31",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-window": "^1.8.11",
+    "react-window-infinite-loader": "^1.0.10",
     "tailwind-merge": "^2.0.0",
     "tailwindcss": "^3.4.0"
   },

@@ -1,9 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { getUserTokens, isGmailConnected, isSlackConnected } from '@/lib/oauth-handlers';
+import { messageCache, userTokenCache, priorityCache, cacheKeys } from '@/lib/cache-manager';
+import { withAPIOptimization, batchOptimizer } from '@/middleware/api-optimization';
 import type { Message } from '@/types';
 
 export const runtime = 'nodejs';
+
+// Enhanced error types for better error handling
+interface ServiceError {
+  service: 'gmail' | 'slack';
+  error: string;
+  code?: string;
+  retryable: boolean;
+  timestamp: number;
+}
+
+interface UnifiedApiError {
+  error: string;
+  code: string;
+  services?: ServiceError[];
+  canRetry: boolean;
+  timestamp: number;
+}
 
 // Enhanced priority detection with executive focus
 function getEnhancedPriority(
@@ -99,7 +118,8 @@ function sortMessagesByPriority(messages: Message[]): Message[] {
   });
 }
 
-export async function GET(request: NextRequest) {
+// Apply API optimization middleware
+async function handleUnifiedMessages(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await currentUser();
     
@@ -107,8 +127,33 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user's connection status
-    const tokens = await getUserTokens(user.id);
+    // Check cache first for unified messages
+    const cacheKey = cacheKeys.unifiedMessages(user.id);
+    const cachedData = messageCache.get<any>(cacheKey);
+    
+    if (cachedData) {
+      console.log(`⚡ Cache HIT: Returning cached unified messages for user ${user.id}`);
+      return NextResponse.json({
+        ...cachedData,
+        cached: true,
+        cacheHit: true,
+        fetchedAt: cachedData.fetchedAt
+      }, { status: 200 });
+    }
+
+    console.log(`💾 Cache MISS: Fetching fresh unified messages for user ${user.id}`);
+
+    // Get user's connection status (with caching)
+    const tokenCacheKey = cacheKeys.userTokens(user.id);
+    let tokens = userTokenCache.get<any>(tokenCacheKey);
+    
+    if (!tokens) {
+      tokens = await getUserTokens(user.id);
+      if (tokens) {
+        userTokenCache.set(tokenCacheKey, tokens, 3600); // Cache for 1 hour
+      }
+    }
+    
     const hasGmail = tokens ? isGmailConnected(tokens) : false;
     const hasSlack = tokens ? isSlackConnected(tokens) : false;
 
@@ -121,66 +166,167 @@ export async function GET(request: NextRequest) {
     }
 
     const allMessages: Message[] = [];
-    const errors: { service: string; error: string }[] = [];
+    const errors: Array<{ service: string; error: string; retryable?: boolean; code?: string }> = [];
     let gmailFetchTime = 0;
     let slackFetchTime = 0;
 
-    // Fetch Gmail messages if connected
+    // Fetch Gmail messages if connected with enhanced error handling and caching
     if (hasGmail) {
       const gmailStart = Date.now();
+      const gmailCacheKey = cacheKeys.gmailMessages(user.id);
+      
       try {
-        const gmailResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/messages/gmail`, {
-          headers: {
-            'Cookie': request.headers.get('cookie') || '',
-            'Authorization': request.headers.get('authorization') || ''
-          }
-        });
-
-        if (gmailResponse.ok) {
-          const gmailData = await gmailResponse.json();
-          allMessages.push(...(gmailData.messages || []));
+        // Check Gmail cache first
+        const cachedGmailData = messageCache.get<any>(gmailCacheKey);
+        
+        if (cachedGmailData) {
+          console.log(`⚡ Gmail cache HIT for user ${user.id}`);
+          allMessages.push(...(cachedGmailData.messages || []));
+          gmailFetchTime = 10; // Minimal time for cache hit
         } else {
-          const errorData = await gmailResponse.json();
-          errors.push({ service: 'gmail', error: errorData.error || 'Failed to fetch Gmail messages' });
+          console.log(`💾 Gmail cache MISS for user ${user.id}, fetching...`);
+          
+          // Add timeout to prevent hanging
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+          
+          const gmailResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/messages/gmail`, {
+            headers: {
+              'Cookie': request.headers.get('cookie') || '',
+              'Authorization': request.headers.get('authorization') || ''
+            },
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+
+          if (gmailResponse.ok) {
+            const gmailData = await gmailResponse.json();
+            allMessages.push(...(gmailData.messages || []));
+            
+            // Cache Gmail response for 5 minutes
+            messageCache.set(gmailCacheKey, gmailData, 300);
+            console.log(`💾 Gmail data cached for user ${user.id}`);
+          } else {
+            const errorData = await gmailResponse.json().catch(() => ({ error: 'Unknown error' }));
+            const isRetryable = gmailResponse.status >= 500 || gmailResponse.status === 429;
+            
+            errors.push({ 
+              service: 'gmail', 
+              error: errorData.error || `HTTP ${gmailResponse.status}: ${gmailResponse.statusText}`,
+              code: errorData.code || `HTTP_${gmailResponse.status}`,
+              retryable: isRetryable,
+              timestamp: Date.now()
+            });
+          }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Gmail fetch error:', error);
-        errors.push({ service: 'gmail', error: 'Gmail service unavailable' });
+        const isTimeoutError = error.name === 'AbortError';
+        const isNetworkError = !error.status;
+        
+        errors.push({ 
+          service: 'gmail', 
+          error: isTimeoutError 
+            ? 'Gmail request timed out after 15 seconds'
+            : isNetworkError 
+              ? 'Network error connecting to Gmail'
+              : 'Gmail service temporarily unavailable',
+          code: isTimeoutError ? 'TIMEOUT' : isNetworkError ? 'NETWORK_ERROR' : 'SERVICE_ERROR',
+          retryable: true,
+          timestamp: Date.now()
+        });
       }
       gmailFetchTime = Date.now() - gmailStart;
     }
 
-    // Fetch Slack messages if connected
+    // Fetch Slack messages if connected with enhanced error handling and caching
     if (hasSlack) {
       const slackStart = Date.now();
+      const slackCacheKey = cacheKeys.slackMessages(user.id);
+      
       try {
-        const slackResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/messages/slack`, {
-          headers: {
-            'Cookie': request.headers.get('cookie') || '',
-            'Authorization': request.headers.get('authorization') || ''
-          }
-        });
-
-        if (slackResponse.ok) {
-          const slackData = await slackResponse.json();
-          allMessages.push(...(slackData.messages || []));
+        // Check Slack cache first
+        const cachedSlackData = messageCache.get<any>(slackCacheKey);
+        
+        if (cachedSlackData) {
+          console.log(`⚡ Slack cache HIT for user ${user.id}`);
+          allMessages.push(...(cachedSlackData.messages || []));
+          slackFetchTime = 10; // Minimal time for cache hit
         } else {
-          const errorData = await slackResponse.json();
-          errors.push({ service: 'slack', error: errorData.error || 'Failed to fetch Slack messages' });
+          console.log(`💾 Slack cache MISS for user ${user.id}, fetching...`);
+          
+          // Add timeout to prevent hanging
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+          
+          const slackResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/messages/slack`, {
+            headers: {
+              'Cookie': request.headers.get('cookie') || '',
+              'Authorization': request.headers.get('authorization') || ''
+            },
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+
+          if (slackResponse.ok) {
+            const slackData = await slackResponse.json();
+            allMessages.push(...(slackData.messages || []));
+            
+            // Cache Slack response for 5 minutes
+            messageCache.set(slackCacheKey, slackData, 300);
+            console.log(`💾 Slack data cached for user ${user.id}`);
+          } else {
+            const errorData = await slackResponse.json().catch(() => ({ error: 'Unknown error' }));
+            const isRetryable = slackResponse.status >= 500 || slackResponse.status === 429;
+            
+            errors.push({ 
+              service: 'slack', 
+              error: errorData.error || `HTTP ${slackResponse.status}: ${slackResponse.statusText}`,
+              code: errorData.code || `HTTP_${slackResponse.status}`,
+              retryable: isRetryable,
+              timestamp: Date.now()
+            });
+          }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Slack fetch error:', error);
-        errors.push({ service: 'slack', error: 'Slack service unavailable' });
+        const isTimeoutError = error.name === 'AbortError';
+        const isNetworkError = !error.status;
+        
+        errors.push({ 
+          service: 'slack', 
+          error: isTimeoutError 
+            ? 'Slack request timed out after 15 seconds'
+            : isNetworkError 
+              ? 'Network error connecting to Slack'
+              : 'Slack service temporarily unavailable',
+          code: isTimeoutError ? 'TIMEOUT' : isNetworkError ? 'NETWORK_ERROR' : 'SERVICE_ERROR',
+          retryable: true,
+          timestamp: Date.now()
+        });
       }
       slackFetchTime = Date.now() - slackStart;
     }
 
-    // Apply enhanced priority detection
+    // Apply enhanced priority detection (with caching for expensive calculations)
     const vipSenders = process.env.VIP_SENDERS?.split(',') || [];
-    const messagesWithPriority = allMessages.map(message => ({
-      ...message,
-      priority: getEnhancedPriority(message, vipSenders)
-    }));
+    const messagesWithPriority = allMessages.map(message => {
+      // Cache priority calculations for performance
+      const priorityCacheKey = cacheKeys.messagePriority(message.id);
+      let cachedPriority = priorityCache.get<'urgent' | 'question' | 'normal'>(priorityCacheKey);
+      
+      if (!cachedPriority) {
+        cachedPriority = getEnhancedPriority(message, vipSenders);
+        priorityCache.set(priorityCacheKey, cachedPriority, 600); // Cache for 10 minutes
+      }
+      
+      return {
+        ...message,
+        priority: cachedPriority
+      };
+    });
 
     // Sort messages by priority
     const sortedMessages = sortMessagesByPriority(messagesWithPriority);
@@ -199,7 +345,8 @@ export async function GET(request: NextRequest) {
       slack: sortedMessages.filter(m => m.source === 'slack').length
     };
 
-    return NextResponse.json({
+    // Enhanced response with comprehensive error information and caching metrics
+    const response = {
       messages: sortedMessages,
       stats: {
         priority: priorityStats,
@@ -215,14 +362,59 @@ export async function GET(request: NextRequest) {
         slack: hasSlack
       },
       errors: errors.length > 0 ? errors : undefined,
-      fetchedAt: new Date().toISOString()
-    });
+      fetchedAt: new Date().toISOString(),
+      status: {
+        success: errors.length === 0,
+        partialSuccess: sortedMessages.length > 0 && errors.length > 0,
+        canRetry: errors.some((e: any) => e.retryable),
+        healthScore: Math.round(((hasGmail && hasSlack ? 2 : 1) - errors.length) / (hasGmail && hasSlack ? 2 : 1) * 100)
+      }
+    };
 
-  } catch (error) {
-    console.error('Unified API error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to fetch unified messages',
-      code: 'UNIFIED_FETCH_ERROR'
-    }, { status: 500 });
+    // Cache the unified response for 5 minutes (if successful)
+    if (errors.length === 0) {
+      messageCache.set(cacheKey, response, 300);
+      console.log(`💾 Unified response cached for user ${user.id}`);
+    }
+    
+    // Return appropriate status code based on success level
+    const statusCode = errors.length === 0 
+      ? 200 
+      : sortedMessages.length > 0 
+        ? 206 // Partial content
+        : 503; // Service unavailable
+    
+    return NextResponse.json(response, { status: statusCode });
+
+  } catch (error: any) {
+    console.error('Unified API critical error:', error);
+    
+    // Enhanced error response with debugging information
+    const errorResponse: UnifiedApiError = {
+      error: error.message || 'Failed to fetch unified messages',
+      code: 'UNIFIED_FETCH_ERROR',
+      canRetry: true,
+      timestamp: Date.now()
+    };
+    
+    // Add stack trace in development
+    if (process.env.NODE_ENV === 'development') {
+      (errorResponse as any).stack = error.stack;
+      (errorResponse as any).details = {
+        name: error.name,
+        cause: error.cause
+      };
+    }
+    
+    return NextResponse.json(errorResponse, { status: 500 });
   }
 }
+
+// Export the optimized handler
+export const GET = withAPIOptimization(handleUnifiedMessages, {
+  enableCompression: true,
+  enableCaching: true,
+  enablePayloadOptimization: true,
+  compressionThreshold: 1024, // 1KB
+  cacheMaxAge: 300, // 5 minutes - matches existing cache
+});

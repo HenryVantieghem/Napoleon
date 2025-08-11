@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { google } from 'googleapis';
 import { getValidGmailToken } from '@/lib/oauth-handlers';
+import { withAPIOptimization } from '@/middleware/api-optimization';
 import type { Message } from '@/types';
 
 export const runtime = 'nodejs';
 
-export async function GET(request: NextRequest) {
+async function handleGmailMessages(request: NextRequest) {
   try {
     const user = await currentUser();
     
@@ -246,3 +247,12 @@ function getPriority(subject: string, senderEmail: string, senderName: string): 
   // Default to normal priority
   return 'normal';
 }
+
+// Export the optimized handler
+export const GET = withAPIOptimization(handleGmailMessages, {
+  enableCompression: true,
+  enableCaching: true,
+  enablePayloadOptimization: true,
+  compressionThreshold: 2048, // 2KB - Gmail responses tend to be larger
+  cacheMaxAge: 300, // 5 minutes
+});

@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { Mail, MessageSquare, ExternalLink, Paperclip, Clock, Zap, HelpCircle } from 'lucide-react'
 import { PriorityBadge } from './PriorityBadge'
@@ -9,44 +10,51 @@ interface MessageCardProps {
   onClick?: () => void
 }
 
-export function MessageCard({ message, onClick }: MessageCardProps) {
-  const isGmail = message.source === 'gmail'
-  const SourceIcon = isGmail ? Mail : MessageSquare
-  
-  // Format timestamp
-  const timeAgo = formatDistanceToNow(new Date(message.timestamp), { addSuffix: true })
-  
-  // Truncate content for preview
-  const previewContent = message.content.length > 150 
-    ? `${message.content.substring(0, 150)}...`
-    : message.content
+export const MessageCard = memo<MessageCardProps>(function MessageCard({ message, onClick }) {
+  // Memoize expensive calculations
+  const { isGmail, SourceIcon, timeAgo, previewContent, displaySender, hasAttachments, PriorityIcon } = useMemo(() => {
+    const isGmailSource = message.source === 'gmail'
+    
+    return {
+      isGmail: isGmailSource,
+      SourceIcon: isGmailSource ? Mail : MessageSquare,
+      timeAgo: formatDistanceToNow(new Date(message.timestamp), { addSuffix: true }),
+      previewContent: message.content.length > 150 
+        ? `${message.content.substring(0, 150)}...`
+        : message.content,
+      displaySender: message.sender.includes('<') 
+        ? message.sender.split('<')[0].trim().replace(/"/g, '')
+        : message.sender,
+      hasAttachments: message.metadata?.hasAttachments || false,
+      PriorityIcon: message.priority === 'urgent' 
+        ? Zap 
+        : message.priority === 'question' 
+          ? HelpCircle 
+          : null
+    }
+  }, [message.source, message.timestamp, message.content, message.sender, message.metadata?.hasAttachments, message.priority])
 
-  // Extract sender name (remove email if present)
-  const displaySender = message.sender.includes('<') 
-    ? message.sender.split('<')[0].trim().replace(/"/g, '')
-    : message.sender
+  // Memoize className for performance
+  const cardClassName = useMemo(() => {
+    return `group transition-all duration-300 ease-out hover:shadow-xl hover:scale-[1.01] cursor-pointer border-l-4 ${
+      message.priority === 'urgent' 
+        ? 'border-l-red-500 hover:border-l-red-600 bg-gradient-to-r from-red-50/40 to-transparent hover:from-red-50/70' 
+        : message.priority === 'question'
+          ? 'border-l-blue-500 hover:border-l-blue-600 bg-gradient-to-r from-blue-50/40 to-transparent hover:from-blue-50/70'
+          : 'border-l-gray-300 hover:border-l-gray-400 bg-gradient-to-r from-gray-50/30 to-transparent hover:from-gray-50/60'
+    } hover:-translate-y-0.5 active:scale-[0.99] active:translate-y-0`
+  }, [message.priority])
 
-  // Check for attachments
-  const hasAttachments = message.metadata?.hasAttachments || false
-
-  // Get priority icon
-  const PriorityIcon = message.priority === 'urgent' 
-    ? Zap 
-    : message.priority === 'question' 
-      ? HelpCircle 
-      : null
+  // Memoize title for tooltip
+  const cardTitle = useMemo(() => {
+    return `${message.priority === 'urgent' ? '🚨 ' : message.priority === 'question' ? '❓ ' : ''}Click to open in ${message.source === 'gmail' ? 'Gmail' : 'Slack'}`
+  }, [message.priority, message.source])
 
   return (
     <Card 
-      className={`group transition-all duration-300 ease-out hover:shadow-xl hover:scale-[1.01] cursor-pointer border-l-4 ${
-        message.priority === 'urgent' 
-          ? 'border-l-red-500 hover:border-l-red-600 bg-gradient-to-r from-red-50/40 to-transparent hover:from-red-50/70' 
-          : message.priority === 'question'
-            ? 'border-l-blue-500 hover:border-l-blue-600 bg-gradient-to-r from-blue-50/40 to-transparent hover:from-blue-50/70'
-            : 'border-l-gray-300 hover:border-l-gray-400 bg-gradient-to-r from-gray-50/30 to-transparent hover:from-gray-50/60'
-      } hover:-translate-y-0.5 active:scale-[0.99] active:translate-y-0`}
+      className={cardClassName}
       onClick={onClick}
-      title={`${message.priority === 'urgent' ? '🚨 ' : message.priority === 'question' ? '❓ ' : ''}Click to open in ${message.source === 'gmail' ? 'Gmail' : 'Slack'}`}
+      title={cardTitle}
     >
       <CardContent className="p-4">
         {/* Header with source, sender, and priority */}
@@ -155,4 +163,4 @@ export function MessageCard({ message, onClick }: MessageCardProps) {
       </CardContent>
     </Card>
   )
-}
+})

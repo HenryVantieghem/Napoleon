@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { UserButton } from '@clerk/nextjs'
 import { 
   MessageSquare, 
@@ -14,14 +14,34 @@ import {
   Zap
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useErrorHandler } from '@/hooks/useErrorHandler'
+import { ErrorToastContainer } from '@/components/ui/ErrorToast'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
   activeTab?: 'dashboard' | 'messages' | 'analytics' | 'settings'
 }
 
-export function DashboardLayout({ children, activeTab = 'dashboard' }: DashboardLayoutProps) {
+const DashboardLayout = memo<DashboardLayoutProps>(function DashboardLayout({ children, activeTab = 'dashboard' }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  
+  // Global error handling
+  const {
+    errors,
+    retryError,
+    clearError,
+    isRecovering
+  } = useErrorHandler({
+    maxRetries: 3,
+    enableAutoRetry: true,
+    enableNotifications: true,
+    onError: (error) => {
+      console.log('🚨 Dashboard Error:', error)
+    },
+    onRecovery: (error) => {
+      console.log('✅ Dashboard Recovery:', error)
+    }
+  })
 
   const navigation = [
     { 
@@ -249,6 +269,16 @@ export function DashboardLayout({ children, activeTab = 'dashboard' }: Dashboard
           </div>
         </main>
       </div>
+
+      {/* Global Error Toast Container */}
+      <ErrorToastContainer
+        errors={errors}
+        isRetrying={errors.reduce((acc, error) => ({ ...acc, [error.id]: isRecovering }), {})}
+        onRetry={retryError}
+        onDismiss={clearError}
+      />
     </div>
   )
-}
+})
+
+export { DashboardLayout }

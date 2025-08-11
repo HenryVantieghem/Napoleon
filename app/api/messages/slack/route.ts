@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { WebClient } from '@slack/web-api';
 import { getValidSlackToken } from '@/lib/oauth-handlers';
+import { withAPIOptimization } from '@/middleware/api-optimization';
 import type { Message } from '@/types';
 
 export const runtime = 'nodejs';
 
-export async function GET(request: NextRequest) {
+async function handleSlackMessages(request: NextRequest) {
   try {
     const user = await currentUser();
     
@@ -235,3 +236,12 @@ function getPriority(text: string, channelName: string, senderName: string): 'ur
   // Default to normal priority
   return 'normal';
 }
+
+// Export the optimized handler
+export const GET = withAPIOptimization(handleSlackMessages, {
+  enableCompression: true,
+  enableCaching: true,
+  enablePayloadOptimization: true,
+  compressionThreshold: 1024, // 1KB - Slack messages tend to be shorter
+  cacheMaxAge: 300, // 5 minutes
+});
