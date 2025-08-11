@@ -9,9 +9,9 @@ export function SignInButton() {
     <>
       <SignedOut>
         <ClerkSignInButton mode="modal">
-          <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
-            <Mail className="w-5 h-5 mr-2" />
-            Sign in with Google
+          <Button size="lg" className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-10 py-4 rounded-lg font-bold text-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+            <Mail className="w-5 h-5 mr-3" />
+            Start Your Executive Dashboard
           </Button>
         </ClerkSignInButton>
       </SignedOut>
@@ -20,11 +20,11 @@ export function SignInButton() {
         <div className="flex items-center gap-4">
           <Button 
             size="lg" 
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-3 rounded-lg font-bold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
             onClick={() => window.location.href = '/dashboard'}
           >
-            <MessageSquare className="w-5 h-5 mr-2" />
-            View Dashboard
+            <MessageSquare className="w-5 h-5 mr-3" />
+            Your Executive Dashboard
           </Button>
           <UserButton 
             appearance={{

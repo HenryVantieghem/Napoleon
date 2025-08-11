@@ -6,23 +6,23 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Napoleon AI - Unified Message Dashboard',
-  description: 'View Gmail and Slack messages in one unified stream',
-  keywords: ['email', 'slack', 'dashboard', 'productivity', 'messages'],
+  title: 'Napoleon AI - Executive Command Center',
+  description: 'Transform how C-suite executives manage critical communications. Unify Gmail and Slack with AI-powered priority detection.',
+  keywords: ['executive dashboard', 'CEO tools', 'email management', 'slack integration', 'priority communications', 'leadership productivity'],
   authors: [{ name: 'Napoleon AI' }],
   viewport: 'width=device-width, initial-scale=1',
   robots: 'index, follow',
   openGraph: {
-    title: 'Napoleon AI - Unified Message Dashboard',
-    description: 'View Gmail and Slack messages in one unified stream',
+    title: 'Napoleon AI - Executive Command Center',
+    description: 'Transform how C-suite executives manage critical communications. Unify Gmail and Slack with AI-powered priority detection.',
     url: 'https://napoleonai.app',
     siteName: 'Napoleon AI',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Napoleon AI - Unified Message Dashboard',
-    description: 'View Gmail and Slack messages in one unified stream',
+    title: 'Napoleon AI - Executive Command Center',
+    description: 'Transform how C-suite executives manage critical communications. Unify Gmail and Slack with AI-powered priority detection.',
   },
 }
 
