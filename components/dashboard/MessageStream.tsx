@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { MessageCard } from './MessageCard'
+import { MessageLoadingSkeleton } from '@/components/ui/LoadingSkeleton'
 import { Button } from '@/components/ui/button'
 import { RefreshCw, AlertCircle, Mail, MessageSquare, Filter } from 'lucide-react'
 import type { Message, ConnectionStatus } from '@/types'
@@ -170,7 +171,7 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
                 {priorityCounts.urgent} urgent
               </span>
               <span className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                 {priorityCounts.question} questions
               </span>
             </div>
@@ -222,34 +223,25 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
       )}
 
       {/* Loading State */}
-      {loading && (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 p-4 animate-pulse">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-6 h-6 bg-gray-200 rounded-full"></div>
-                <div className="h-4 bg-gray-200 rounded flex-1"></div>
-                <div className="h-6 w-16 bg-gray-200 rounded"></div>
-              </div>
-              <div className="h-4 bg-gray-200 rounded mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-            </div>
-          ))}
-        </div>
-      )}
+      {loading && <MessageLoadingSkeleton count={5} />}
 
       {/* Messages List */}
       {!loading && filteredMessages.length > 0 && (
         <div className="space-y-4">
-          {filteredMessages.map((message) => (
-            <MessageCard
+          {filteredMessages.map((message, index) => (
+            <div
               key={`${message.source}-${message.id}`}
-              message={message}
-              onClick={() => {
-                // TODO: Open message in modal or external client
-                console.log('Open message:', message)
-              }}
-            />
+              className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              <MessageCard
+                message={message}
+                onClick={() => {
+                  // TODO: Open message in modal or external client
+                  console.log('Open message:', message)
+                }}
+              />
+            </div>
           ))}
         </div>
       )}

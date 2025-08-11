@@ -9,7 +9,11 @@
       "Bash(npm install)",
       "Bash(npm run lint)",
       "Bash(npx create-next-app:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)",
+      "Bash(node:*)",
+      "Bash(rm:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }

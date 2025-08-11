@@ -14,6 +14,7 @@ export interface Message {
     labelIds?: string[]
     channelType?: string
     teamId?: string
+    hasAttachments?: boolean
   }
 }
 

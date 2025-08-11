@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Mail, MessageSquare, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { OAuthConnectionCard } from './OAuthConnectionCard'
+import { ConnectionLoadingSkeleton } from '@/components/ui/LoadingSkeleton'
 
 interface ConnectionStatus {
   gmail: boolean
@@ -36,10 +35,7 @@ interface TokenStatusResponse {
 export function ConnectAccounts() {
   const [tokenStatus, setTokenStatus] = useState<TokenStatusResponse | null>(null)
   const [loading, setLoading] = useState(true)
-  const [connecting, setConnecting] = useState<{ gmail: boolean, slack: boolean }>({
-    gmail: false,
-    slack: false
-  })
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     fetchTokenStatus()
@@ -51,16 +47,14 @@ export function ConnectAccounts() {
     
     if (connected) {
       // Refresh token status after successful connection
-      setTimeout(fetchTokenStatus, 1000)
-      
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname)
+      setTimeout(() => {
+        setRefreshing(true)
+        fetchTokenStatus()
+      }, 1000)
     }
     
     if (error) {
       console.error('OAuth error:', error)
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname)
     }
   }, [])
 
@@ -75,30 +69,29 @@ export function ConnectAccounts() {
       console.error('Failed to fetch token status:', error)
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
   }
 
-  const handleGmailConnect = async () => {
-    setConnecting(prev => ({ ...prev, gmail: true }))
+  const handleGmailConnect = () => {
     window.location.href = '/api/oauth/gmail/auth'
   }
 
-  const handleSlackConnect = async () => {
-    setConnecting(prev => ({ ...prev, slack: true }))
+  const handleSlackConnect = () => {
     window.location.href = '/api/oauth/slack/auth'
   }
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {[1, 2].map((i) => (
-          <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 animate-pulse">
-            <div className="h-20 bg-gray-200 rounded mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded mb-4 w-3/4"></div>
-            <div className="h-10 bg-gray-200 rounded"></div>
-          </div>
-        ))}
+      <div className="space-y-8">
+        {/* Header skeleton */}
+        <div className="text-center animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/2 mx-auto mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
+        </div>
+        
+        {/* Connection cards skeleton */}
+        <ConnectionLoadingSkeleton />
       </div>
     )
   }
@@ -108,146 +101,54 @@ export function ConnectAccounts() {
   const gmailExpired = tokenStatus?.details?.gmail?.expired || false
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* Gmail Connection */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-              <Mail className="w-6 h-6 text-red-600" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Gmail</h3>
-              <p className="text-sm text-gray-500">Connect your Gmail account</p>
-            </div>
-          </div>
-          
-          {isGmailConnected ? (
-            <div className="flex flex-col items-end space-y-1">
-              <Badge variant={gmailExpired ? "destructive" : "default"} className="flex items-center gap-1">
-                {gmailExpired ? (
-                  <>
-                    <AlertCircle className="w-3 h-3" />
-                    Token Expired
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-3 h-3" />
-                    Connected
-                  </>
-                )}
-              </Badge>
-              {tokenStatus?.details?.gmail?.connectedAt && (
-                <p className="text-xs text-gray-400">
-                  Connected {new Date(tokenStatus.details.gmail.connectedAt).toLocaleDateString()}
-                </p>
-              )}
-            </div>
-          ) : (
-            <Badge variant="outline">Not Connected</Badge>
-          )}
-        </div>
-        
-        <p className="text-gray-600 mb-4">
-          Access your Gmail messages from the last 7 days with secure OAuth authentication.
-          {gmailExpired && (
-            <span className="block text-red-600 text-sm mt-1">
-              Your Gmail token has expired. Please reconnect to continue accessing messages.
-            </span>
-          )}
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Connect Your Accounts</h2>
+        <p className="text-gray-600 max-w-2xl mx-auto">
+          Secure OAuth integration with enterprise-grade security. Connect your accounts to start 
+          receiving prioritized messages in your executive dashboard.
         </p>
-        
-        <Button 
-          onClick={handleGmailConnect} 
-          disabled={connecting.gmail}
-          className={`w-full transition-colors ${
-            isGmailConnected && !gmailExpired 
-              ? 'bg-green-600 hover:bg-green-700' 
-              : gmailExpired 
-                ? 'bg-orange-600 hover:bg-orange-700'
-                : 'bg-red-600 hover:bg-red-700'
-          }`}
-        >
-          {connecting.gmail ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Connecting...
-            </>
-          ) : isGmailConnected && !gmailExpired ? (
-            'Reconnect Gmail'
-          ) : gmailExpired ? (
-            'Refresh Connection'
-          ) : (
-            'Connect Gmail'
-          )}
-        </Button>
       </div>
 
-      {/* Slack Connection */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <MessageSquare className="w-6 h-6 text-green-600" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Slack</h3>
-              <p className="text-sm text-gray-500">Connect your Slack workspace</p>
+      {/* Connection Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <OAuthConnectionCard
+          service="gmail"
+          isConnected={isGmailConnected}
+          isExpired={gmailExpired}
+          connectedAt={tokenStatus?.details?.gmail?.connectedAt}
+          onConnect={handleGmailConnect}
+          loading={refreshing}
+        />
+
+        <OAuthConnectionCard
+          service="slack"
+          isConnected={isSlackConnected}
+          connectedAt={tokenStatus?.details?.slack?.connectedAt}
+          teamName={tokenStatus?.details?.slack?.teamName}
+          onConnect={handleSlackConnect}
+          loading={refreshing}
+        />
+      </div>
+
+      {/* Security Notice */}
+      {(!isGmailConnected || !isSlackConnected) && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center">
+          <div className="max-w-3xl mx-auto">
+            <h3 className="text-lg font-semibold text-blue-900 mb-2">Enterprise Security Guarantee</h3>
+            <p className="text-blue-800 mb-4">
+              Napoleon AI uses official OAuth 2.0 flows with bank-grade encryption. Your login credentials 
+              are never stored or accessed by our application.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-blue-700">
+              <div>✓ Zero-trust architecture</div>
+              <div>✓ Encrypted token storage</div>
+              <div>✓ SOC2 compliant infrastructure</div>
             </div>
           </div>
-          
-          {isSlackConnected ? (
-            <div className="flex flex-col items-end space-y-1">
-              <Badge variant="default" className="flex items-center gap-1">
-                <CheckCircle className="w-3 h-3" />
-                Connected
-              </Badge>
-              {tokenStatus?.details?.slack?.teamName && (
-                <p className="text-xs text-gray-500">
-                  {tokenStatus.details.slack.teamName}
-                </p>
-              )}
-              {tokenStatus?.details?.slack?.connectedAt && (
-                <p className="text-xs text-gray-400">
-                  Connected {new Date(tokenStatus.details.slack.connectedAt).toLocaleDateString()}
-                </p>
-              )}
-            </div>
-          ) : (
-            <Badge variant="outline">Not Connected</Badge>
-          )}
         </div>
-        
-        <p className="text-gray-600 mb-4">
-          View messages from your Slack channels and direct messages in one place.
-          {isSlackConnected && tokenStatus?.details?.slack?.teamName && (
-            <span className="block text-green-600 text-sm mt-1">
-              Connected to {tokenStatus.details.slack.teamName} workspace.
-            </span>
-          )}
-        </p>
-        
-        <Button 
-          onClick={handleSlackConnect} 
-          disabled={connecting.slack}
-          className={`w-full transition-colors ${
-            isSlackConnected 
-              ? 'bg-green-600 hover:bg-green-700' 
-              : 'bg-green-600 hover:bg-green-700'
-          }`}
-        >
-          {connecting.slack ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Connecting...
-            </>
-          ) : isSlackConnected ? (
-            'Reconnect Slack'
-          ) : (
-            'Connect Slack'
-          )}
-        </Button>
-      </div>
+      )}
     </div>
   )
 }

@@ -4,7 +4,7 @@ import { google } from 'googleapis';
 import { getValidGmailToken } from '@/lib/oauth-handlers';
 import type { Message } from '@/types';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {
@@ -56,8 +56,7 @@ export async function GET(request: NextRequest) {
             const details = await gmail.users.messages.get({
               userId: 'me',
               id: msg.id!,
-              format: 'metadata',
-              metadataHeaders: ['From', 'Subject', 'Date', 'To'],
+              format: 'full',
             });
 
             const headers = details.data.payload?.headers || [];
@@ -71,12 +70,23 @@ export async function GET(request: NextRequest) {
             const senderName = senderMatch ? (senderMatch[1] || senderMatch[0]).trim().replace(/"/g, '') : 'Unknown';
             const senderEmail = senderMatch && senderMatch[2] ? senderMatch[2] : from;
 
+            // Extract message content/snippet
+            let content = details.data.snippet || subject;
+            
+            // Try to get text content from payload
+            if (details.data.payload) {
+              const textContent = extractTextFromPayload(details.data.payload);
+              if (textContent && textContent.length > content.length) {
+                content = textContent.substring(0, 300) + (textContent.length > 300 ? '...' : '');
+              }
+            }
+
             // Create message object
             const message: Message = {
               id: msg.id!,
               source: 'gmail',
               subject,
-              content: subject, // Use subject as preview content
+              content: content || subject, // Use extracted content or fallback to subject
               sender: senderName,
               senderEmail: senderEmail || undefined,
               recipients: to || undefined,
@@ -85,6 +95,8 @@ export async function GET(request: NextRequest) {
               metadata: {
                 threadId: details.data.threadId || undefined,
                 labelIds: details.data.labelIds || [],
+                hasAttachments: (details.data.payload?.parts?.some(part => 
+                  part.filename && part.filename.length > 0) || false),
               }
             };
 
@@ -145,6 +157,50 @@ export async function GET(request: NextRequest) {
       code: 'GMAIL_FETCH_ERROR'
     }, { status: 500 });
   }
+}
+
+// Helper function to extract text content from Gmail payload
+function extractTextFromPayload(payload: any): string {
+  let textContent = '';
+  
+  // If payload has body data and it's text/plain
+  if (payload.body?.data && payload.mimeType === 'text/plain') {
+    try {
+      textContent = Buffer.from(payload.body.data, 'base64').toString('utf-8');
+    } catch (e) {
+      console.error('Error decoding Gmail body:', e);
+    }
+  }
+  
+  // If payload has parts (multipart message)
+  if (payload.parts && payload.parts.length > 0) {
+    for (const part of payload.parts) {
+      if (part.mimeType === 'text/plain' && part.body?.data) {
+        try {
+          const partContent = Buffer.from(part.body.data, 'base64').toString('utf-8');
+          if (partContent.length > textContent.length) {
+            textContent = partContent;
+          }
+        } catch (e) {
+          console.error('Error decoding Gmail part:', e);
+        }
+      }
+      
+      // Recursively check nested parts
+      if (part.parts) {
+        const nestedContent = extractTextFromPayload(part);
+        if (nestedContent.length > textContent.length) {
+          textContent = nestedContent;
+        }
+      }
+    }
+  }
+  
+  // Clean up the text content
+  return textContent
+    .replace(/[\r\n]+/g, ' ') // Replace line breaks with spaces
+    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+    .trim();
 }
 
 // Priority detection algorithm for Gmail messages

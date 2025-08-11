@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from 'date-fns'
-import { Mail, MessageSquare, ExternalLink } from 'lucide-react'
+import { Mail, MessageSquare, ExternalLink, Paperclip, Clock } from 'lucide-react'
 import { PriorityBadge } from './PriorityBadge'
 import { Card, CardContent } from '@/components/ui/card'
 import type { Message } from '@/types'
@@ -26,14 +26,17 @@ export function MessageCard({ message, onClick }: MessageCardProps) {
     ? message.sender.split('<')[0].trim().replace(/"/g, '')
     : message.sender
 
+  // Check for attachments
+  const hasAttachments = message.metadata?.hasAttachments || false
+
   return (
     <Card 
-      className={`transition-all duration-200 hover:shadow-md cursor-pointer border-l-4 ${
+      className={`group transition-all duration-200 hover:shadow-lg cursor-pointer border-l-4 ${
         message.priority === 'urgent' 
-          ? 'border-l-red-500 hover:border-l-red-600' 
+          ? 'border-l-red-500 hover:border-l-red-600 bg-red-50/30 hover:bg-red-50/50' 
           : message.priority === 'question'
-            ? 'border-l-yellow-500 hover:border-l-yellow-600'
-            : 'border-l-gray-300 hover:border-l-gray-400'
+            ? 'border-l-blue-500 hover:border-l-blue-600 bg-blue-50/30 hover:bg-blue-50/50'
+            : 'border-l-gray-300 hover:border-l-gray-400 hover:bg-gray-50/50'
       }`}
       onClick={onClick}
     >
@@ -50,7 +53,15 @@ export function MessageCard({ message, onClick }: MessageCardProps) {
             </div>
             
             <div className="min-w-0 flex-1">
-              <p className="font-medium text-gray-900 truncate">{displaySender}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-gray-900 truncate">{displaySender}</p>
+                {hasAttachments && (
+                  <Paperclip className="w-3 h-3 text-gray-500 flex-shrink-0" />
+                )}
+              </div>
+              {message.senderEmail && message.senderEmail !== displaySender && (
+                <p className="text-xs text-gray-500 truncate">{message.senderEmail}</p>
+              )}
               {message.channel && (
                 <p className="text-xs text-gray-500">#{message.channel}</p>
               )}
@@ -59,38 +70,48 @@ export function MessageCard({ message, onClick }: MessageCardProps) {
           
           <div className="flex items-center gap-2 flex-shrink-0">
             <PriorityBadge priority={message.priority} size="sm" />
-            <ExternalLink className="w-4 h-4 text-gray-400" />
+            <div className="hidden sm:flex items-center text-xs text-gray-500">
+              <Clock className="w-3 h-3 mr-1" />
+              {timeAgo.replace(' ago', '')}
+            </div>
+            <ExternalLink className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>
 
         {/* Subject (for Gmail) */}
         {message.subject && (
-          <h4 className="font-semibold text-gray-900 mb-1 line-clamp-1">
+          <h4 className="font-semibold text-gray-900 mb-2 line-clamp-1 group-hover:text-gray-700 transition-colors">
             {message.subject}
           </h4>
         )}
 
         {/* Content preview */}
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2 leading-relaxed">
+        <p className="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">
           {previewContent}
         </p>
 
-        {/* Footer with timestamp and metadata */}
+        {/* Footer with metadata */}
         <div className="flex items-center justify-between text-xs text-gray-500">
-          <span className="flex items-center gap-1">
-            <time dateTime={message.timestamp}>
-              {timeAgo}
-            </time>
-          </span>
-          
-          {/* Additional metadata */}
-          <div className="flex items-center gap-2">
-            {message.metadata?.labelIds && message.metadata.labelIds.length > 0 && (
-              <span className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-xs">
+          <div className="flex items-center gap-3">
+            {/* Gmail-specific metadata */}
+            {isGmail && message.metadata?.labelIds && message.metadata.labelIds.length > 0 && (
+              <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full font-medium">
                 {message.metadata.labelIds.length} label{message.metadata.labelIds.length !== 1 ? 's' : ''}
               </span>
             )}
-            <span className="capitalize font-medium">
+            
+            {/* Thread indicator for Gmail */}
+            {isGmail && message.metadata?.threadId && (
+              <span className="text-gray-500">Thread</span>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <span className={`capitalize font-medium px-2 py-1 rounded-full ${
+              isGmail 
+                ? 'bg-red-100 text-red-600' 
+                : 'bg-green-100 text-green-600'
+            }`}>
               {message.source}
             </span>
           </div>

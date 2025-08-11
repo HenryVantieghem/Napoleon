@@ -23,7 +23,7 @@ export function PriorityBadge({ priority, size = 'md', showIcon = true }: Priori
           variant: 'question' as const,
           label: 'Question',
           icon: HelpCircle,
-          className: 'bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200'
+          className: 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200'
         }
       case 'normal':
       default:
