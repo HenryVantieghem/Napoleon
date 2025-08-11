@@ -13,7 +13,9 @@
       "Bash(npm run dev:*)",
       "Bash(node:*)",
       "Bash(rm:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "mcp__playwright__browser_navigate",
+      "Bash(curl:*)"
     ],
     "deny": []
   }

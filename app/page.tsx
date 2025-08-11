@@ -1,13 +1,13 @@
 import { SignInButton } from '@/components/auth/SignInButton'
+import { PageTransition, StaggeredTransition } from '@/components/ui/PageTransition'
 import { Mail, MessageSquare, Shield, Zap, Users, Star, TrendingUp, Clock } from 'lucide-react'
-import { Metadata } from 'next'
+import { Metadata, Viewport } from 'next'
 
 export const metadata: Metadata = {
   title: 'Napoleon AI - Executive Command Center for Communications',
   description: 'Transform how C-suite executives manage critical communications. Unify Gmail and Slack with AI-powered priority detection. Never miss what matters.',
   keywords: ['executive dashboard', 'CEO tools', 'email management', 'slack integration', 'priority communications', 'leadership productivity'],
   authors: [{ name: 'Napoleon AI' }],
-  viewport: 'width=device-width, initial-scale=1',
   robots: 'index, follow',
   openGraph: {
     title: 'Napoleon AI - Executive Command Center for Communications',
@@ -32,9 +32,14 @@ export const metadata: Metadata = {
   },
 }
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+}
+
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <PageTransition className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Navigation */}
       <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -349,6 +354,6 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
-    </div>
+    </PageTransition>
   )
 }

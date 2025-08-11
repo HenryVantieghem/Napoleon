@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { MessageCard } from './MessageCard'
 import { MessageLoadingSkeleton } from '@/components/ui/LoadingSkeleton'
+import { KeyboardShortcutsHelp } from '@/components/ui/KeyboardShortcutsHelp'
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { Button } from '@/components/ui/button'
 import { RefreshCw, AlertCircle, Mail, MessageSquare, Filter } from 'lucide-react'
 import type { Message, ConnectionStatus } from '@/types'
@@ -56,10 +58,48 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
   const [filter, setFilter] = useState<'all' | 'urgent' | 'question' | 'gmail' | 'slack'>('all')
   const [stats, setStats] = useState<UnifiedResponse['stats'] | null>(null)
   const [serviceErrors, setServiceErrors] = useState<Array<{ service: string; error: string }>>([])
+  const [selectedMessageIndex, setSelectedMessageIndex] = useState(-1)
+  const filterSelectRef = useRef<HTMLSelectElement>(null)
 
   useEffect(() => {
     fetchMessages()
   }, [])
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onRefresh: () => {
+      if (!refreshing && !loading) {
+        handleRefresh()
+      }
+    },
+    onNextMessage: () => {
+      const filtered = getFilteredMessages()
+      if (filtered.length > 0) {
+        setSelectedMessageIndex(prev => 
+          prev < filtered.length - 1 ? prev + 1 : 0
+        )
+      }
+    },
+    onPrevMessage: () => {
+      const filtered = getFilteredMessages()
+      if (filtered.length > 0) {
+        setSelectedMessageIndex(prev => 
+          prev > 0 ? prev - 1 : filtered.length - 1
+        )
+      }
+    },
+    onToggleFilter: () => {
+      if (filterSelectRef.current) {
+        filterSelectRef.current.focus()
+      }
+    },
+    onEscape: () => {
+      setSelectedMessageIndex(-1)
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur()
+      }
+    }
+  })
 
   const fetchMessages = async (isRefresh = false) => {
     if (isRefresh) {
@@ -140,14 +180,33 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
   
   if (!hasConnections) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <MessageSquare className="w-8 h-8 text-gray-400" />
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-sm border border-blue-200 p-12 text-center relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-100/20 to-purple-100/20 opacity-50"></div>
+        <div className="relative z-10">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <MessageSquare className="w-10 h-10 text-white" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-4">Welcome to Your Executive Command Center</h3>
+          <p className="text-gray-700 mb-6 max-w-md mx-auto leading-relaxed">
+            Connect your Gmail and Slack accounts above to unlock your unified message stream with 
+            AI-powered priority detection designed for executives.
+          </p>
+          <div className="flex justify-center items-center gap-6 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+              <span>Enterprise Security</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+              <span>2-Minute Setup</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
+              <span>Zero Data Storage</span>
+            </div>
+          </div>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Connect Your Accounts</h3>
-        <p className="text-gray-600 mb-4">
-          Connect Gmail and Slack above to see your unified message stream with intelligent priority sorting.
-        </p>
       </div>
     )
   }
@@ -217,9 +276,11 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
           
           {/* Filter Dropdown */}
           <select
+            ref={filterSelectRef}
             value={filter}
             onChange={(e) => setFilter(e.target.value as any)}
-            className="text-sm border border-gray-300 rounded-lg px-2 py-1 bg-white"
+            className="text-sm border border-gray-300 rounded-lg px-2 py-1 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            title="Filter messages (press F to focus)"
           >
             <option value="all">All Messages ({messages.length})</option>
             <option value="urgent">Urgent ({priorityCounts.urgent})</option>
@@ -380,25 +441,80 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
 
       {/* Empty State */}
       {!loading && filteredMessages.length === 0 && messages.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-          <Filter className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h4 className="text-lg font-medium text-gray-900 mb-2">No messages match your filter</h4>
-          <p className="text-gray-600">
-            Try selecting a different filter or refresh to see new messages.
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+          <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Filter className="w-8 h-8 text-blue-600" />
+          </div>
+          <h4 className="text-xl font-semibold text-gray-900 mb-3">No messages match your filter</h4>
+          <p className="text-gray-600 mb-6 max-w-sm mx-auto">
+            Try selecting a different filter or refresh to see new messages from your connected accounts.
           </p>
+          <div className="flex justify-center gap-3">
+            <Button 
+              onClick={() => setFilter('all')}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Filter className="w-4 h-4" />
+              Show All Messages
+            </Button>
+            <Button 
+              onClick={handleRefresh}
+              variant="outline" 
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </Button>
+          </div>
         </div>
       )}
 
       {/* No Messages State */}
       {!loading && messages.length === 0 && hasConnections && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-          <Mail className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h4 className="text-lg font-medium text-gray-900 mb-2">No messages found</h4>
-          <p className="text-gray-600">
-            No messages from the last 7 days. Try refreshing or check your connection status above.
-          </p>
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl shadow-sm border border-green-200 p-12 text-center relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute inset-0 bg-gradient-to-r from-green-100/20 to-emerald-100/20 opacity-50"></div>
+          <div className="relative z-10">
+            <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <Mail className="w-10 h-10 text-white" />
+            </div>
+            <h4 className="text-2xl font-bold text-gray-900 mb-4">You're All Caught Up!</h4>
+            <p className="text-gray-700 mb-6 max-w-md mx-auto leading-relaxed">
+              No new messages from the last 7 days. Your connected accounts are monitoring for new communications.
+            </p>
+            <div className="flex justify-center items-center gap-8 text-sm text-gray-600 mb-6">
+              {connectionStatus?.gmail && (
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <Mail className="w-4 h-4" />
+                  <span>Gmail Connected</span>
+                </div>
+              )}
+              {connectionStatus?.slack && (
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Slack Connected</span>
+                </div>
+              )}
+            </div>
+            <Button 
+              onClick={handleRefresh}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Check for New Messages
+            </Button>
+          </div>
         </div>
       )}
+      
+      {/* Keyboard Shortcuts Help */}
+      <KeyboardShortcutsHelp />
     </div>
   )
 }
