@@ -4,9 +4,17 @@ export interface Message {
   subject?: string
   content: string
   sender: string
+  senderEmail?: string
+  recipients?: string
   channel?: string
   timestamp: string
   priority: 'urgent' | 'question' | 'normal'
+  metadata?: {
+    threadId?: string
+    labelIds?: string[]
+    channelType?: string
+    teamId?: string
+  }
 }
 
 export interface UserTokens {

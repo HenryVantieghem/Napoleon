@@ -8,7 +8,8 @@
       "Bash(npm run type-check:*)",
       "Bash(npm install)",
       "Bash(npm run lint)",
-      "Bash(npx create-next-app:*)"
+      "Bash(npx create-next-app:*)",
+      "Bash(npm install:*)"
     ],
     "deny": []
   }

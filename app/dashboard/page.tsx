@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import { Metadata } from 'next'
 import { MessageSquare, Settings, Shield } from 'lucide-react'
 import { ConnectAccounts } from '@/components/dashboard/ConnectAccounts'
+import { MessageStream } from '@/components/dashboard/MessageStream'
+import { getUserTokens, isGmailConnected, isSlackConnected } from '@/lib/oauth-handlers'
 
 export const metadata: Metadata = {
   title: 'Dashboard - Napoleon AI',
@@ -14,6 +16,13 @@ export default async function DashboardPage() {
   
   if (!user) {
     redirect('/sign-in')
+  }
+
+  // Get user's connection status
+  const tokens = await getUserTokens(user.id)
+  const connectionStatus = {
+    gmail: tokens ? isGmailConnected(tokens) : false,
+    slack: tokens ? isSlackConnected(tokens) : false
   }
 
   return (
@@ -71,18 +80,9 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Message Stream Placeholder */}
+        {/* Live Message Stream */}
         <div className="mt-8">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">Message Stream</h3>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <MessageSquare className="w-8 h-8 text-gray-400" />
-            </div>
-            <h4 className="text-lg font-medium text-gray-900 mb-2">Connect Your Accounts</h4>
-            <p className="text-gray-600">
-              Once you connect Gmail and Slack, your messages will appear here with intelligent priority sorting.
-            </p>
-          </div>
+          <MessageStream connectionStatus={connectionStatus} />
         </div>
       </div>
     </div>
