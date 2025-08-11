@@ -22,8 +22,8 @@ export function MessageLoadingSkeleton({ count = 3 }: MessageLoadingSkeletonProp
       {Array.from({ length: count }, (_, i) => (
         <div 
           key={i}
-          className="bg-white rounded-xl border border-gray-200 p-4 animate-pulse"
-          style={{ animationDelay: `${i * 0.1}s` }}
+          className="bg-white rounded-xl border border-gray-200 border-l-4 border-l-gray-300 p-4 animate-pulse hover:shadow-lg transition-shadow duration-200"
+          style={{ animationDelay: `${i * 0.15}s` }}
         >
           {/* Header skeleton */}
           <div className="flex items-start justify-between gap-3 mb-3">

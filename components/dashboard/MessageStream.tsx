@@ -20,6 +20,33 @@ interface MessageResponse {
   code?: string
 }
 
+interface UnifiedResponse {
+  messages: Message[]
+  stats: {
+    priority: {
+      urgent: number
+      question: number
+      normal: number
+      total: number
+    }
+    sources: {
+      gmail: number
+      slack: number
+    }
+    performance: {
+      gmailFetchTime: number
+      slackFetchTime: number
+      totalFetchTime: number
+    }
+  }
+  connections: {
+    gmail: boolean
+    slack: boolean
+  }
+  errors?: Array<{ service: string; error: string }>
+  fetchedAt: string
+}
+
 export function MessageStream({ connectionStatus }: MessageStreamProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
@@ -27,6 +54,8 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
   const [lastFetch, setLastFetch] = useState<Date | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [filter, setFilter] = useState<'all' | 'urgent' | 'question' | 'gmail' | 'slack'>('all')
+  const [stats, setStats] = useState<UnifiedResponse['stats'] | null>(null)
+  const [serviceErrors, setServiceErrors] = useState<Array<{ service: string; error: string }>>([])
 
   useEffect(() => {
     fetchMessages()
@@ -40,71 +69,44 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
     }
     
     setError(null)
+    setServiceErrors([])
 
     try {
-      const allMessages: Message[] = []
+      // Use the unified endpoint for aggregated messages
+      const response = await fetch('/api/messages/unified')
       
-      // Fetch Gmail messages if connected
-      if (connectionStatus?.gmail) {
-        try {
-          const gmailResponse = await fetch('/api/messages/gmail')
-          if (gmailResponse.ok) {
-            const gmailData: MessageResponse = await gmailResponse.json()
-            allMessages.push(...gmailData.messages)
-          } else {
-            const errorData = await gmailResponse.json()
-            console.warn('Gmail fetch failed:', errorData.error)
-          }
-        } catch (gmailError) {
-          console.warn('Gmail fetch error:', gmailError)
+      if (!response.ok) {
+        const errorData = await response.json()
+        
+        // Handle no connections error specially
+        if (errorData.code === 'NO_CONNECTIONS') {
+          setMessages([])
+          setStats(null)
+          return
         }
+        
+        throw new Error(errorData.error || 'Failed to fetch messages')
       }
-
-      // Fetch Slack messages if connected (placeholder for now)
-      if (connectionStatus?.slack) {
-        try {
-          const slackResponse = await fetch('/api/messages/slack')
-          if (slackResponse.ok) {
-            const slackData: MessageResponse = await slackResponse.json()
-            allMessages.push(...slackData.messages)
-          } else {
-            const errorData = await slackResponse.json()
-            console.warn('Slack fetch failed:', errorData.error)
-          }
-        } catch (slackError) {
-          console.warn('Slack fetch error:', slackError)
-        }
-      }
-
-      // Sort all messages by priority and timestamp
-      const sortedMessages = sortMessagesByPriority(allMessages)
       
-      setMessages(sortedMessages)
-      setLastFetch(new Date())
+      const data: UnifiedResponse = await response.json()
+      
+      // Update state with unified data
+      setMessages(data.messages || [])
+      setStats(data.stats)
+      setServiceErrors(data.errors || [])
+      setLastFetch(new Date(data.fetchedAt))
       
     } catch (err) {
       console.error('Error fetching messages:', err)
-      setError('Failed to fetch messages. Please try again.')
+      setError(err instanceof Error ? err.message : 'Failed to fetch messages. Please try again.')
+      setMessages([])
+      setStats(null)
     } finally {
       setLoading(false)
       setRefreshing(false)
     }
   }
 
-  const sortMessagesByPriority = (messages: Message[]): Message[] => {
-    return messages.sort((a, b) => {
-      // Priority order: urgent > question > normal
-      const priorityOrder = { urgent: 3, question: 2, normal: 1 }
-      const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority]
-      
-      if (priorityDiff !== 0) {
-        return priorityDiff
-      }
-      
-      // If same priority, sort by timestamp (newest first)
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    })
-  }
 
   const handleRefresh = () => {
     fetchMessages(true)
@@ -126,10 +128,11 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
   }
 
   const filteredMessages = getFilteredMessages()
-  const priorityCounts = {
+  const priorityCounts = stats?.priority || {
     urgent: messages.filter(msg => msg.priority === 'urgent').length,
     question: messages.filter(msg => msg.priority === 'question').length,
-    normal: messages.filter(msg => msg.priority === 'normal').length
+    normal: messages.filter(msg => msg.priority === 'normal').length,
+    total: messages.length
   }
 
   // Show connection prompt if no services connected
@@ -151,29 +154,64 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
 
   return (
     <div className="space-y-6">
+      {/* Service Errors Alert */}
+      {serviceErrors.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-amber-800 text-sm font-medium">Some services encountered issues</p>
+              <ul className="mt-1 text-amber-700 text-xs space-y-0.5">
+                {serviceErrors.map((err, idx) => (
+                  <li key={idx}>
+                    <span className="font-medium capitalize">{err.service}:</span> {err.error}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stream Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-semibold text-gray-900">Message Stream</h3>
-          {lastFetch && (
-            <p className="text-sm text-gray-500">
-              Last updated {lastFetch.toLocaleTimeString()}
-            </p>
-          )}
+          <h3 className="text-xl font-semibold text-gray-900">Unified Message Stream</h3>
+          <div className="flex items-center gap-3 mt-1">
+            {lastFetch && (
+              <p className="text-sm text-gray-500">
+                Last updated {lastFetch.toLocaleTimeString()}
+              </p>
+            )}
+            {stats?.performance && (
+              <p className="text-xs text-gray-400">
+                Loaded in {(stats.performance.totalFetchTime / 1000).toFixed(1)}s
+              </p>
+            )}
+          </div>
         </div>
         
         <div className="flex items-center gap-3">
           {/* Priority Summary */}
           {messages.length > 0 && (
             <div className="hidden sm:flex items-center gap-2 text-xs text-gray-600">
-              <span className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                {priorityCounts.urgent} urgent
-              </span>
-              <span className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                {priorityCounts.question} questions
-              </span>
+              {priorityCounts.urgent > 0 && (
+                <span className="flex items-center gap-1 px-2 py-1 bg-red-50 text-red-700 rounded-full font-medium">
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                  {priorityCounts.urgent} urgent
+                </span>
+              )}
+              {priorityCounts.question > 0 && (
+                <span className="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full font-medium">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  {priorityCounts.question} questions
+                </span>
+              )}
+              {priorityCounts.normal > 0 && (
+                <span className="flex items-center gap-1 text-gray-500">
+                  {priorityCounts.normal} normal
+                </span>
+              )}
             </div>
           )}
           
@@ -225,24 +263,118 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
       {/* Loading State */}
       {loading && <MessageLoadingSkeleton count={5} />}
 
-      {/* Messages List */}
+      {/* Messages List with Priority Sections */}
       {!loading && filteredMessages.length > 0 && (
-        <div className="space-y-4">
-          {filteredMessages.map((message, index) => (
-            <div
-              key={`${message.source}-${message.id}`}
-              className="animate-in fade-in slide-in-from-bottom-2 duration-300"
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <MessageCard
-                message={message}
-                onClick={() => {
-                  // TODO: Open message in modal or external client
-                  console.log('Open message:', message)
-                }}
-              />
+        <div className="space-y-6">
+          {/* Urgent Messages Section */}
+          {filter === 'all' && filteredMessages.filter(m => m.priority === 'urgent').length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                <h4 className="text-sm font-semibold text-red-900 uppercase tracking-wider">
+                  Urgent Messages ({filteredMessages.filter(m => m.priority === 'urgent').length})
+                </h4>
+              </div>
+              <div className="space-y-3">
+                {filteredMessages
+                  .filter(m => m.priority === 'urgent')
+                  .map((message, index) => (
+                    <div
+                      key={`${message.source}-${message.id}`}
+                      className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+                      style={{ animationDelay: `${index * 30}ms` }}
+                    >
+                      <MessageCard
+                        message={message}
+                        onClick={() => {
+                          console.log('Open message:', message)
+                        }}
+                      />
+                    </div>
+                  ))}
+              </div>
             </div>
-          ))}
+          )}
+
+          {/* Questions Section */}
+          {filter === 'all' && filteredMessages.filter(m => m.priority === 'question').length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <h4 className="text-sm font-semibold text-blue-900 uppercase tracking-wider">
+                  Questions ({filteredMessages.filter(m => m.priority === 'question').length})
+                </h4>
+              </div>
+              <div className="space-y-3">
+                {filteredMessages
+                  .filter(m => m.priority === 'question')
+                  .map((message, index) => (
+                    <div
+                      key={`${message.source}-${message.id}`}
+                      className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+                      style={{ animationDelay: `${index * 30}ms` }}
+                    >
+                      <MessageCard
+                        message={message}
+                        onClick={() => {
+                          console.log('Open message:', message)
+                        }}
+                      />
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* Normal Messages Section */}
+          {filter === 'all' && filteredMessages.filter(m => m.priority === 'normal').length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  Other Messages ({filteredMessages.filter(m => m.priority === 'normal').length})
+                </h4>
+              </div>
+              <div className="space-y-3">
+                {filteredMessages
+                  .filter(m => m.priority === 'normal')
+                  .map((message, index) => (
+                    <div
+                      key={`${message.source}-${message.id}`}
+                      className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+                      style={{ animationDelay: `${index * 30}ms` }}
+                    >
+                      <MessageCard
+                        message={message}
+                        onClick={() => {
+                          console.log('Open message:', message)
+                        }}
+                      />
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* Filtered View (non-priority filters) */}
+          {filter !== 'all' && (
+            <div className="space-y-3">
+              {filteredMessages.map((message, index) => (
+                <div
+                  key={`${message.source}-${message.id}`}
+                  className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+                  style={{ animationDelay: `${index * 30}ms` }}
+                >
+                  <MessageCard
+                    message={message}
+                    onClick={() => {
+                      console.log('Open message:', message)
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
