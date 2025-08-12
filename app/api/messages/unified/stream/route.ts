@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
             encoder.encode(`data: ${JSON.stringify({ 
               type: 'error', 
               error: 'Failed to load initial messages',
-              details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+              details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
               timestamp: new Date().toISOString()
             })}\n\n`)
           )
@@ -221,7 +221,7 @@ export async function GET(request: NextRequest) {
               encoder.encode(`data: ${JSON.stringify({ 
                 type: 'error', 
                 error: 'Failed to check for updates',
-                details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+                details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
                 timestamp: new Date().toISOString()
               })}\n\n`)
             )
@@ -247,7 +247,7 @@ export async function GET(request: NextRequest) {
             controller.close()
           } catch (e) {
             // Connection might already be closed
-            console.log(`⚠️ SSE: Error closing controller for user ${userId}:`, e.message)
+            console.log(`⚠️ SSE: Error closing controller for user ${userId}:`, (e as Error).message)
           }
         }, 10 * 60 * 1000) // 10 minutes
 
@@ -266,7 +266,7 @@ export async function GET(request: NextRequest) {
       JSON.stringify({ 
         error: 'Internal Server Error', 
         message: 'Failed to establish SSE connection',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       }), 
       { 
         status: 500,

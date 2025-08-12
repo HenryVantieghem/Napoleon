@@ -1,6 +1,5 @@
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/supabase/server'
 import { Metadata, Viewport } from 'next'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { ConnectAccounts } from '@/components/dashboard/ConnectAccounts'
@@ -21,7 +20,7 @@ export const viewport: Viewport = {
 }
 
 export default async function DashboardPage() {
-  const supabase = getSupabaseServerClient(cookies())
+  const supabase = createServerClient()
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {

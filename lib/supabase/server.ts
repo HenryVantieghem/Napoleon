@@ -1,8 +1,9 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient as createSupabaseServerClient, type CookieOptions } from '@supabase/ssr'
 import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies'
+import { cookies } from 'next/headers'
 
 export const getSupabaseServerClient = (cookieStore: ReadonlyRequestCookies) => {
-  return createServerClient(
+  return createSupabaseServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -21,4 +22,9 @@ export const getSupabaseServerClient = (cookieStore: ReadonlyRequestCookies) => 
       },
     }
   )
+}
+
+// Convenience function that uses cookies() automatically
+export const createServerClient = () => {
+  return getSupabaseServerClient(cookies())
 }

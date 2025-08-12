@@ -2,12 +2,16 @@
 
 export interface NormalizedMessage {
   id: string
-  provider: 'google' | 'slack'
+  provider: 'gmail' | 'slack'
   subject: string
   sender: string
   snippet: string
+  preview: string
+  timestamp: string
   received_at: string
+  priority: number
   priority_score: number
+  url?: string
 }
 
 // Priority scoring algorithm
@@ -140,16 +144,21 @@ export function normalizeGmail(gmailData: any): NormalizedMessage[] {
   for (const msg of gmailData.messages) {
     const normalized: NormalizedMessage = {
       id: msg.id,
-      provider: 'google',
+      provider: 'gmail',
       subject: msg.subject || 'No Subject',
       sender: msg.sender || 'Unknown Sender',
       snippet: msg.snippet || '',
+      preview: msg.snippet || '',
+      timestamp: msg.received_at,
       received_at: msg.received_at,
-      priority_score: 0 // Will be calculated below
+      priority: 0, // Will be calculated below
+      priority_score: 0, // Will be calculated below
+      url: msg.url
     }
     
     // Calculate priority score
     normalized.priority_score = scorePriority(normalized)
+    normalized.priority = normalized.priority_score
     messages.push(normalized)
   }
 
@@ -171,12 +180,17 @@ export function normalizeSlack(slackData: any): NormalizedMessage[] {
       subject: msg.subject || `Message from ${msg.sender}`,
       sender: msg.sender || 'Unknown Channel',
       snippet: msg.snippet || '',
+      preview: msg.snippet || '',
+      timestamp: msg.received_at,
       received_at: msg.received_at,
-      priority_score: 0 // Will be calculated below
+      priority: 0, // Will be calculated below
+      priority_score: 0, // Will be calculated below
+      url: msg.url
     }
     
     // Calculate priority score
     normalized.priority_score = scorePriority(normalized)
+    normalized.priority = normalized.priority_score
     messages.push(normalized)
   }
 

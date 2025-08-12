@@ -18,7 +18,8 @@
       "Bash(curl:*)",
       "Bash(git push:*)",
       "Bash(cat:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(npm run typecheck:*)"
     ],
     "deny": []
   }

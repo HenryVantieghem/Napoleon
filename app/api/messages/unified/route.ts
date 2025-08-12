@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
     }
 
     const sourceStats = {
-      gmail: normalizedMessages.filter(m => m.provider === 'google').length,
+      gmail: normalizedMessages.filter(m => m.provider === 'gmail').length,
       slack: normalizedMessages.filter(m => m.provider === 'slack').length
     }
 

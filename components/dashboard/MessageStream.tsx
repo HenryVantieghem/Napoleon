@@ -26,7 +26,7 @@ function MessageCard({ message }: { message: NormalizedMessage }) {
                        message.priority_score >= 20 ? 'border-yellow-200 bg-yellow-50' :
                        'border-gray-200 bg-white'
 
-  const providerIcon = message.provider === 'google' ? 
+  const providerIcon = message.provider === 'gmail' ? 
     <Mail className="w-4 h-4 text-blue-600" /> : 
     <MessageSquare className="w-4 h-4 text-purple-600" />
 
@@ -180,7 +180,7 @@ export function MessageStream({ connectionStatus }: MessageStreamProps) {
     urgent: messages.filter(m => m.priority_score >= 60).length,
     question: messages.filter(m => m.priority_score >= 20 && m.priority_score < 60).length,
     normal: messages.filter(m => m.priority_score < 20).length,
-    gmail: messages.filter(m => m.provider === 'google').length,
+    gmail: messages.filter(m => m.provider === 'gmail').length,
     slack: messages.filter(m => m.provider === 'slack').length
   }
 

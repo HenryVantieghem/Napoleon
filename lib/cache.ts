@@ -192,7 +192,7 @@ class MessageCache {
     const now = Date.now()
     let cleanedCount = 0
 
-    for (const [key, entry] of this.cache.entries()) {
+    for (const [key, entry] of Array.from(this.cache.entries())) {
       if (now > entry.expiresAt) {
         this.cache.delete(key)
         cleanedCount++
@@ -211,7 +211,7 @@ class MessageCache {
     let oldestKey: string | null = null
     let oldestTime = Date.now()
 
-    for (const [key, entry] of this.cache.entries()) {
+    for (const [key, entry] of Array.from(this.cache.entries())) {
       if (entry.timestamp < oldestTime) {
         oldestTime = entry.timestamp
         oldestKey = key
@@ -252,7 +252,7 @@ class MessageCache {
   private estimateMemoryUsage(): number {
     let totalSize = 0
     
-    for (const [key, entry] of this.cache.entries()) {
+    for (const [key, entry] of Array.from(this.cache.entries())) {
       totalSize += key.length * 2 // String overhead
       totalSize += JSON.stringify(entry.data).length * 2 // Data size estimate
       totalSize += 64 // Entry overhead estimate
@@ -339,7 +339,7 @@ export const messageCacheHelpers = {
       messages,
       timestamp: Date.now(),
       count: messages.length,
-      providers: [...new Set(messages.map(m => m.provider))],
+      providers: Array.from(new Set(messages.map(m => m.provider))),
     })
   },
 
