@@ -1,12 +1,66 @@
 {
   "framework": "nextjs",
   "functions": {
+    "app/api/messages/unified/stream/route.ts": {
+      "runtime": "edge",
+      "maxDuration": 600
+    },
     "app/api/**/*.ts": {
       "runtime": "edge",
       "maxDuration": 30
     }
   },
   "headers": [
+    {
+      "source": "/api/messages/unified/stream",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "X-Accel-Buffering",
+          "value": "no"
+        },
+        {
+          "key": "Content-Type",
+          "value": "text/event-stream"
+        },
+        {
+          "key": "Connection",
+          "value": "keep-alive"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization, Cookie"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [

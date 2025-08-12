@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, memo } from 'react'
-import { UserButton } from '@clerk/nextjs'
+// UserButton removed - using simple sign out button instead
 import { 
   MessageSquare, 
   Mail, 
@@ -218,14 +218,13 @@ const DashboardLayout = memo<DashboardLayoutProps>(function DashboardLayout({ ch
               </div>
               <h1 className="text-lg font-bold text-gray-900">Napoleon AI</h1>
             </div>
-            <UserButton 
-              appearance={{
-                elements: {
-                  avatarBox: "w-8 h-8"
-                }
-              }}
-              afterSignOutUrl="/"
-            />
+            <button 
+              onClick={() => fetch('/auth/signout', { method: 'POST' }).then(() => window.location.href = '/')}
+              className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200"
+              title="Sign Out"
+            >
+              <span className="text-xs font-medium text-gray-600">U</span>
+            </button>
           </div>
         </div>
 
@@ -249,14 +248,13 @@ const DashboardLayout = memo<DashboardLayoutProps>(function DashboardLayout({ ch
                   </div>
                 </div>
                 
-                <UserButton 
-                  appearance={{
-                    elements: {
-                      avatarBox: "w-10 h-10"
-                    }
-                  }}
-                  afterSignOutUrl="/"
-                />
+                <button 
+                  onClick={() => fetch('/auth/signout', { method: 'POST' }).then(() => window.location.href = '/')}
+                  className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200"
+                  title="Sign Out"
+                >
+                  <span className="text-sm font-medium text-gray-600">U</span>
+                </button>
               </div>
             </div>
           </div>

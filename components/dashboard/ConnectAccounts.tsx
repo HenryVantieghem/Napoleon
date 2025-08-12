@@ -60,13 +60,13 @@ export const ConnectAccounts = memo(function ConnectAccounts() {
 
   const fetchTokenStatus = useCallback(async () => {
     try {
-      const response = await fetch('/api/user/tokens')
+      const response = await fetch('/api/user/connections')
       if (response.ok) {
         const data = await response.json()
         setTokenStatus(data)
       }
     } catch (error) {
-      console.error('Failed to fetch token status:', error)
+      console.error('Failed to fetch connection status:', error)
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -74,11 +74,11 @@ export const ConnectAccounts = memo(function ConnectAccounts() {
   }, [])
 
   const handleGmailConnect = useCallback(() => {
-    window.location.href = '/api/oauth/gmail/auth'
+    window.location.href = '/api/integrations/start?provider=google'
   }, [])
 
   const handleSlackConnect = useCallback(() => {
-    window.location.href = '/api/oauth/slack/auth'
+    window.location.href = '/api/integrations/start?provider=slack'
   }, [])
 
   if (loading) {

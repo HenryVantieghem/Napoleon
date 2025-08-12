@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
+import { cookies } from 'next/headers';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { getCachePerformanceReport, invalidateUserCache } from '@/lib/cache-manager';
 import { withAPIOptimization } from '@/middleware/api-optimization';
 
@@ -8,9 +9,10 @@ export const runtime = 'nodejs';
 // GET /api/cache/performance - Get cache performance metrics
 async function handleCachePerformanceGet(request: NextRequest) {
   try {
-    const user = await currentUser();
+    const supabase = getSupabaseServerClient(cookies());
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     
-    if (!user) {
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -49,9 +51,10 @@ async function handleCachePerformanceGet(request: NextRequest) {
 // DELETE /api/cache/performance?action=invalidate - Invalidate cache for current user
 async function handleCachePerformanceDelete(request: NextRequest) {
   try {
-    const user = await currentUser();
+    const supabase = getSupabaseServerClient(cookies());
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     
-    if (!user) {
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

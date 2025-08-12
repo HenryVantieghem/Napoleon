@@ -15,7 +15,10 @@
       "Bash(rm:*)",
       "Bash(npm run build:*)",
       "mcp__playwright__browser_navigate",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(git push:*)",
+      "Bash(cat:*)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": []
   }

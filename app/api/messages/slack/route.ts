@@ -1,247 +1,232 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
-import { WebClient } from '@slack/web-api';
-import { getValidSlackToken } from '@/lib/oauth-handlers';
-import { withAPIOptimization } from '@/middleware/api-optimization';
-import type { Message } from '@/types';
+import { NextRequest, NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
+import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { NANGO } from '@/lib/nango'
 
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
-async function handleSlackMessages(request: NextRequest) {
+interface SlackChannel {
+  id: string
+  name: string
+  is_channel: boolean
+  is_group: boolean
+  is_im: boolean
+}
+
+interface SlackMessage {
+  type: string
+  user: string
+  text: string
+  ts: string
+  thread_ts?: string
+  bot_id?: string
+  subtype?: string
+}
+
+interface SlackUser {
+  id: string
+  name: string
+  real_name: string
+  profile: {
+    display_name?: string
+    real_name?: string
+  }
+}
+
+export async function GET(request: NextRequest) {
   try {
-    const user = await currentUser();
-    
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Get authenticated user
+    const supabase = getSupabaseServerClient(cookies())
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
     }
 
-    // Get valid Slack token
-    const accessToken = await getValidSlackToken(user.id);
-    
-    if (!accessToken) {
-      return NextResponse.json({ 
-        error: 'Slack not connected',
-        code: 'SLACK_NOT_CONNECTED' 
-      }, { status: 400 });
+    // Check if user has Slack connection
+    const { data: connection } = await supabase
+      .from('nango_connections')
+      .select('connection_id')
+      .eq('user_id', user.id)
+      .eq('provider', 'slack')
+      .single()
+
+    if (!connection) {
+      return NextResponse.json({ messages: [] })
     }
 
-    // Initialize Slack API client
-    const slack = new WebClient(accessToken);
+    const connectionId = connection.connection_id
+    const sevenDaysAgo = Math.floor((Date.now() - 7 * 24 * 60 * 60 * 1000) / 1000)
 
-    // Calculate date range - last 7 days (as Unix timestamp)
-    const sevenDaysAgo = Math.floor((Date.now() - 7 * 24 * 60 * 60 * 1000) / 1000);
-    
-    const messages: Message[] = [];
-
-    try {
-      // Get list of channels the user is a member of
-      const channelsResponse = await slack.conversations.list({
+    // Get list of conversations via Nango proxy
+    const channelsUrl = `${NANGO.host}/proxy`
+    const channelsBody = {
+      connection_id: connectionId,
+      provider_config_key: 'slack',
+      endpoint: 'https://slack.com/api/conversations.list',
+      params: {
         exclude_archived: true,
-        types: 'public_channel,private_channel',
+        types: 'public_channel,private_channel,im',
         limit: 50
-      });
+      },
+      method: 'GET'
+    }
 
-      // Get direct message conversations
-      const dmsResponse = await slack.conversations.list({
-        exclude_archived: true,
-        types: 'im',
-        limit: 50
-      });
+    const channelsResponse = await fetch(channelsUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${NANGO.secret}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(channelsBody)
+    })
 
-      const allConversations = [
-        ...(channelsResponse.channels || []),
-        ...(dmsResponse.channels || [])
-      ];
+    if (!channelsResponse.ok) {
+      console.error('Nango channels request failed:', channelsResponse.statusText)
+      return NextResponse.json({ messages: [] })
+    }
 
-      // Process conversations in batches to prevent API rate limits
-      const batchSize = 5;
-      for (let i = 0; i < allConversations.length && i < 20; i += batchSize) {
-        const batch = allConversations.slice(i, i + batchSize);
-        
-        const batchPromises = batch.map(async (conversation) => {
-          try {
-            if (!conversation.id) return [];
+    const channelsData = await channelsResponse.json()
+    const channels: SlackChannel[] = channelsData.channels || []
 
-            // Get recent messages from this conversation
-            const historyResponse = await slack.conversations.history({
-              channel: conversation.id,
+    if (channels.length === 0) {
+      return NextResponse.json({ messages: [] })
+    }
+
+    // Fetch messages from each channel
+    const messages = []
+    const batchSize = 5
+    const limitedChannels = channels.slice(0, 20) // Limit channels for performance
+
+    for (let i = 0; i < limitedChannels.length; i += batchSize) {
+      const batch = limitedChannels.slice(i, i + batchSize)
+      
+      const batchPromises = batch.map(async (channel) => {
+        try {
+          // Get channel history via Nango proxy
+          const historyUrl = `${NANGO.host}/proxy`
+          const historyBody = {
+            connection_id: connectionId,
+            provider_config_key: 'slack',
+            endpoint: 'https://slack.com/api/conversations.history',
+            params: {
+              channel: channel.id,
               oldest: sevenDaysAgo.toString(),
-              limit: 10, // Limit messages per channel
+              limit: 20,
               inclusive: true
-            });
+            },
+            method: 'GET'
+          }
 
-            if (!historyResponse.messages) return [];
+          const historyResponse = await fetch(historyUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${NANGO.secret}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(historyBody)
+          })
 
-            // Convert Slack messages to our Message format
-            const conversationMessages: Message[] = [];
-            
-            for (const slackMessage of historyResponse.messages) {
-              if (!slackMessage.text || !slackMessage.ts || !slackMessage.user) continue;
-              
-              // Skip bot messages and system messages
-              if (slackMessage.bot_id || slackMessage.subtype) continue;
+          if (!historyResponse.ok) {
+            console.error(`Failed to fetch history for channel ${channel.id}:`, historyResponse.statusText)
+            return []
+          }
 
-              // Get user info for sender name
-              let senderName = 'Unknown User';
+          const historyData = await historyResponse.json()
+          const slackMessages: SlackMessage[] = historyData.messages || []
+
+          // Process messages and get user info
+          const channelMessages = []
+          const userCache = new Map<string, SlackUser>()
+
+          for (const slackMessage of slackMessages) {
+            if (!slackMessage.text || !slackMessage.ts || !slackMessage.user) continue
+            if (slackMessage.bot_id || slackMessage.subtype) continue // Skip bot messages
+
+            // Get user info (with caching)
+            let senderName = 'Unknown User'
+            if (!userCache.has(slackMessage.user)) {
               try {
-                const userResponse = await slack.users.info({ user: slackMessage.user });
-                const user = userResponse.user as any;
-                senderName = user?.profile?.display_name || user?.real_name || user?.name || 'Unknown User';
-              } catch (userError) {
-                console.warn('Error fetching user info:', userError);
-              }
-
-              // Determine channel name
-              let channelName = conversation.name || 'Direct Message';
-              if (conversation.is_im) {
-                channelName = `DM with ${senderName}`;
-              }
-
-              const message: Message = {
-                id: slackMessage.ts!,
-                source: 'slack',
-                content: slackMessage.text,
-                sender: senderName,
-                channel: channelName,
-                timestamp: new Date(parseFloat(slackMessage.ts!) * 1000).toISOString(),
-                priority: getPriority(slackMessage.text, channelName, senderName),
-                metadata: {
-                  channelType: conversation.is_channel ? 'channel' : conversation.is_group ? 'group' : 'dm',
-                  teamId: slackMessage.team,
+                const userUrl = `${NANGO.host}/proxy`
+                const userBody = {
+                  connection_id: connectionId,
+                  provider_config_key: 'slack',
+                  endpoint: 'https://slack.com/api/users.info',
+                  params: { user: slackMessage.user },
+                  method: 'GET'
                 }
-              };
 
-              conversationMessages.push(message);
+                const userResponse = await fetch(userUrl, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${NANGO.secret}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(userBody)
+                })
+
+                if (userResponse.ok) {
+                  const userData = await userResponse.json()
+                  userCache.set(slackMessage.user, userData.user)
+                }
+              } catch (userError) {
+                console.warn(`Error fetching user ${slackMessage.user}:`, userError)
+              }
             }
 
-            return conversationMessages;
-          } catch (conversationError) {
-            console.error(`Error fetching messages from conversation ${conversation.id}:`, conversationError);
-            return [];
-          }
-        });
+            const user = userCache.get(slackMessage.user)
+            if (user) {
+              senderName = user.profile?.display_name || user.real_name || user.name || 'Unknown User'
+            }
 
-        const batchResults = await Promise.all(batchPromises);
-        const validMessages = batchResults.flat();
-        messages.push(...validMessages);
-      }
-    } catch (apiError) {
-      console.error('Slack API error:', apiError);
-      return NextResponse.json({ 
-        error: 'Failed to fetch Slack data',
-        code: 'SLACK_API_ERROR' 
-      }, { status: 500 });
+            // Determine channel name for sender field
+            let channelName = channel.name || 'Unknown Channel'
+            if (channel.is_im) {
+              channelName = `DM with ${senderName}`
+            } else if (channel.is_group) {
+              channelName = `Group: ${channelName}`
+            } else {
+              channelName = `#${channelName}`
+            }
+
+            // Create normalized message
+            channelMessages.push({
+              id: slackMessage.ts,
+              provider: 'slack',
+              subject: `Message from ${channelName}`,
+              sender: channelName, // Use channel name as sender for Slack
+              snippet: slackMessage.text,
+              received_at: new Date(parseFloat(slackMessage.ts) * 1000).toISOString()
+            })
+          }
+
+          return channelMessages
+        } catch (error) {
+          console.error(`Error processing channel ${channel.id}:`, error)
+          return []
+        }
+      })
+
+      const batchResults = await Promise.all(batchPromises)
+      const validMessages = batchResults.flat()
+      messages.push(...validMessages)
     }
 
-    // Sort messages by timestamp (newest first) and then by priority
-    messages.sort((a, b) => {
-      // Priority order: urgent > question > normal
-      const priorityOrder = { urgent: 3, question: 2, normal: 1 };
-      const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
-      
-      if (priorityDiff !== 0) {
-        return priorityDiff;
-      }
-      
-      // If same priority, sort by timestamp (newest first)
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-    });
-
-    return NextResponse.json({ 
+    return NextResponse.json({
       messages,
       totalCount: messages.length,
       source: 'slack',
       fetchedAt: new Date().toISOString()
-    });
+    })
 
   } catch (error) {
-    console.error('Slack API error:', error);
-    
-    // Handle specific Slack API errors
-    if ((error as any)?.code === 'not_authed') {
-      return NextResponse.json({ 
-        error: 'Slack authentication failed',
-        code: 'SLACK_AUTH_FAILED' 
-      }, { status: 401 });
-    }
-    
-    if ((error as any)?.code === 'account_inactive') {
-      return NextResponse.json({ 
-        error: 'Slack account inactive',
-        code: 'SLACK_INACTIVE' 
-      }, { status: 403 });
-    }
-    
-    return NextResponse.json({ 
-      error: 'Failed to fetch Slack messages',
-      code: 'SLACK_FETCH_ERROR'
-    }, { status: 500 });
+    console.error('Slack API error:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch Slack messages' },
+      { status: 500 }
+    )
   }
 }
-
-// Priority detection algorithm for Slack messages (same logic as Gmail)
-function getPriority(text: string, channelName: string, senderName: string): 'urgent' | 'question' | 'normal' {
-  const textLower = text.toLowerCase();
-  const channelLower = channelName.toLowerCase();
-  const senderLower = senderName.toLowerCase();
-  
-  // Urgent indicators
-  const urgentKeywords = [
-    'urgent', 'asap', 'emergency', 'critical', 'immediate',
-    'breaking', 'alert', 'action required', 'time sensitive',
-    'deadline', 'overdue', 'escalation', 'help needed',
-    'issue', 'problem', 'down', 'failing', 'broken'
-  ];
-  
-  // VIP indicators (channels and senders)
-  const vipChannels = [
-    'general', 'announcements', 'alerts', 'incidents',
-    'leadership', 'executive', 'board', 'ceo', 'management'
-  ];
-  
-  const vipTitles = [
-    'ceo', 'cto', 'cfo', 'president', 'director', 'vp',
-    'manager', 'lead', 'head', 'senior', 'chief'
-  ];
-  
-  // Check for urgent keywords in message text
-  if (urgentKeywords.some(keyword => textLower.includes(keyword))) {
-    return 'urgent';
-  }
-  
-  // Check for VIP channels
-  if (vipChannels.some(vip => channelLower.includes(vip))) {
-    return 'urgent';
-  }
-  
-  // Check for VIP senders
-  if (vipTitles.some(title => senderLower.includes(title))) {
-    return 'urgent';
-  }
-  
-  // Check for questions
-  if (textLower.includes('?') || 
-      textLower.includes('please') ||
-      textLower.includes('can you') ||
-      textLower.includes('could you') ||
-      textLower.includes('help') ||
-      textLower.includes('question') ||
-      textLower.includes('how to') ||
-      textLower.includes('what is') ||
-      textLower.includes('how do') ||
-      textLower.includes('where is')) {
-    return 'question';
-  }
-  
-  // Default to normal priority
-  return 'normal';
-}
-
-// Export the optimized handler
-export const GET = withAPIOptimization(handleSlackMessages, {
-  enableCompression: true,
-  enableCaching: true,
-  enablePayloadOptimization: true,
-  compressionThreshold: 1024, // 1KB - Slack messages tend to be shorter
-  cacheMaxAge: 300, // 5 minutes
-});

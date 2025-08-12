@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    serverComponentsExternalPackages: ['googleapis', '@slack/web-api']
+    serverComponentsExternalPackages: []
   },
   images: {
     domains: ['avatars.githubusercontent.com', 'lh3.googleusercontent.com']
@@ -19,13 +19,6 @@ const nextConfig = {
             name: 'vendors',
             chunks: 'all',
             priority: 20,
-          },
-          // Clerk authentication chunk (loaded early but separately)
-          clerk: {
-            test: /[\\/]node_modules[\\/]@clerk[\\/]/,
-            name: 'clerk',
-            chunks: 'all',
-            priority: 30,
           },
           // UI components chunk (commonly shared)
           ui: {
