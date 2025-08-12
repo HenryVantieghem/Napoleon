@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { NANGO } from '@/lib/nango'
+import { nangoDb, getConnId, type Provider } from '@/lib/nango'
 import crypto from 'crypto'
 
 // Verify Nango webhook signature (optional but recommended)
@@ -59,36 +59,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create Supabase client for service role operations
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        cookies: {
-          get() { return undefined },
-          set() {},
-          remove() {},
-        },
-      }
-    )
+    // Use the nangoDb helper to upsert the connection
+    const success = await nangoDb.upsertConnection({
+      user_id: userId,
+      provider: provider as Provider,
+      connection_id: connectionId,
+      // Store any tokens if provided by webhook
+      access_token: metadata?.access_token,
+      refresh_token: metadata?.refresh_token,
+      expires_at: metadata?.expires_at,
+    })
 
-    // Upsert connection record
-    const { error } = await supabase
-      .from('nango_connections')
-      .upsert({
-        user_id: userId,
-        provider: provider as 'google' | 'slack',
-        connection_id: connectionId,
-        account_id: metadata?.account?.id || null,
-        team_id: metadata?.team?.id || null,
-      }, {
-        onConflict: 'user_id,provider'
-      })
-
-    if (error) {
-      console.error('Database upsert error:', error)
+    if (!success) {
       return NextResponse.json(
-        { error: 'Database error' },
+        { error: 'Failed to store connection' },
         { status: 500 }
       )
     }

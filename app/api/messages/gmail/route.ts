@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
-import { NANGO } from '@/lib/nango'
+import { proxyFetch, NANGO } from '@/lib/nango'
 
 export const runtime = 'nodejs'
 

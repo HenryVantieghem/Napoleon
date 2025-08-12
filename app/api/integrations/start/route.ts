@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
-import { NANGO } from '@/lib/nango'
+import { startConnect, type Provider } from '@/lib/nango'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const provider = searchParams.get('provider')
+    const provider = searchParams.get('provider') as Provider
 
     // Validate provider
     if (!provider || !['google', 'slack'].includes(provider)) {
@@ -27,21 +27,11 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Generate connection ID
-    const connectionId = `${user.id}-${provider}`
-    
-    // Get app URL from environment or request
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
-                   `${request.nextUrl.protocol}//${request.nextUrl.host}`
+    // Start OAuth connection flow with Nango
+    const authUrl = startConnect(provider, user.id)
 
-    // Construct Nango OAuth URL
-    const nangoUrl = new URL(`/oauth/connect/${provider}`, NANGO.host)
-    nangoUrl.searchParams.set('connection_id', connectionId)
-    nangoUrl.searchParams.set('success_url', `${appUrl}/dashboard`)
-    nangoUrl.searchParams.set('error_url', `${appUrl}/dashboard`)
-
-    // Redirect to Nango OAuth flow
-    return NextResponse.redirect(nangoUrl.toString())
+    // Redirect to Nango OAuth flow (302 redirect)
+    return NextResponse.redirect(authUrl)
 
   } catch (error) {
     console.error('Integration start error:', error)

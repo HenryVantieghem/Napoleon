@@ -1,261 +1,199 @@
-import { nango as nangoConfig } from './config'
-
-// Nango configuration
-export const NANGO = {
-  host: nangoConfig.serverUrl,
-  secret: nangoConfig.secretKey,
-  public: nangoConfig.publicKey,
-} as const
+import { createServerClient } from './supabase/server'
 
 // Provider types
 export type Provider = 'google' | 'slack'
 
-// Connection status types
+// Nango connection interface
 export interface NangoConnection {
-  id: number
-  connection_id: string
-  provider_config_key: string
+  user_id: string
   provider: Provider
-  oauth_access_token: string
-  oauth_refresh_token?: string
-  oauth_access_token_expires_at?: string
-  created_at: string
-  updated_at: string
-}
-
-// OAuth token response
-export interface OAuthTokens {
-  access_token: string
+  connection_id: string
+  access_token?: string
   refresh_token?: string
   expires_at?: string
-  token_type: 'Bearer'
-  scope?: string
+  created_at?: string
+  updated_at?: string
 }
 
-// Nango API response types
-export interface NangoResponse<T = any> {
-  success: boolean
-  data?: T
-  error?: string
-  message?: string
+// Core Nango configuration
+const NANGO_HOST = process.env.NANGO_SERVER_URL || 'https://api.nango.dev'
+const NANGO_SECRET = process.env.NANGO_SECRET_KEY || ''
+const NANGO_PUBLIC = process.env.NANGO_PUBLIC_KEY || ''
+
+// Export for backward compatibility
+export const NANGO = {
+  host: NANGO_HOST,
+  secret: NANGO_SECRET,
+  public: NANGO_PUBLIC,
 }
 
-// Proxy request options
-export interface ProxyRequestOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
-  headers?: Record<string, string>
-  params?: Record<string, string | number | boolean>
-  data?: any
-  timeout?: number
-  retries?: number
+/**
+ * Start OAuth connection flow with Nango
+ * Returns the authorization URL to redirect the user to
+ */
+export function startConnect(provider: Provider, userId: string): string {
+  const connectionId = getConnId(userId, provider)
+  const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/integrations/callback`
+  
+  const params = new URLSearchParams({
+    connection_id: connectionId,
+    provider_config_key: provider,
+    redirect_uri: redirectUri,
+  })
+  
+  return `${NANGO_HOST}/oauth/authorize?${params.toString()}`
 }
 
-// Typed Nango helpers
-export class NangoClient {
-  private baseUrl: string
-  private secretKey: string
+/**
+ * Generate a consistent connection ID for a user and provider
+ */
+export function getConnId(userId: string, provider: Provider): string {
+  return `${userId}-${provider}`
+}
 
-  constructor() {
-    this.baseUrl = NANGO.host
-    this.secretKey = NANGO.secret
+/**
+ * Make a proxy request through Nango to access provider APIs
+ */
+export async function proxyFetch<T = any>(
+  provider: Provider,
+  path: string,
+  query?: Record<string, string | number | boolean>
+): Promise<T> {
+  const supabase = createServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    throw new Error('User not authenticated')
   }
-
-  /**
-   * Get OAuth authorization URL for a provider
-   */
-  getAuthUrl(provider: Provider, connectionId: string, redirectUri?: string): string {
-    const params = new URLSearchParams({
-      connection_id: connectionId,
-      provider_config_key: provider,
-    })
-    
-    if (redirectUri) {
-      params.set('redirect_uri', redirectUri)
-    }
-
-    return `${this.baseUrl}/oauth/authorize?${params.toString()}`
+  
+  const connectionId = getConnId(user.id, provider)
+  
+  const url = new URL(`${NANGO_HOST}/proxy`)
+  
+  // Build query string if provided
+  let endpoint = path
+  if (query && Object.keys(query).length > 0) {
+    const queryString = new URLSearchParams(
+      Object.entries(query).reduce((acc, [key, value]) => {
+        acc[key] = String(value)
+        return acc
+      }, {} as Record<string, string>)
+    ).toString()
+    endpoint = `${path}?${queryString}`
   }
-
-  /**
-   * Get connection details
-   */
-  async getConnection(connectionId: string, provider: Provider): Promise<NangoConnection | null> {
-    try {
-      const response = await fetch(
-        `${this.baseUrl}/connection/${connectionId}?provider_config_key=${provider}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${this.secretKey}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-
-      if (!response.ok) {
-        if (response.status === 404) return null
-        throw new Error(`Failed to get connection: ${response.statusText}`)
-      }
-
-      return await response.json()
-    } catch (error) {
-      console.error('Error getting Nango connection:', error)
-      return null
-    }
-  }
-
-  /**
-   * Delete a connection
-   */
-  async deleteConnection(connectionId: string, provider: Provider): Promise<boolean> {
-    try {
-      const response = await fetch(
-        `${this.baseUrl}/connection/${connectionId}?provider_config_key=${provider}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${this.secretKey}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-
-      return response.ok
-    } catch (error) {
-      console.error('Error deleting Nango connection:', error)
-      return false
-    }
-  }
-
-  /**
-   * Make a proxy request to an external API using stored OAuth tokens
-   */
-  async proxyRequest<T = any>(
-    connectionId: string,
-    provider: Provider,
-    endpoint: string,
-    options: ProxyRequestOptions = {}
-  ): Promise<T> {
-    const {
-      method = 'GET',
-      headers = {},
-      params = {},
-      data,
-      timeout = 30000,
-      retries = 2
-    } = options
-
-    const requestUrl = `${this.baseUrl}/proxy`
-    const requestHeaders = {
-      'Authorization': `Bearer ${this.secretKey}`,
+  
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${NANGO_SECRET}`,
       'Content-Type': 'application/json',
       'Provider-Config-Key': provider,
       'Connection-Id': connectionId,
-      ...headers
-    }
-
-    const requestBody = {
-      method,
+    },
+    body: JSON.stringify({
+      method: 'GET',
       endpoint,
-      headers: requestHeaders,
-      ...(Object.keys(params).length > 0 && { params }),
-      ...(data && { data }),
-    }
-
-    let lastError: Error
-    for (let attempt = 0; attempt <= retries; attempt++) {
-      try {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), timeout)
-
-        const response = await fetch(requestUrl, {
-          method: 'POST',
-          headers: requestHeaders,
-          body: JSON.stringify(requestBody),
-          signal: controller.signal,
-        })
-
-        clearTimeout(timeoutId)
-
-        if (!response.ok) {
-          throw new Error(`Nango proxy request failed: ${response.status} ${response.statusText}`)
-        }
-
-        return await response.json()
-      } catch (error) {
-        lastError = error as Error
-        if (attempt < retries) {
-          // Exponential backoff
-          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000))
-        }
-      }
-    }
-
-    throw lastError!
+    }),
+  })
+  
+  if (!response.ok) {
+    const error = await response.text()
+    throw new Error(`Nango proxy request failed: ${response.status} - ${error}`)
   }
-
-  /**
-   * Verify webhook signature
-   */
-  verifyWebhookSignature(payload: string, signature: string, secret: string): boolean {
-    try {
-      const crypto = require('crypto')
-      const expectedSignature = crypto
-        .createHmac('sha256', secret)
-        .update(payload)
-        .digest('hex')
-
-      return signature === expectedSignature
-    } catch (error) {
-      console.error('Error verifying webhook signature:', error)
-      return false
-    }
-  }
+  
+  return response.json()
 }
 
-// Export singleton instance
-export const nangoClient = new NangoClient()
-
-// Helper functions for common operations
-export const nangoHelpers = {
+// Supabase table helpers for nango_connections
+export const nangoDb = {
   /**
-   * Generate connection ID for a user and provider
+   * Get a connection from the database
    */
-  generateConnectionId(userId: string, provider: Provider): string {
-    return `${userId}-${provider}`
-  },
-
-  /**
-   * Check if connection is expired
-   */
-  isConnectionExpired(connection: NangoConnection): boolean {
-    if (!connection.oauth_access_token_expires_at) return false
+  async getConnection(userId: string, provider: Provider): Promise<NangoConnection | null> {
+    const supabase = createServerClient()
     
-    const expiresAt = new Date(connection.oauth_access_token_expires_at)
-    const now = new Date()
+    const { data, error } = await supabase
+      .from('nango_connections')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('provider', provider)
+      .single()
     
-    // Consider expired if less than 5 minutes remaining
-    return expiresAt.getTime() - now.getTime() < 5 * 60 * 1000
-  },
-
-  /**
-   * Get provider display name
-   */
-  getProviderDisplayName(provider: Provider): string {
-    const names: Record<Provider, string> = {
-      google: 'Gmail',
-      slack: 'Slack',
+    if (error) {
+      console.error('Error fetching Nango connection:', error)
+      return null
     }
-    return names[provider] || provider
+    
+    return data
   },
-
+  
   /**
-   * Get provider icon/emoji
+   * Save or update a connection in the database
    */
-  getProviderIcon(provider: Provider): string {
-    const icons: Record<Provider, string> = {
-      google: '📧',
-      slack: '💬',
+  async upsertConnection(connection: NangoConnection): Promise<boolean> {
+    const supabase = createServerClient()
+    
+    const { error } = await supabase
+      .from('nango_connections')
+      .upsert({
+        ...connection,
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'user_id,provider'
+      })
+    
+    if (error) {
+      console.error('Error upserting Nango connection:', error)
+      return false
     }
-    return icons[provider] || '🔗'
+    
+    return true
+  },
+  
+  /**
+   * Delete a connection from the database
+   */
+  async deleteConnection(userId: string, provider: Provider): Promise<boolean> {
+    const supabase = createServerClient()
+    
+    const { error } = await supabase
+      .from('nango_connections')
+      .delete()
+      .eq('user_id', userId)
+      .eq('provider', provider)
+    
+    if (error) {
+      console.error('Error deleting Nango connection:', error)
+      return false
+    }
+    
+    return true
+  },
+  
+  /**
+   * Get all connections for a user
+   */
+  async getUserConnections(userId: string): Promise<NangoConnection[]> {
+    const supabase = createServerClient()
+    
+    const { data, error } = await supabase
+      .from('nango_connections')
+      .select('*')
+      .eq('user_id', userId)
+    
+    if (error) {
+      console.error('Error fetching user connections:', error)
+      return []
+    }
+    
+    return data || []
+  },
+  
+  /**
+   * Check if a user has a connection for a provider
+   */
+  async hasConnection(userId: string, provider: Provider): Promise<boolean> {
+    const connection = await this.getConnection(userId, provider)
+    return !!connection
   },
 }
