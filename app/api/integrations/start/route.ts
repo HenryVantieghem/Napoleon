@@ -16,6 +16,14 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Check if Supabase is configured
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      // For testing without authentication - use test user ID
+      const testUserId = 'test-user-123'
+      const authUrl = startConnect(provider, testUserId)
+      return NextResponse.redirect(authUrl)
+    }
+
     // Get authenticated user
     const supabase = getSupabaseServerClient(cookies())
     const { data: { user }, error: authError } = await supabase.auth.getUser()

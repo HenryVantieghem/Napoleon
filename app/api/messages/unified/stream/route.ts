@@ -5,7 +5,7 @@ import { getUserConnections } from '@/lib/nango-handlers'
 import { normalizeMessages, type NormalizedMessage } from '@/lib/normalize'
 import { messageCacheHelpers } from '@/lib/cache'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 // In-memory store for tracking last seen messages per user
 const userLastMessages = new Map<string, Set<string>>()

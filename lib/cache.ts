@@ -46,8 +46,8 @@ class MessageCache {
   private readonly namespace: string
 
   constructor(options: CacheOptions = {}) {
-    this.defaultTtl = options.ttl || cacheConfig.ttlSeconds
-    this.maxSize = options.maxSize || cacheConfig.maxEntries
+    this.defaultTtl = options.ttl || cacheConfig?.ttlSeconds || 300
+    this.maxSize = options.maxSize || cacheConfig?.maxEntries || 1000
     this.namespace = options.namespace || 'default'
     
     // Cleanup expired entries every minute

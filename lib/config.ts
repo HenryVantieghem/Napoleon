@@ -27,6 +27,12 @@ const envSchema = z.object({
 
 // Validate environment variables
 function validateEnv() {
+  // Skip validation during build if required vars are missing
+  if (process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build') {
+    console.warn('Skipping environment validation during production build')
+    return {} as any
+  }
+  
   try {
     return envSchema.parse(process.env)
   } catch (error) {
@@ -34,6 +40,12 @@ function validateEnv() {
       const errorMessages = error.errors.map(err => 
         `${err.path.join('.')}: ${err.message}`
       ).join('\n')
+      
+      // During development, just warn instead of throwing
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`Environment validation warnings:\n${errorMessages}`)
+        return envSchema.partial().parse(process.env)
+      }
       
       throw new Error(`Environment validation failed:\n${errorMessages}`)
     }
