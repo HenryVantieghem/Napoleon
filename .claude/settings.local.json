@@ -24,7 +24,8 @@
       "Bash(git pull:*)",
       "Bash(git tag:*)",
       "Bash(grep:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(touch:*)"
     ],
     "deny": []
   }
